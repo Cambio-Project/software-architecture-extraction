@@ -5,6 +5,7 @@ from extractor.controllers.analyzer import Analyzer
 from extractor.controllers.exporter import Exporter
 from extractor.controllers.validator import Validator
 from extractor.arch_models.architecture import Architecture
+from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
 from extractor.arch_models.zipkin_trace import ZipkinTrace
@@ -71,7 +72,10 @@ def cli():
     if model:
         model_name = model_file[model_file.rfind('/') + 1:]
         model_name = model_name[:model_name.rfind('.')]
-        arch = Architecture(model)
+        if args.export_architecture[0].lower() == 'misim':
+            arch = ArchitectureMiSim(model)
+        else:
+            arch = Architecture(model)
 
     # Validation
     if args.validate_model and model:
@@ -112,14 +116,19 @@ def cli():
             exit(1)
 
         export_type = 'js'
+        model_type = export_type
         pretty_print = False
         if args.export_architecture[0].lower() == 'json':
             export_type = 'json'
+            model_type = export_type
+        elif args.export_architecture[0].lower() == 'misim':
+            export_type = 'json'
+            model_type = 'MiSim'
         if len(args.export_architecture) > 1 and bool_from_string(args.export_architecture[1]):
             pretty_print = True
 
         handle = open('{}_architecture_export.{}'.format(model_name, export_type), 'w+')
-        handle.write(Exporter.export_architecture(arch, export_type, pretty_print, args.lightweight))
+        handle.write(Exporter.export_architecture(arch, model_type, pretty_print, args.lightweight))
         handle.close()
 
 

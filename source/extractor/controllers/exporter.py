@@ -8,5 +8,7 @@ class Exporter:
         if export_type == 'js':
             return 'const graph=' + arch.export(pretty) + ';'
         # Json
-        else:
+        elif export_type == 'json':
             return arch.export(pretty, lightweight)
+        elif export_type == 'MiSim':
+            return arch.export()

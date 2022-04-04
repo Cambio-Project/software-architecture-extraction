@@ -40,7 +40,9 @@ class JaegerTrace(IModel):
                 service.tags = {tag['key']: tag['value'] for tag in process['tags']}
                 service.tags['serviceName'] = service_name
 
-                self._services[service_name] = service
+                # check if service already exists
+                if service_name not in self.services:
+                    self._services[service_name] = service
                 process_ids[process_id] = service_name
 
             # Add operations to the corresponding services.
@@ -71,7 +73,6 @@ class JaegerTrace(IModel):
             for span in trace['spans']:
                 for reference in span['references']:
                     if reference['refType'] == 'CHILD_OF':
-
                         # Callee
                         pid = span['processID']
                         service_name = process_ids[pid]
