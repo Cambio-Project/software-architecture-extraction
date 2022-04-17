@@ -22,10 +22,9 @@ class ArchitectureMiSim:
         for _, s in self._model.services.items():
             # variables of this microservice
             name = s.name
-            instances = 1
+            instances = s.instances
             patterns = []
             capacity = 1000
-
             operations = []
 
             # retrieve all operations of this microservice
