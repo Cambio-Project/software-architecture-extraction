@@ -1,7 +1,7 @@
 from typing import List
 
-from extractor.arch_models.hazard import Hazard
-from extractor.arch_models.model import IModel
+from ..arch_models.hazard import Hazard
+from ..arch_models.model import IModel
 
 
 class Analyzer:

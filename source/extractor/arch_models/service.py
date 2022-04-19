@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from extractor.arch_models.operation import Operation
+from ..arch_models.operation import Operation
 
 
 class Service:
