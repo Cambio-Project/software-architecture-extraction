@@ -3,13 +3,13 @@ import zipfile
 
 from django.http import HttpResponse
 
-from extractor.arch_models.architecture import Architecture
-from extractor.arch_models.jaeger_trace import JaegerTrace
-from extractor.arch_models.misim_model import MiSimModel
-from extractor.arch_models.zipkin_trace import ZipkinTrace
-from extractor.controllers.analyzer import Analyzer
-from extractor.controllers.exporter import Exporter
-from extractor.models.architecture import ArchitectureModel
+from .arch_models.architecture import Architecture
+from .arch_models.jaeger_trace import JaegerTrace
+from .arch_models.misim_model import MiSimModel
+from .arch_models.zipkin_trace import ZipkinTrace
+from .controllers.analyzer import Analyzer
+from .controllers.exporter import Exporter
+from .models.architecture import ArchitectureModel
 from util.log import error
 
 

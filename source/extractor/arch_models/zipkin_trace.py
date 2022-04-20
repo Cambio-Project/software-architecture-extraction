@@ -1,12 +1,12 @@
 import json
 
-from extractor.arch_models.model import IModel
+from ..arch_models.model import IModel
 from typing import Union, Any, Dict, List
 
 from typing.io import IO
 
-from extractor.arch_models.operation import Operation
-from extractor.arch_models.service import Service
+from ..arch_models.operation import Operation
+from ..arch_models.service import Service
 
 
 class ZipkinTrace(IModel):

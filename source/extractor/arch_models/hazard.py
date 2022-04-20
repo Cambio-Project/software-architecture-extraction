@@ -1,7 +1,7 @@
 from typing import Union
 
-from extractor.arch_models.operation import Operation
-from extractor.arch_models.service import Service
+from ..arch_models.operation import Operation
+from ..arch_models.service import Service
 
 
 class Keyword:

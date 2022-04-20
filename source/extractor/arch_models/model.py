@@ -2,9 +2,9 @@ from typing import Union, Dict, Tuple, List, Any
 from typing.io import IO
 import pandas as pd
 
-from extractor.arch_models.hazard import *
-from extractor.arch_models.operation import Operation
-from extractor.arch_models.service import Service
+from ..arch_models.hazard import *
+from ..arch_models.operation import Operation
+from ..arch_models.service import Service
 from util.log import tb
 
 
