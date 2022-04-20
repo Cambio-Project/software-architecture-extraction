@@ -10,7 +10,6 @@ class Service:
         self._id = Service.ID
         self._name = name
         self._operations = {}
-        self._instances = 1
         self._hosts = []
 
         # Runtime
@@ -44,10 +43,6 @@ class Service:
         return self._tags
 
     @property
-    def instances(self) -> int:
-        return self._instances
-
-    @property
     def hosts(self):
         return self._hosts
 
@@ -75,9 +70,6 @@ class Service:
         for operation in operations:
             del self._operations[operation.name]
             operation.service = self
-
-    def add_instance(self):
-        self._instances += 1
 
     def add_host(self, host):
         if host not in self._hosts:

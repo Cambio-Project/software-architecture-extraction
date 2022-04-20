@@ -59,6 +59,10 @@ class JaegerTrace(IModel):
 
                 service_name = process_ids[pid]
 
+                host = trace['processes'][pid]['tags'][1].get('value')
+                if not self.services[service_name].hosts.__contains__(host):
+                    self.services[service_name].add_host(host)
+
                 if operation_name in self._services[service_name].operations:
                     operation = self._services[service_name].operations[operation_name]
                 else:
