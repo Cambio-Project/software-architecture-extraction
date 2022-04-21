@@ -10,6 +10,7 @@ from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
 from extractor.arch_models.zipkin_trace import ZipkinTrace
 from util.parse import bool_from_string
+from extractor.controllers.jaeger_network_manager import JaegerNetworkManager
 
 
 def cli():

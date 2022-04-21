@@ -22,7 +22,7 @@ class JaegerTrace(IModel):
         return operation_logs
 
     def _parse_multiple(self, model: Dict[str, Any]) -> bool:
-        return False
+        return self._parse(model)
 
     def _parse(self, model: Dict[str, Any]) -> bool:
         # Store process_id: service_name
