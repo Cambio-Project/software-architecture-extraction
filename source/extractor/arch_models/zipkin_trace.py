@@ -10,8 +10,10 @@ from ..arch_models.service import Service
 
 
 class ZipkinTrace(IModel):
+
     def __init__(self, source: Union[str, IO, list] = None, multiple: bool = False):
         super().__init__(self.__class__.__name__, source, multiple)
+        
 
     def _parse_multiple(self, model: List[List[Dict[str, Any]]]) -> bool:
         multiple = [trace for trace_list in model for trace in trace_list]
@@ -27,18 +29,30 @@ class ZipkinTrace(IModel):
             local = span.get('localEndpoint', {})
             remote = span.get('remoteEndpoint', {})
 
-            local_endpoint = local.get('serviceName', '')
-            remote_endpoint = remote.get('serviceName', '')
+            local_ip = local.get('ipv4', '')
+            remote_ip = remote.get('ipv4', '')
+            local_endpoint = local.get('port', '')
+            remote_endpoint = remote.get('port', '')
+            local_serviceName = local.get('serviceName', '') or ("local_endpoint_" + str(local_ip) + ":" + str(local_endpoint))
+            remote_serviceName = remote.get('serviceName', '') or ("remote_endpoint_" + str(remote_ip) + ":" + str(remote_endpoint))
 
-            if local_endpoint not in self._services:
-                service = Service(local_endpoint)
-                service.tags = local
-                self._services[local_endpoint] = service
+            if len(local) > 0:
+                if local_serviceName not in self._services:
+                    service = Service(local_serviceName)
+                    service.tags = local
+                    self._services[local_serviceName] = service
+                host = str(local_ip) + ":" + str(local_endpoint)
+                if not self.services[local_serviceName].hosts.__contains__(host):
+                    self.services[local_serviceName].add_host(host)
 
-            if remote_endpoint not in self._services:
-                service = Service(remote_endpoint)
-                service.tags = remote
-                self._services[remote_endpoint] = service
+            if len(remote) > 0 :
+                if remote_serviceName not in self._services:
+                    service = Service(remote_serviceName)
+                    service.tags = remote
+                    self._services[remote_serviceName] = service
+                host = str(remote_ip) + ":" + str(remote_endpoint)
+                if not self.services[remote_serviceName].hosts.__contains__(host):
+                    self.services[remote_serviceName].add_host(host)
 
         # Add operations
         for span in model:
