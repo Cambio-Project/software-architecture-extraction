@@ -7,6 +7,7 @@ from typing.io import IO
 
 from ..arch_models.operation import Operation
 from ..arch_models.service import Service
+from ..arch_models.circuit_breaker import CircuitBreaker
 
 
 class JaegerTrace(IModel):
@@ -72,6 +73,12 @@ class JaegerTrace(IModel):
                 operation.durations[span_id] = span.get('duration', -1)
                 operation.tags[span_id] = {tag['key']: tag['value'] for tag in span.get('tags', {})}
                 operation.logs[span_id] = JaegerTrace._parse_logs(span.get('logs', {}))
+
+                for s in operation.tags.items():
+                    for value in s[1]:
+                        if value == 'pattern.circuitBreaker':
+                            if s[1][value] == 'true':
+                                operation.add_circuit_breaker(CircuitBreaker())
 
             # Add dependencies
             for span in trace['spans']:

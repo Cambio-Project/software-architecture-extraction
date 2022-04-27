@@ -1,4 +1,5 @@
 from typing import Dict, List
+from ..arch_models.circuit_breaker import CircuitBreaker
 
 
 class Operation:
@@ -9,6 +10,7 @@ class Operation:
         self._name = name
         self._dependencies = []
         self._service = None
+        self._circuit_breaker = None
         
         # Runtime 
         self._durations = {}
@@ -57,6 +59,10 @@ class Operation:
     def logs(self) -> Dict[str, Dict]:
         return self._logs
 
+    @property
+    def circuit_breaker(self) -> CircuitBreaker:
+        return self._circuit_breaker
+
     @logs.setter
     def logs(self, logs: Dict[str, Dict]):
         self._logs = logs
@@ -84,3 +90,6 @@ class Operation:
     def remove_dependencies(self, dependencies: List):
         for dependency in dependencies:
             self._dependencies.remove(dependency)
+
+    def add_circuit_breaker(self, circuitBreaker: CircuitBreaker):
+        self._circuit_breaker = circuitBreaker

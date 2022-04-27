@@ -1,6 +1,7 @@
 import json
 from ..arch_models.model import IModel
 
+
 class ArchitectureMiSim:
     """
     Creates an architectural representation of a generic model from services, operations, and dependencies with
@@ -30,6 +31,7 @@ class ArchitectureMiSim:
             for _, o in s.operations.items():
                 op_name = o.name
                 demand = 100
+                circuit_breaker = o.circuit_breaker
                 dependencies = []
 
                 # Get all dependencies of this operation
@@ -46,9 +48,22 @@ class ArchitectureMiSim:
                     if dependency not in dependencies:
                         dependencies.append(dependency)
 
+                # if a circuit breaker is present, add the corresponding attributes
+                if circuit_breaker is not None:
+                    circuit_breaker_dict = {
+                        "rollingWindow": circuit_breaker.rolling_window,
+                        "requestVolumeThreshold": circuit_breaker.request_volume_threshold,
+                        "errorThresholdPercentage": circuit_breaker.error_threshold_percentage,
+                        "sleepWindow": circuit_breaker.sleep_window,
+                        "timeout": circuit_breaker.timeout
+                    }
+                else:
+                    circuit_breaker_dict = None
+
                 operations.append({
                     'name': op_name,
                     'demand': demand,
+                    'circuitBreaker': circuit_breaker_dict,
                     'dependencies': dependencies
                 })
 
