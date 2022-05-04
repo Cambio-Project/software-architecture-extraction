@@ -60,7 +60,7 @@ class JaegerTrace(IModel):
 
                 service_name = process_ids[pid]
 
-                host = trace['processes'][pid]['tags'][1].get('value')
+                host = trace['processes'][pid]['tags'][0].get('value')
                 if not self.services[service_name].hosts.__contains__(host):
                     self.services[service_name].add_host(host)
 
