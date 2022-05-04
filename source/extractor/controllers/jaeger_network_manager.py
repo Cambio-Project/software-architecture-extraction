@@ -23,11 +23,20 @@ class JaegerNetworkManager:
         # get all services
         services = requests.get(URL_ALL_SERVICES).json()
 
+        # List of all trace IDs used to eliminate duplicate traces
+        traceIDs = []
+
         # get the traces for each service and collect them in the traces array
         for service in services['data']:
             if service != 'jaeger-query':
                 url = URL_SERVICE + service
-                self.traces['data'].extend(requests.get(url).json()['data'])
+                new_traces = requests.get(url).json()['data']
+
+                # Elimination of duplicate traces
+                for trace in new_traces:
+                    if trace['traceID'] not in traceIDs:
+                        traceIDs.append(trace['traceID'])
+                        self.traces['data'].append(trace)
 
         return self.traces
 
@@ -63,12 +72,21 @@ class JaegerNetworkManager:
         with open(file) as f:
             services = json.load(f)
 
+        # List of all trace IDs used to eliminate duplicate traces
+        traceIDs = []
+
         # get the traces for each service from the corresponding file and collect them in the traces array
         for service in services['data']:
             if service != 'jaeger-query':
                 file_path = path + '/' + service + '.json'
                 with open(file_path) as f:
                     file = json.load(f)
-                self.traces['data'].extend(file['data'])
+                    new_traces = file['data']
+
+                    # Elimination of duplicate traces
+                    for trace in new_traces:
+                        if trace['traceID'] not in traceIDs:
+                            traceIDs.append(trace['traceID'])
+                            self.traces['data'].append(trace)
 
         return self.traces
