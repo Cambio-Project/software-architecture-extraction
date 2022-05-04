@@ -101,6 +101,23 @@ class JaegerTrace(IModel):
                         parent_operation = self._services[parent_service_name].operations[parent_operation_name]
                         parent_operation.add_dependency(operation)
 
+            # A GET-request-dependency gets replaced with all the dependencies of this GET-request.
+            for _, s in self.services.items():
+                for _, op in s.operations.items():
+                    for dependency in op.dependencies:
+                        if dependency.name == 'GET':
+                            for new_dep in self.services[dependency.service.name].operations.get('GET').dependencies:
+                                op.add_dependency(new_dep)
+                            op.remove_dependency_with_duplicates(dependency)
+
+            # Delete all GET-operations from the model
+            for _, s in self.services.items():
+                get_operations = []
+                for _, op in s.operations.items():
+                    if op.name == 'GET':
+                        get_operations.append(op)
+                s.remove_operations(get_operations)
+
         return True
 
     def read_multiple(self, source: Union[str, IO, dict] = None) -> bool:
