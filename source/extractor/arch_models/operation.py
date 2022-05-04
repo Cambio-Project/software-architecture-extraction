@@ -91,5 +91,9 @@ class Operation:
         for dependency in dependencies:
             self._dependencies.remove(dependency)
 
+    def remove_dependency_with_duplicates(self, dependency):
+        while self._dependencies.__contains__(dependency):
+            self._dependencies.remove(dependency)
+
     def add_circuit_breaker(self, circuitBreaker: CircuitBreaker):
         self._circuit_breaker = circuitBreaker
