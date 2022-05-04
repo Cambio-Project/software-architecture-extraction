@@ -19,7 +19,8 @@ class ArchitectureMiSim:
 
         microservices = []
 
-        for _, s in self._model.services.items():
+        services_of_model = sorted(self._model.services.items(), key=lambda x: x[0])
+        for _, s in services_of_model:
             # variables of this microservice
             name = s.name
             instances = len(s.hosts)
@@ -27,15 +28,17 @@ class ArchitectureMiSim:
             capacity = 1000
             operations = []
 
-            # retrieve all operations of this microservice
-            for _, o in s.operations.items():
+            # get all operations of this microservice
+            operations_of_microservice = sorted(s.operations.items(), key=lambda x: x[0])
+            for _, o in operations_of_microservice:
                 op_name = o.name
                 demand = 100
                 circuit_breaker = o.circuit_breaker
                 dependencies = []
 
                 # Get all dependencies of this operation
-                for d in o.dependencies:
+                dependencies_of_operation = sorted(o.dependencies, key=lambda x: x.name)
+                for d in dependencies_of_operation:
                     service = d.service.name
                     operation = d.name
                     probability = 1.0
