@@ -77,7 +77,7 @@ class JaegerTrace(IModel):
                 for s in operation.tags.items():
                     for value in s[1]:
                         if value == 'pattern.circuitBreaker':
-                            if s[1][value] == 'true':
+                            if bool(s[1][value]):
                                 operation.add_circuit_breaker(CircuitBreaker())
 
             # Add dependencies
