@@ -5,14 +5,10 @@ from source.extractor.arch_models.zipkin_trace import ZipkinTrace
 from source.input.AllInput import get_input
 
 user_input = get_input()
-transformation_model_input = user_input.transformation_model_input
-validations_input = user_input.validations_input
-analyses_input = user_input.analyses_input
-exports_input = user_input.exports_input
+extractor_input = user_input.extractor_input
+resirio_settings = user_input.resirio_settings
 
 model = None
 arch = None
 model_file = ''
 model_name = ''
-
-        
