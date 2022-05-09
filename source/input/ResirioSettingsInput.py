@@ -40,8 +40,8 @@ class ResirioSettingsInput:
         self.should_be_lightweight_export = True if should_be_lightweight_answer == "y" else False
 
     def __str__(self):
-        output_string = "Analyse Model: " + str(self.analyse_model) + ", Analyse Architecture: " + str(
-            self.analyse_architecture)
+        output_string = "Analyse Model: " + str(self.should_analyse_model) + ", Analyse Architecture: " + str(
+            self.should_analyse_architecture)
         output_string += "\nValidate Model: " + str(self.should_validate_model) + ", Validate Architecture: " + str(
             self.should_validate_architecture)
         output_string += "\nExport Model: " + str(self.should_export_model) + ", Export Architecture: " + str(
