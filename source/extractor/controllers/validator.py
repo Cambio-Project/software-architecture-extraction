@@ -1,6 +1,6 @@
 from typing import Tuple, List
 
-from extractor.arch_models.architecture import Architecture
+from source.extractor.arch_models.architecture_resirio import Architecture
 from extractor.arch_models.model import IModel
 
 

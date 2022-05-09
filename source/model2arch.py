@@ -4,7 +4,7 @@ import argparse
 from extractor.controllers.analyzer import Analyzer
 from extractor.controllers.exporter import Exporter
 from extractor.controllers.validator import Validator
-from extractor.arch_models.architecture import Architecture
+from source.extractor.arch_models.architecture_resirio import Architecture
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel

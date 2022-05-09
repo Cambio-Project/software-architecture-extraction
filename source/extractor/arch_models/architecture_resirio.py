@@ -3,7 +3,7 @@ import re
 from typing import Tuple, List
 
 from ..graph.graph import Graph, Node, Edge
-from ..arch_models.model import IModel, UnknownOperation
+from .model import IModel, UnknownOperation
 
 
 class CyclicServiceOperations(BaseException):
