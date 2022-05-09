@@ -6,8 +6,11 @@ from source.input.ResirioSettingsInput import ResirioSettingsInput
 class AllInput:
     def __init__(self):
         self.extractor_input = ExtractorInput()
-        print()
-        self.resirio_settings = ResirioSettingsInput()
+        if self.extractor_input.should_create_resirio_model:
+            print()
+            self.resirio_settings = ResirioSettingsInput()
+        else:
+            self.resirio_settings = None
 
     def __str__(self):
         return "Extractor Input:\n" + str(self.extractor_input) + "\n\nResirio Settings:\n" + str(
