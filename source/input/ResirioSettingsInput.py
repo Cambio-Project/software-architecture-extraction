@@ -1,3 +1,5 @@
+# class which forces the user to type the additional input for the resirio via the command line when instantiated
+# the input consists of three parts: Analyses, Validation and Export
 class ResirioSettingsInput:
 
     def __init__(self):
@@ -32,7 +34,7 @@ class ResirioSettingsInput:
     def ask_for_exports(self):
         should_export_model_answer = input("Do you want to export the MODEL? <y> or <n>:")
         should_export_architecture_answer = input("Do you want to export the ARCHITECTURE? <y> or <n>:")
-        should_be_lightweight_answer = input("Do you want the export of the graph lightweight? <y> or <n>:")
+        should_be_lightweight_answer = input("Do you want the export of the graph being lightweight? <y> or <n>:")
         self.should_export_model = True if should_export_model_answer == "y" else False
         self.should_export_architecture = True if should_export_architecture_answer == "y" else False
         self.should_be_lightweight_export = True if should_be_lightweight_answer == "y" else False
