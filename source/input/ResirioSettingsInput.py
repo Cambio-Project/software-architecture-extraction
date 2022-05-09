@@ -3,8 +3,8 @@
 class ResirioSettingsInput:
 
     def __init__(self):
-        self.analyse_model = False
-        self.analyse_architecture = False
+        self.should_analyse_model = False
+        self.should_analyse_architecture = False
 
         self.should_validate_model = False
         self.should_validate_architecture = False
@@ -22,8 +22,8 @@ class ResirioSettingsInput:
     def ask_for_analyses(self):
         analyse_model_answer = input("Do you want an analyses of the MODEL? <y> or <n>:")
         analyse_architecture_answer = input("Do you want an analyses of the ARCHITECTURE? <y> or <n>:")
-        self.analyse_model = True if analyse_model_answer == "y" else False
-        self.analyse_architecture = True if analyse_architecture_answer == "y" else False
+        self.should_analyse_model = True if analyse_model_answer == "y" else False
+        self.should_analyse_architecture = True if analyse_architecture_answer == "y" else False
 
     def ask_for_validations(self):
         validate_model_answer = input("Do you want a validation of the MODEL? <y> or <n>:")

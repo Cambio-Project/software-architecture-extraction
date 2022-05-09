@@ -14,7 +14,7 @@ class ExtractorInput:
         self.ask_for_traces()
 
     def ask_for_model_output_type(self):
-        model_type_for_extraction = input("Extract Model for Resirio [r] or MiSim [m]? ")
+        model_type_for_extraction = input("Create Model for Resirio [r] or MiSim [m]? ")
         if model_type_for_extraction == "r":
             self.should_create_resirio_model = True
         elif model_type_for_extraction == "m":
@@ -23,7 +23,7 @@ class ExtractorInput:
             pass  # TODO type of output model not supported
 
     def ask_for_trace_input_type(self):
-        trace_input_type = input("Traces for input are from Jaeger [j] or Zipkin [z]? ")
+        trace_input_type = input("Your traces are from Jaeger [j] or Zipkin [z]? ")
         if trace_input_type == "j":
             self.traces_are_jaeger = True
         elif trace_input_type == "z":
