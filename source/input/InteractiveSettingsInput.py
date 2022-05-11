@@ -1,6 +1,6 @@
-# class which forces the user to type the additional input for the resirio via the command line when instantiated
-# the input consists of three parts: Analyses, Validation and Export
-class ResirioSettingsInput:
+# Class which forces the user to type the input of the settings via the command line when instantiated.
+# The input consists of three parts: Analyses, Validation and Export.
+class InteractiveSettingsInput:
 
     def __init__(self):
         self.should_analyse_model = False
