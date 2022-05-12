@@ -1,11 +1,12 @@
-import pickle
-from source.extractor.arch_models.jaeger_trace import JaegerTrace
-from source.extractor.arch_models.misim_model import MiSimModel
-from source.extractor.arch_models.zipkin_trace import ZipkinTrace
 from source.input.InteractiveInput import InteractiveInput
 
 user_input = InteractiveInput()
-extractor_input = user_input.extractor_input
+print()
+print("Found input:")
+print(user_input)
+print("---------")
+model_input = user_input.model_input
+trace_input = user_input.trace_input
 settings_input = user_input.settings_input
 
 model = None
