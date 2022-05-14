@@ -13,7 +13,6 @@ class ZipkinTrace(IModel):
 
     def __init__(self, source: Union[str, IO, list] = None, multiple: bool = False):
         super().__init__(self.__class__.__name__, source, multiple)
-        
 
     def _parse_multiple(self, model: List[List[Dict[str, Any]]]) -> bool:
         multiple = [trace for trace_list in model for trace in trace_list]
@@ -25,34 +24,35 @@ class ZipkinTrace(IModel):
 
         # Store all services
         for span in model:
-            span_ids[span['id']] = span
+            if span.get('kind', None) != 'CLIENT':
+                span_ids[span['id']] = span
             local = span.get('localEndpoint', {})
             remote = span.get('remoteEndpoint', {})
 
-            local_ip = local.get('ipv4', '')
-            remote_ip = remote.get('ipv4', '')
-            local_endpoint = local.get('port', '')
-            remote_endpoint = remote.get('port', '')
-            local_serviceName = local.get('serviceName', '') or ("local_endpoint_" + str(local_ip) + ":" + str(local_endpoint))
-            remote_serviceName = remote.get('serviceName', '') or ("remote_endpoint_" + str(remote_ip) + ":" + str(remote_endpoint))
+            local_endpoint = local.get('serviceName', '')
+            remote_endpoint = remote.get('serviceName', '')
 
-            if len(local) > 0:
-                if local_serviceName not in self._services:
-                    service = Service(local_serviceName)
-                    service.tags = local
-                    self._services[local_serviceName] = service
-                host = str(local_ip) + ":" + str(local_endpoint)
-                if not self.services[local_serviceName].hosts.__contains__(host):
-                    self.services[local_serviceName].add_host(host)
+            if local_endpoint not in self._services:
+                service = Service(local_endpoint)
+                service.tags = local
+                host = local.get('ipv4') or local.get('ipv6')
+                port = local.get('port', None)
+                if port is not None:
+                    host = host + ':' + port
+                service.add_host(host)
+                self._services[local_endpoint] = service
+            else:
+                host = local.get('ipv4') or local.get('ipv6')
+                port = local.get('port', None)
+                if port is not None:
+                    host = host + ':' + port
+                if not self._services[local_endpoint].hosts.__contains__(host):
+                    self._services[local_endpoint].add_host(host)
 
-            if len(remote) > 0 :
-                if remote_serviceName not in self._services:
-                    service = Service(remote_serviceName)
-                    service.tags = remote
-                    self._services[remote_serviceName] = service
-                host = str(remote_ip) + ":" + str(remote_endpoint)
-                if not self.services[remote_serviceName].hosts.__contains__(host):
-                    self.services[remote_serviceName].add_host(host)
+            if remote_endpoint not in self._services and remote_endpoint != '':
+                service = Service(remote_endpoint)
+                service.tags = remote
+                self._services[remote_endpoint] = service
 
         # Add operations
         for span in model:
@@ -64,6 +64,9 @@ class ZipkinTrace(IModel):
                 return False
 
             operation_name = span['name']
+            if operation_name == 'get':
+                continue
+
             if operation_name in self.services[service_name].operations:
                 operation = self.services[service_name].operations[operation_name]
             else:
@@ -83,6 +86,8 @@ class ZipkinTrace(IModel):
                 local = span.get('localEndpoint', {})
                 service_name = local.get('serviceName', '')
                 operation_name = span['name']
+                if operation_name == 'get':
+                    continue
 
                 operation = self._services[service_name].operations[operation_name]
 
@@ -92,8 +97,11 @@ class ZipkinTrace(IModel):
                 parent = parent_span.get('localEndpoint', {})
                 parent_service_name = parent.get('serviceName', '')
                 parent_operation_name = parent_span['name']
+                if parent_operation_name == 'get':
+                    continue
 
                 parent_operation = self._services[parent_service_name].operations[parent_operation_name]
+
                 skip = False
                 for dependency in parent_operation.dependencies:
                     if dependency.name == operation_name:
