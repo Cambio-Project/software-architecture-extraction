@@ -1,5 +1,7 @@
 import json
 
+from ..arch_models.circuit_breaker import CircuitBreaker
+
 from ..arch_models.model import IModel
 from typing import Union, Any, Dict, List
 
@@ -38,14 +40,14 @@ class ZipkinTrace(IModel):
                 host = local.get('ipv4') or local.get('ipv6')
                 port = local.get('port', None)
                 if port is not None:
-                    host = host + ':' + port
+                    host = str(host) + ':' + str(port)
                 service.add_host(host)
                 self._services[local_endpoint] = service
             else:
                 host = local.get('ipv4') or local.get('ipv6')
                 port = local.get('port', None)
                 if port is not None:
-                    host = host + ':' + port
+                    host = str(host) + ':' + str(port)
                 if not self._services[local_endpoint].hosts.__contains__(host):
                     self._services[local_endpoint].add_host(host)
 
@@ -77,6 +79,12 @@ class ZipkinTrace(IModel):
             operation.durations[span_id] = span.get('duration', -1)
             operation.tags[span_id] = span.get('tags', {})
             operation.logs[span_id] = {a['timestamp']: {'log': a['value']} for a in span.get('annotations', {})}
+
+            for s in operation.tags.items():
+                for value in s[1]:
+                    if value == 'pattern.circuitBreaker':
+                        if bool(s[1][value]):
+                            operation.add_circuit_breaker(CircuitBreaker())
 
         # Add dependencies
         for span in model:
