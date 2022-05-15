@@ -13,7 +13,7 @@ class TestExporter(unittest.TestCase):
         pass
         
     def test_Zipkin_MiSim(self):
-        model_file = str('./extractor/arch_models/test/zipkin_trace.json')
+        model_file = str('./source/extractor/arch_models/test/zipkin_trace.json')
         model = ZipkinTrace(model_file, False)
         if not model:
             return
@@ -21,7 +21,6 @@ class TestExporter(unittest.TestCase):
         model_name = model_name[:model_name.rfind('.')]
         arch = ArchitectureMiSim(model)
         exportmodel = json.loads(arch.export())
-        print(exportmodel)
         for data in exportmodel["microservices"]:
             self.assertIsNotNone(data["name"])
             self.assertGreater(data["instances"], 0)
