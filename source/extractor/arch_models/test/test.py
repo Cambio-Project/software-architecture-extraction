@@ -13,6 +13,7 @@ class TestExporter(unittest.TestCase):
         pass
         
     def test_Zipkin_MiSim(self):
+        # Source of example trace zipkin_trace.json: https://zipkin.io/pages/data_model.html
         model_file = str('./source/extractor/arch_models/test/zipkin_trace.json')
         model = ZipkinTrace(model_file, False)
         if not model:
