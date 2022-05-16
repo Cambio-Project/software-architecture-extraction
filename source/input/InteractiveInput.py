@@ -12,12 +12,11 @@ class InteractiveInput:
     # Asks for either a RESIRIO- or MiSim-model or no model. Asks for traces if no model was given. Lastly, asks for settings.
     def __init__(self):
         self.model_input = InteractiveModelInput()
+        self.trace_input = None
         print()
         if not self.model_input.contains_model():
             self.trace_input = InteractiveTraceInput()
             print()
-        else:
-            self.trace_input = None
         self.settings_input = InteractiveSettingsInput()
 
     def __str__(self):

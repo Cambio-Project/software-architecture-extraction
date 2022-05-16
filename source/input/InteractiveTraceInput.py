@@ -15,16 +15,17 @@ class InteractiveTraceInput:
         self.traces_are_zipkin = False
         self.use_jaeger_network = False
         self.traces = {'data': []}
+        self.contains_multiple_traces = False
 
         self.ask_for_trace_type()
         if self.traces_are_jaeger:
             self.ask_for_use_of_jaeger_network()
-
         if self.use_jaeger_network:
             jaeger_network_manager = JaegerNetworkManager()
             self.traces = jaeger_network_manager.get_traces()
         else:
             self.ask_for_traces()
+        self.contains_multiple_traces = len(self.get_trace_list()) > 1
 
     def ask_for_trace_type(self):
         trace_input_type = input("Your traces are from Jaeger or Zipkin? <j> or <z>: ")
