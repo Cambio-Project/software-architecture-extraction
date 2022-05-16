@@ -13,7 +13,7 @@ class TestExporter(unittest.TestCase):
         pass
         
     def test_Zipkin_MiSim(self):
-        model_file = str('./source/extractor/arch_models/test/zipkin_trace.json')
+        model_file = str('./extractor/arch_models/test/zipkin_trace.json')
         model = ZipkinTrace(model_file, False)
         if not model:
             return
