@@ -34,28 +34,34 @@ class ZipkinTrace(IModel):
             local_endpoint = local.get('serviceName', '')
             remote_endpoint = remote.get('serviceName', '')
 
+            local_host = local.get('ipv4') or local.get('ipv6')
+            local_port = local.get('port', None)
+
+            remote_host = remote.get('ipv4') or remote.get('ipv6')
+            remote_port = remote.get('port', None)
+
+            if local_port is not None:
+                local_host = str(local_host) + ':' + str(local_port)
+            if remote_port is not None:
+                remote_host = str(remote_host) + ':' + str(remote_port)
+
             if local_endpoint not in self._services:
                 service = Service(local_endpoint)
                 service.tags = local
-                host = local.get('ipv4') or local.get('ipv6')
-                port = local.get('port', None)
-                if port is not None:
-                    host = str(host) + ':' + str(port)
-                service.add_host(host)
+                service.add_host(local_host)
                 self._services[local_endpoint] = service
             else:
-                host = local.get('ipv4') or local.get('ipv6')
-                port = local.get('port', None)
-                if port is not None:
-                    host = str(host) + ':' + str(port)
-                if not self._services[local_endpoint].hosts.__contains__(host):
-                    self._services[local_endpoint].add_host(host)
-
-            if remote_endpoint not in self._services and remote_endpoint != '':
-                service = Service(remote_endpoint)
-                service.tags = remote
-                self._services[remote_endpoint] = service
-
+                if not self._services[local_endpoint].hosts.__contains__(local_host):
+                    self._services[local_endpoint].add_host(local_host)
+            if len(remote_endpoint) > 0:
+                if remote_endpoint not in self._services:
+                    service = Service(remote_endpoint)
+                    service.tags = remote
+                    service.add_host(remote_host)
+                    self._services[remote_endpoint] = service
+                else:
+                    if not self._services[remote_endpoint].hosts.__contains__(remote_host):
+                        self._services[remote_endpoint].add_host(remote_host)
         # Add operations
         for span in model:
             local = span.get('localEndpoint', {})
