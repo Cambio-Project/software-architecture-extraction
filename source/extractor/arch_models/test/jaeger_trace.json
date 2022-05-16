@@ -1,0 +1,947 @@
+{
+    "data": [
+        {
+            "traceID": "acc4c46b51d852c2",
+            "spans": [
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "fde2cc070d163981",
+                    "flags": 1,
+                    "operationName": "GET",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "f788efafd102a0de"
+                        }
+                    ],
+                    "startTime": 1651668221632000,
+                    "duration": 88093,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-spring-rest-template"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "client"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://e:8080/e1"
+                        },
+                        {
+                            "key": "peer.port",
+                            "type": "int64",
+                            "value": 8080
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [],
+                    "processID": "p1",
+                    "warnings": null
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "f788efafd102a0de",
+                    "flags": 1,
+                    "operationName": "b1",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "1d68c253e803ae62"
+                        }
+                    ],
+                    "startTime": 1651668221432000,
+                    "duration": 299403,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-web-servlet"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "server"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://b:8080/b1"
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "timestamp": 1651668221442000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "preHandle"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.b.MicroserviceType.b1()"
+                                },
+                                {
+                                    "key": "handler.class_simple_name",
+                                    "type": "string",
+                                    "value": "Microservice"
+                                },
+                                {
+                                    "key": "handler.method_name",
+                                    "type": "string",
+                                    "value": "b1"
+                                }
+                            ]
+                        },
+                        {
+                            "timestamp": 1651668221731000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "afterCompletion"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.b.MicroserviceType.b1()"
+                                }
+                            ]
+                        }
+                    ],
+                    "processID": "p1",
+                    "warnings": null
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "ce34f0044c286de6",
+                    "flags": 1,
+                    "operationName": "GET",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "f788efafd102a0de"
+                        }
+                    ],
+                    "startTime": 1651668221461000,
+                    "duration": 164467,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-spring-rest-template"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "client"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://d:8080/d1"
+                        },
+                        {
+                            "key": "peer.port",
+                            "type": "int64",
+                            "value": 8080
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [],
+                    "processID": "p1",
+                    "warnings": null
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "b9077d64296775d2",
+                    "flags": 1,
+                    "operationName": "GET",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "d2a0278a77ffabd0"
+                        }
+                    ],
+                    "startTime": 1651668221822000,
+                    "duration": 91332,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-spring-rest-template"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "client"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://e:8080/e2"
+                        },
+                        {
+                            "key": "peer.port",
+                            "type": "int64",
+                            "value": 8080
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [],
+                    "processID": "p2",
+                    "warnings": [
+                        "clock skew adjustment disabled; not applying calculated delta of -29.205ms"
+                    ]
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "d2a0278a77ffabd0",
+                    "flags": 1,
+                    "operationName": "c1",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "da4a70af13ba4c61"
+                        }
+                    ],
+                    "startTime": 1651668221795000,
+                    "duration": 141815,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-web-servlet"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "server"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://c:8080/c1"
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "timestamp": 1651668221804000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "preHandle"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.c.MicroserviceType.c1()"
+                                },
+                                {
+                                    "key": "handler.class_simple_name",
+                                    "type": "string",
+                                    "value": "Microservice"
+                                },
+                                {
+                                    "key": "handler.method_name",
+                                    "type": "string",
+                                    "value": "c1"
+                                }
+                            ]
+                        },
+                        {
+                            "timestamp": 1651668221936000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "afterCompletion"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.c.MicroserviceType.c1()"
+                                }
+                            ]
+                        }
+                    ],
+                    "processID": "p2",
+                    "warnings": [
+                        "clock skew adjustment disabled; not applying calculated delta of -29.205ms"
+                    ]
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "acc4c46b51d852c2",
+                    "flags": 1,
+                    "operationName": "a1",
+                    "references": [],
+                    "startTime": 1651668221325000,
+                    "duration": 615699,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-web-servlet"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "server"
+                        },
+                        {
+                            "key": "sampler.type",
+                            "type": "string",
+                            "value": "const"
+                        },
+                        {
+                            "key": "sampler.param",
+                            "type": "bool",
+                            "value": true
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://localhost:8080/a1"
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "timestamp": 1651668221326000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "preHandle"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "private org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.a.MicroserviceType.a1()"
+                                },
+                                {
+                                    "key": "handler.class_simple_name",
+                                    "type": "string",
+                                    "value": "Microservice"
+                                },
+                                {
+                                    "key": "handler.method_name",
+                                    "type": "string",
+                                    "value": "a1"
+                                }
+                            ]
+                        },
+                        {
+                            "timestamp": 1651668221941000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "afterCompletion"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "private org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.a.MicroserviceType.a1()"
+                                }
+                            ]
+                        }
+                    ],
+                    "processID": "p3",
+                    "warnings": null
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "da4a70af13ba4c61",
+                    "flags": 1,
+                    "operationName": "GET",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "acc4c46b51d852c2"
+                        }
+                    ],
+                    "startTime": 1651668221738000,
+                    "duration": 197405,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-spring-rest-template"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "client"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://c:8080/c1"
+                        },
+                        {
+                            "key": "peer.port",
+                            "type": "int64",
+                            "value": 8080
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [],
+                    "processID": "p3",
+                    "warnings": null
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "1d68c253e803ae62",
+                    "flags": 1,
+                    "operationName": "GET",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "acc4c46b51d852c2"
+                        }
+                    ],
+                    "startTime": 1651668221340000,
+                    "duration": 396197,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-spring-rest-template"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "client"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://b:8080/b1"
+                        },
+                        {
+                            "key": "peer.port",
+                            "type": "int64",
+                            "value": 8080
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [],
+                    "processID": "p3",
+                    "warnings": null
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "5b0eeeaa7b26504e",
+                    "flags": 1,
+                    "operationName": "d1",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "ce34f0044c286de6"
+                        }
+                    ],
+                    "startTime": 1651668221594000,
+                    "duration": 26395,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-web-servlet"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "server"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://d:8080/d1"
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "timestamp": 1651668221604000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "preHandle"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.d.MicroserviceType.d1()"
+                                },
+                                {
+                                    "key": "handler.class_simple_name",
+                                    "type": "string",
+                                    "value": "Microservice"
+                                },
+                                {
+                                    "key": "handler.method_name",
+                                    "type": "string",
+                                    "value": "d1"
+                                }
+                            ]
+                        },
+                        {
+                            "timestamp": 1651668221620000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "afterCompletion"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.d.MicroserviceType.d1()"
+                                }
+                            ]
+                        }
+                    ],
+                    "processID": "p4",
+                    "warnings": null
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "d5e079a1e83575f8",
+                    "flags": 1,
+                    "operationName": "e1",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "fde2cc070d163981"
+                        }
+                    ],
+                    "startTime": 1651668221692000,
+                    "duration": 29186,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-web-servlet"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "server"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://e:8080/e1"
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "timestamp": 1651668221703000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "preHandle"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.e.MicroserviceType.e1()"
+                                },
+                                {
+                                    "key": "handler.class_simple_name",
+                                    "type": "string",
+                                    "value": "Microservice"
+                                },
+                                {
+                                    "key": "handler.method_name",
+                                    "type": "string",
+                                    "value": "e1"
+                                }
+                            ]
+                        },
+                        {
+                            "timestamp": 1651668221721000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "afterCompletion"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.e.MicroserviceType.e1()"
+                                }
+                            ]
+                        }
+                    ],
+                    "processID": "p5",
+                    "warnings": [
+                        "clock skew adjustment disabled; not applying calculated delta of -30.5465ms"
+                    ]
+                },
+                {
+                    "traceID": "acc4c46b51d852c2",
+                    "spanID": "dbc40561a730c98e",
+                    "flags": 1,
+                    "operationName": "e2",
+                    "references": [
+                        {
+                            "refType": "CHILD_OF",
+                            "traceID": "acc4c46b51d852c2",
+                            "spanID": "b9077d64296775d2"
+                        }
+                    ],
+                    "startTime": 1651668221906000,
+                    "duration": 2117,
+                    "tags": [
+                        {
+                            "key": "http.status_code",
+                            "type": "int64",
+                            "value": 200
+                        },
+                        {
+                            "key": "component",
+                            "type": "string",
+                            "value": "java-web-servlet"
+                        },
+                        {
+                            "key": "span.kind",
+                            "type": "string",
+                            "value": "server"
+                        },
+                        {
+                            "key": "http.url",
+                            "type": "string",
+                            "value": "http://e:8080/e2"
+                        },
+                        {
+                            "key": "http.method",
+                            "type": "string",
+                            "value": "GET"
+                        },
+                        {
+                            "key": "internal.span.format",
+                            "type": "string",
+                            "value": "proto"
+                        }
+                    ],
+                    "logs": [
+                        {
+                            "timestamp": 1651668221906000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "preHandle"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.e.MicroserviceType.e2()"
+                                },
+                                {
+                                    "key": "handler.class_simple_name",
+                                    "type": "string",
+                                    "value": "Microservice"
+                                },
+                                {
+                                    "key": "handler.method_name",
+                                    "type": "string",
+                                    "value": "e2"
+                                }
+                            ]
+                        },
+                        {
+                            "timestamp": 1651668221908000,
+                            "fields": [
+                                {
+                                    "key": "event",
+                                    "type": "string",
+                                    "value": "afterCompletion"
+                                },
+                                {
+                                    "key": "handler",
+                                    "type": "string",
+                                    "value": "public org.springframework.http.ResponseEntity\u003cjava.lang.String\u003e com.example.e.MicroserviceType.e2()"
+                                }
+                            ]
+                        }
+                    ],
+                    "processID": "p5",
+                    "warnings": null
+                }
+            ],
+            "processes": {
+                "p1": {
+                    "serviceName": "B",
+                    "tags": [
+                        {
+                            "key": "hostname",
+                            "type": "string",
+                            "value": "f0975e8012b8"
+                        },
+                        {
+                            "key": "ip",
+                            "type": "string",
+                            "value": "172.22.0.2"
+                        },
+                        {
+                            "key": "jaeger.version",
+                            "type": "string",
+                            "value": "Java-0.27.0"
+                        }
+                    ]
+                },
+                "p2": {
+                    "serviceName": "C",
+                    "tags": [
+                        {
+                            "key": "hostname",
+                            "type": "string",
+                            "value": "fc6e1f38c8a0"
+                        },
+                        {
+                            "key": "ip",
+                            "type": "string",
+                            "value": "172.22.0.3"
+                        },
+                        {
+                            "key": "jaeger.version",
+                            "type": "string",
+                            "value": "Java-0.27.0"
+                        }
+                    ]
+                },
+                "p3": {
+                    "serviceName": "A",
+                    "tags": [
+                        {
+                            "key": "hostname",
+                            "type": "string",
+                            "value": "66386b3d4f0b"
+                        },
+                        {
+                            "key": "ip",
+                            "type": "string",
+                            "value": "172.22.0.4"
+                        },
+                        {
+                            "key": "jaeger.version",
+                            "type": "string",
+                            "value": "Java-0.27.0"
+                        }
+                    ]
+                },
+                "p4": {
+                    "serviceName": "D",
+                    "tags": [
+                        {
+                            "key": "hostname",
+                            "type": "string",
+                            "value": "5a029bd31368"
+                        },
+                        {
+                            "key": "ip",
+                            "type": "string",
+                            "value": "172.22.0.5"
+                        },
+                        {
+                            "key": "jaeger.version",
+                            "type": "string",
+                            "value": "Java-0.27.0"
+                        }
+                    ]
+                },
+                "p5": {
+                    "serviceName": "E",
+                    "tags": [
+                        {
+                            "key": "hostname",
+                            "type": "string",
+                            "value": "1e6d22f693dc"
+                        },
+                        {
+                            "key": "ip",
+                            "type": "string",
+                            "value": "172.22.0.6"
+                        },
+                        {
+                            "key": "jaeger.version",
+                            "type": "string",
+                            "value": "Java-0.27.0"
+                        }
+                    ]
+                }
+            },
+            "warnings": null
+        }
+    ],
+    "total": 0,
+    "limit": 0,
+    "offset": 0,
+    "errors": null
+}
