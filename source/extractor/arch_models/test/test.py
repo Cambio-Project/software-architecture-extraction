@@ -31,7 +31,7 @@ class TestExporter(unittest.TestCase):
             self.assertIsNotNone(data["operations"])
 
     def test_Jaeger_MiSim(self):
-        # Source of example trace zipkin_trace.json: https://zipkin.io/pages/data_model.html
+        # Source of example setup used for jaeger_trace.json: https://github.com/orcas-elite/example-setups
         model_file = str('./extractor/arch_models/test/jaeger_trace.json')
         model = JaegerTrace(model_file, False)
         if not model:
