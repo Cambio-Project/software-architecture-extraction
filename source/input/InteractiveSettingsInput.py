@@ -60,9 +60,10 @@ class InteractiveSettingsInput:
         output_string += "\nValidate Model: " + str(self.should_validate_model) + ", Validate Architecture: " + str(
             self.should_validate_architecture)
         output_string += "\nExport Model for " + ("RESIRIO" if self.should_export_for_resirio else "MiSim")
-        output_string += ("\nStore in intermediate (pickle)-format: " + str(self.should_store_in_pickle_format)) if self.should_export_for_resirio else ""
+        output_string += ("\nAdditionally store in intermediate (pickle)-format: " + str(self.should_store_in_pickle_format)) if self.should_export_for_resirio else ""
         output_string += ("\nExport data-type: " + (".json" if self.resirio_export_should_be_json else ".js")) if self.should_export_for_resirio else ""
         output_string += ("\nLightweight Export: " + str(self.should_be_lightweight_export)) if self.should_export_for_resirio else ""
+        output_string += ("\nPrint pretty: " + str(self.should_be_pretty_print)) if self.should_export_for_resirio else ""
         return output_string
 
 

@@ -68,11 +68,11 @@ def export():
     name_of_output_file = ("RESIRIO" if settings_input.should_export_for_resirio else "MiSim") + "-extraction_" + current_date
     if settings_input.should_store_in_pickle_format:
         pickle.dump(generic_model, open(name_of_output_file + "_pickle_export.dat", 'wb+'))  # stores the generic model in a binary format
-        export_file_type = "json" if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else "js"
-        export_type = export_file_type if settings_input.should_export_for_resirio else "MiSim"
-        output_file = open(name_of_output_file + "." + export_file_type, 'w+')  # creates output file
-        output_file.write(Exporter.export_architecture(architecture, export_type, settings_input.should_be_pretty_print, settings_input.should_be_lightweight_export))
-        output_file.close()
+    export_file_type = "json" if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else "js"
+    export_type = export_file_type if settings_input.should_export_for_resirio else "MiSim"
+    output_file = open(name_of_output_file + "." + export_file_type, 'w+')  # creates output file
+    output_file.write(Exporter.export_architecture(architecture, export_type, settings_input.should_be_pretty_print, settings_input.should_be_lightweight_export))
+    output_file.close()
 
 
 # Main
