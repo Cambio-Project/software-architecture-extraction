@@ -69,14 +69,11 @@ if settings_input.should_store_in_pickle_format:
     if model_file:
         pickle.dump(model, open(model_name + '_model_export.dat', 'wb+'))
 if settings_input.should_export_for_resirio:
-    stop = False
     if model is None:
         print('No model!')
-        stop = True
+        exit(1)
     if arch is None:
         print('No architecture!')
-        stop = True
-    if stop:
         exit(1)
     export_type = 'json' if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else 'js'
     model_type = export_type if settings_input.should_export_for_resirio else "MiSim"
