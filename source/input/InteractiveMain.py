@@ -19,67 +19,66 @@ model_input = user_input.model_input
 trace_input = user_input.trace_input
 settings_input = user_input.settings_input
 
-model = None
-arch = None
-model_file = ''
-model_name = ''
+generic_model = None
+architecture = None
+model_file_for_generic_model = ""
+output_model_name = ""
 
 if model_input.contains_resirio_model:
-    model_file = model_input.get_model_file_path()
-    model = pickle.load(open(model_file, 'rb'))
+    model_file_for_generic_model = model_input.get_model_file_path()
+    generic_model = pickle.load(open(model_file_for_generic_model, 'rb'))
 elif model_input.contains_misim_model:
-    model_file = model_input.get_model_file_path()
-    model = MiSimModel(model_file)
+    model_file_for_generic_model = model_input.get_model_file_path()
+    generic_model = MiSimModel(model_file_for_generic_model)
 elif trace_input.traces_are_jaeger:
-    model_file = ""  # TODO which model file?
-    model = JaegerTrace(model_file, trace_input.contains_multiple_traces)
+    model_file_for_generic_model = ""  # TODO which model file?
+    generic_model = JaegerTrace(model_file_for_generic_model, trace_input.contains_multiple_traces)
 elif trace_input.traces_are_zipkin:
-    model_file = ""  # TODO which model file?
-    model = ZipkinTrace(model_file, trace_input.contains_multiple_traces)
+    model_file_for_generic_model = ""  # TODO which model file?
+    generic_model = ZipkinTrace(model_file_for_generic_model, trace_input.contains_multiple_traces)
 
-if model is not None:
-    model_name = model_file[model_file.rfind('/') + 1:]
-    model_name = model_name[:model_name.rfind('.')]
+if generic_model is not None:
+    output_model_name = model_file_for_generic_model[model_file_for_generic_model.rfind('/') + 1:]
+    output_model_name = output_model_name[:output_model_name.rfind('.')]
     if settings_input.should_export_for_misim:
-        arch = ArchitectureMiSim(model)
+        architecture = ArchitectureMiSim(generic_model)
     else:
-        arch = Architecture(model)
+        architecture = Architecture(generic_model)
 
 # Validation
-if settings_input.should_validate_model and model is not None:
-    success, exceptions = Validator.validate_model(model)
-    success &= model.valid
+if settings_input.should_validate_model and generic_model is not None:
+    success, exceptions = Validator.validate_model(generic_model)
+    success &= generic_model.valid
     print('Validation of {} model: {} {}'.format(
-        model.type,
+        generic_model.type,
         'Successful' if success else 'Failed',
         '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
 
-if settings_input.should_validate_architecture and arch is not None:
-    success, exceptions = Validator.validate_architecture(arch)
+if settings_input.should_validate_architecture and architecture is not None:
+    success, exceptions = Validator.validate_architecture(architecture)
     print('Validation of architecture: {} {}'.format(
         'Successful' if success else 'Failed',
         '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
 
 # Analysis
-if settings_input.should_analyse_model and model:
-    model.hazards = Analyzer.analyze_model(model)
+if settings_input.should_analyse_model and generic_model:
+    generic_model.hazards = Analyzer.analyze_model(generic_model)
 
 # Export
-if settings_input.should_store_in_pickle_format:
-    if model_file:
-        pickle.dump(model, open(model_name + '_model_export.dat', 'wb+'))
+if settings_input.should_store_in_pickle_format and model_file_for_generic_model is not None:
+    pickle.dump(generic_model, open(output_model_name + "_model_export.dat", 'wb+'))
 if settings_input.should_export_for_resirio:
-    if model is None:
-        print('No model!')
+    if generic_model is None:
+        print("No model!")
         exit(1)
-    if arch is None:
-        print('No architecture!')
+    if architecture is None:
+        print("No architecture!")
         exit(1)
-    export_type = 'json' if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else 'js'
+    export_type = "json" if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else "js"
     model_type = export_type if settings_input.should_export_for_resirio else "MiSim"
     pretty_print = False
     if settings_input.should_be_pretty_print:
         pretty_print = True
-    handle = open('{}_architecture_export.{}'.format(model_name, export_type), 'w+')
-    handle.write(Exporter.export_architecture(arch, model_type, pretty_print, settings_input.should_be_lightweight_export))
+    handle = open("{}_architecture_export.{}".format(output_model_name, export_type), 'w+')
+    handle.write(Exporter.export_architecture(architecture, model_type, pretty_print, settings_input.should_be_lightweight_export))
     handle.close()
