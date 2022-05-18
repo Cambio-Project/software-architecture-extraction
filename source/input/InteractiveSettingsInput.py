@@ -44,7 +44,7 @@ class InteractiveSettingsInput:
         self.should_export_for_misim = True if export_type_answer == "m" else False
 
     def ask_for_additional_resirio_settings(self):
-        should_store_in_pickle_format_answer = input("Do you want to store in an intermediate format (pickle)? <y> or <n>: ")
+        should_store_in_pickle_format_answer = input("Do you want to store in an intermediate format (pickle), too? <y> or <n>: ")
         resirio_export_data_type_answer = input("Do you want the export being .js or .json? <js> or <json>: ")
         should_be_lightweight_answer = input("Do you want the export of the graph being lightweight? <y> or <n>: ")
         should_print_pretty_answer = input("Do you want a pretty print? <y> or <n>: ")
