@@ -26,26 +26,21 @@ settings_input = user_input.settings_input
 # Creates the respective IModel implementation (generic model) from the given input.
 def create_generic_model():
     if model_input.contains_resirio_model:
-        model_file_for_generic_model = model_input.get_model_file_path()
-        return pickle.load(open(model_file_for_generic_model, 'rb'))
+        return pickle.load(open(model_input.get_model_file_path(), 'rb'))
     elif model_input.contains_misim_model:
-        model_file_for_generic_model = model_input.get_model_file_path()
-        return MiSimModel(model_file_for_generic_model)
+        return MiSimModel(model_input.get_model_file_path())
     elif trace_input.traces_are_jaeger:
-        model_file_for_generic_model = ""  # TODO which model file?
-        return JaegerTrace(model_file_for_generic_model, trace_input.contains_multiple_traces)
+        return JaegerTrace(trace_input.traces, trace_input.contains_multiple_traces)
     elif trace_input.traces_are_zipkin:
-        model_file_for_generic_model = ""  # TODO which model file?
-        return ZipkinTrace(model_file_for_generic_model, trace_input.contains_multiple_traces)
+        return ZipkinTrace(trace_input.traces, trace_input.contains_multiple_traces)
 
 
 # Creates the architecture for RESIRIO or MiSim out of the generic model.
 def create_architecture():
-    if generic_model is not None:
-        if settings_input.should_export_for_resirio:
-            return Architecture(generic_model)
-        else:
-            return ArchitectureMiSim(generic_model)
+    if settings_input.should_export_for_resirio:
+        return Architecture(generic_model)
+    else:
+        return ArchitectureMiSim(generic_model)
 
 
 def validate():
@@ -69,17 +64,10 @@ def analyse():
 
 
 def export():
-    current_time = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-    name_of_output_file = ("RESIRIO" if settings_input.should_export_for_resirio else "MiSim") + "-extraction_" + current_time
-    if settings_input.should_store_in_pickle_format and generic_model is not None:
+    current_date = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+    name_of_output_file = ("RESIRIO" if settings_input.should_export_for_resirio else "MiSim") + "-extraction_" + current_date
+    if settings_input.should_store_in_pickle_format:
         pickle.dump(generic_model, open(name_of_output_file + "_pickle_export.dat", 'wb+'))  # stores the generic model in a binary format
-    if settings_input.should_export_for_resirio:
-        if generic_model is None:
-            print("No model!")
-            exit(1)
-        if architecture is None:
-            print("No architecture!")
-            exit(1)
         export_file_type = "json" if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else "js"
         export_type = export_file_type if settings_input.should_export_for_resirio else "MiSim"
         output_file = open(name_of_output_file + "." + export_file_type, 'w+')  # creates output file
