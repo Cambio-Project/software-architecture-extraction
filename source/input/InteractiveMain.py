@@ -9,6 +9,7 @@ from source.extractor.controllers.analyzer import Analyzer
 from source.extractor.controllers.exporter import Exporter
 from source.extractor.controllers.validator import Validator
 from source.input.InteractiveInput import InteractiveInput
+from time import gmtime, strftime
 
 user_input = InteractiveInput()
 print()
@@ -38,8 +39,8 @@ elif trace_input.traces_are_zipkin:
     generic_model = ZipkinTrace(model_file_for_generic_model, trace_input.contains_multiple_traces)
 
 if generic_model is not None:
-    output_model_name = model_file_for_generic_model[model_file_for_generic_model.rfind('/') + 1:]
-    output_model_name = output_model_name[:output_model_name.rfind('.')]
+    time_stamp = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    output_model_name = "RESIRIO" if settings_input.should_export_for_resirio else "MiSim" + "-model_" + time_stamp
     if settings_input.should_export_for_misim:
         architecture = ArchitectureMiSim(generic_model)
     else:
@@ -66,7 +67,7 @@ if settings_input.should_analyse_model and generic_model:
 
 # Export
 if settings_input.should_store_in_pickle_format and model_file_for_generic_model is not None:
-    pickle.dump(generic_model, open(output_model_name + "_model_export.dat", 'wb+'))
+    pickle.dump(generic_model, open(output_model_name + "_pickle_export.dat", 'wb+'))
 if settings_input.should_export_for_resirio:
     if generic_model is None:
         print("No model!")
