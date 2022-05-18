@@ -81,9 +81,8 @@ if settings_input.should_export_for_resirio:
     export_type = 'json' if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else 'js'
     model_type = export_type if settings_input.should_export_for_resirio else "MiSim"
     pretty_print = False
-    # TODO
-    # if len(args.export_architecture) > 1 and bool_from_string(args.export_architecture[1]):
-    #     pretty_print = True
+    if settings_input.should_be_pretty_print:
+        pretty_print = True
     handle = open('{}_architecture_export.{}'.format(model_name, export_type), 'w+')
     handle.write(Exporter.export_architecture(arch, model_type, pretty_print, settings_input.should_be_lightweight_export))
     handle.close()

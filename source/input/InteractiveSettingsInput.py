@@ -16,6 +16,7 @@ class InteractiveSettingsInput:
         self.resirio_export_should_be_js = False
         self.resirio_export_should_be_json = False
         self.should_be_lightweight_export = False
+        self.should_be_pretty_print = False
 
         self.ask_for_analyses()
         print()
@@ -46,10 +47,12 @@ class InteractiveSettingsInput:
         should_store_in_pickle_format_answer = input("Do you want to store in an intermediate format (pickle)? <y> or <n>: ")
         resirio_export_data_type_answer = input("Do you want the export being .js or .json? <js> or <json>: ")
         should_be_lightweight_answer = input("Do you want the export of the graph being lightweight? <y> or <n>: ")
+        should_print_pretty_answer = input("Do you want a pretty print? <y> or <n>: ")
         self.should_store_in_pickle_format = True if should_store_in_pickle_format_answer == "y" else False
         self.resirio_export_should_be_json = True if resirio_export_data_type_answer == "json" else False
         self.resirio_export_should_be_js = True if resirio_export_data_type_answer == "js" else False
         self.should_be_lightweight_export = True if should_be_lightweight_answer == "y" else False
+        self.should_be_pretty_print = True if should_print_pretty_answer == "y" else False
 
     def __str__(self):
         output_string = "Analyse Model: " + str(self.should_analyse_model) + ", Analyse Architecture: " + str(
