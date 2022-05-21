@@ -1,3 +1,4 @@
+import json
 from os.path import exists
 
 from source.extractor.controllers.jaeger_network_manager import JaegerNetworkManager
@@ -53,9 +54,10 @@ class InteractiveTraceInput:
     # Adds the file at the given path as a trace to self.traces. If the trace doesn't exist and error is printed.
     def add_trace_if_exists(self, trace_file_path):
         if exists(trace_file_path):
-            trace_file_content = open(trace_file_path, "r");
-            self.traces['data'].append(trace_file_content.read())
-            trace_file_content.close()
+            trace_file_handler = open(trace_file_path, "r");
+            trace_file_as_json = json.loads(trace_file_handler.read())
+            self.traces['data'].append(trace_file_as_json['data'][0])
+            trace_file_handler.close()
         else:
             print("File <" + trace_file_path + "> doesn't exist!\n")
 
