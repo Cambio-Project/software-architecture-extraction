@@ -76,7 +76,7 @@ class InteractiveTraceInput:
     def __str__(self):
         number_of_traces = len(self.traces['data'])
         output_string = "Use " + str(number_of_traces) + " " + self.get_trace_type() + " traces "
-        output_string += ("from the HTTP Jaeger API." if self.use_jaeger_network else "which were manually put in.")
+        output_string += ("from the HTTP Jaeger API." if self.use_jaeger_network else "which " + ("were" if self.contains_multiple_traces else "was") + " manually put in.")
         return output_string
 
 
