@@ -44,7 +44,7 @@ def create_architecture():
 
 
 def validate():
-    if settings_input.should_validate_model and generic_model is not None:
+    if settings_input.should_validate_model:
         success, exceptions = Validator.validate_model(generic_model)
         success &= generic_model.valid
         print('Validation of {} model: {} {}'.format(
@@ -59,7 +59,7 @@ def validate():
 
 
 def analyse():
-    if settings_input.should_analyse_model and generic_model:
+    if settings_input.should_analyse_model:
         generic_model.hazards = Analyzer.analyze_model(generic_model)
 
 
