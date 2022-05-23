@@ -1,11 +1,11 @@
 from typing import Union, Dict, Tuple, List, Any
-from typing.io import IO
+from typing import IO
 import pandas as pd
 
 from ..arch_models.hazard import *
 from ..arch_models.operation import Operation
 from ..arch_models.service import Service
-from util.log import tb
+from ...util.log import tb
 
 
 class NoDependenciesException(BaseException):

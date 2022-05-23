@@ -3,7 +3,7 @@ import json
 from ..arch_models.model import IModel
 from typing import Union, Any, Dict
 
-from typing.io import IO
+from typing import IO
 
 from ..arch_models.operation import Operation
 from ..arch_models.service import Service

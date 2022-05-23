@@ -1,4 +1,4 @@
-from util.text.en import TEXT as EN
+from en import TEXT as EN
 
 
 class LanguageConfig:
