@@ -11,20 +11,9 @@ from source.extractor.controllers.validator import Validator
 from source.input.InteractiveInput import InteractiveInput
 from datetime import datetime
 
-# Asks the user for all input in an interactive way via the command line.
-# Prints all registered input to check whether everything is like the user wants.
-user_input = InteractiveInput()
-print()
-print("Registered input:")
-print(user_input)
-print("----")
-model_input = user_input.model_input
-trace_input = user_input.trace_input
-settings_input = user_input.settings_input
-
 
 # Creates the respective IModel implementation (generic model) from the given input.
-def create_generic_model():
+def create_generic_model(model_input, trace_input):
     if model_input.contains_resirio_model:
         return pickle.load(open(model_input.get_model_file_path(), 'rb'))
     elif model_input.contains_misim_model:
@@ -36,14 +25,14 @@ def create_generic_model():
 
 
 # Creates the architecture for RESIRIO or MiSim out of the generic model.
-def create_architecture():
+def create_architecture(settings_input, generic_model):
     if settings_input.should_export_for_resirio:
         return Architecture(generic_model)
     else:
         return ArchitectureMiSim(generic_model)
 
 
-def validate():
+def validate(settings_input, generic_model, architecture):
     if settings_input.should_validate_model:
         success, exceptions = Validator.validate_model(generic_model)
         success &= generic_model.valid
@@ -51,19 +40,19 @@ def validate():
             generic_model.type,
             'Successful' if success else 'Failed',
             '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
-    if settings_input.should_validate_architecture and architecture is not None:
+    if settings_input.should_validate_architecture:
         success, exceptions = Validator.validate_architecture(architecture)
         print('Validation of architecture: {} {}'.format(
             'Successful' if success else 'Failed',
             '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
 
 
-def analyse():
+def analyse(settings_input, generic_model):
     if settings_input.should_analyse_model:
         generic_model.hazards = Analyzer.analyze_model(generic_model)
 
 
-def export():
+def export(settings_input, generic_model, architecture):
     current_date = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
     name_of_output_file = ("RESIRIO" if settings_input.should_export_for_resirio else "MiSim") + "-extraction_" + current_date
     if settings_input.should_store_in_pickle_format:
@@ -75,9 +64,25 @@ def export():
     output_file.close()
 
 
-# Main
-generic_model = create_generic_model()
-architecture = create_architecture()
-validate()
-analyse()
-export()
+# 1. Asks the user for all input in an interactive way via the command line.
+# 2. Prints all registered input to check whether everything is like the user wants.
+# 3. Validation, Analyses, Export
+def main():
+    user_input = InteractiveInput()
+    print("----")
+    print("Registered input:")
+    print(user_input)
+    print("----")
+    model_input = user_input.model_input
+    trace_input = user_input.trace_input
+    settings_input = user_input.settings_input
+
+    generic_model = create_generic_model(model_input, trace_input)
+    architecture = create_architecture(settings_input, generic_model)
+    validate(settings_input, generic_model, architecture)
+    analyse(settings_input, generic_model)
+    export(settings_input, generic_model, architecture)
+
+
+if __name__ == "__main__":
+    main()
