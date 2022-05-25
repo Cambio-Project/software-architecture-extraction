@@ -1,4 +1,4 @@
-from util.text.ids import *
+from ids import *
 
 TEXT = {
     DEFAULT:                                               '...',

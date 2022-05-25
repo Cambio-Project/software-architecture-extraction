@@ -1,7 +1,8 @@
 from typing import Tuple, List
 
-from extractor.arch_models.architecture_resirio import Architecture
-from extractor.arch_models.model import IModel
+
+from ..arch_models.architecture_resirio import Architecture
+from ..arch_models.model import IModel
 
 
 class Validator:

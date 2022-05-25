@@ -2,7 +2,6 @@ import json
 import zipfile
 
 from django.http import HttpResponse
-
 from .arch_models.architecture_resirio import Architecture
 from .arch_models.jaeger_trace import JaegerTrace
 from .arch_models.misim_model import MiSimModel
@@ -10,7 +9,7 @@ from .arch_models.zipkin_trace import ZipkinTrace
 from .controllers.analyzer import Analyzer
 from .controllers.exporter import Exporter
 from .models.architecture import ArchitectureModel
-from util.log import error
+from ..util.log import error
 
 
 def upload(request):

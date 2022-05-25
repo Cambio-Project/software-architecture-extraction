@@ -1,6 +1,6 @@
 import unittest
 
-from extractor.graph.graph import Graph, Node, Edge
+from .graph.graph import Graph, Node, Edge
 
 
 class TestGraph(unittest.TestCase):
