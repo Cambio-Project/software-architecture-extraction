@@ -1,4 +1,4 @@
-from ..arch_models.architecture_resirio import Architecture
+from source.extractor.arch_models.architecture_resirio import Architecture
 
 
 class Exporter:

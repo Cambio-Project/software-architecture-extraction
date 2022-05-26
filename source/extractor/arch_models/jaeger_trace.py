@@ -1,13 +1,13 @@
 import json
 
-from ..arch_models.model import IModel
+from source.extractor.arch_models.model import IModel
 from typing import Union, Any, Dict
 
 from typing import IO
 
-from ..arch_models.operation import Operation
-from ..arch_models.service import Service
-from ..arch_models.circuit_breaker import CircuitBreaker
+from source.extractor.arch_models.operation import Operation
+from source.extractor.arch_models.service import Service
+from source.extractor.arch_models.circuit_breaker import CircuitBreaker
 
 
 class JaegerTrace(IModel):

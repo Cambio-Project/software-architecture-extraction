@@ -1,5 +1,5 @@
 from typing import Dict, List
-from ..arch_models.circuit_breaker import CircuitBreaker
+from source.extractor.arch_models.circuit_breaker import CircuitBreaker
 
 
 class Operation:

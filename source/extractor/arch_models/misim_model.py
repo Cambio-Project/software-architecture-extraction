@@ -2,9 +2,9 @@ import json
 
 from typing import IO, Union, Dict, Any
 
-from ..arch_models.model import IModel, UnknownOperation, WrongFormatException
-from ..arch_models.operation import Operation
-from ..arch_models.service import Service
+from source.extractor.arch_models.model import IModel, UnknownOperation, WrongFormatException
+from source.extractor.arch_models.operation import Operation
+from source.extractor.arch_models.service import Service
 
 
 class MiSimModel(IModel):
