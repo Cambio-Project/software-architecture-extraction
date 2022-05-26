@@ -1,6 +1,5 @@
 import json
 import unittest
-import os
 
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.zipkin_trace import ZipkinTrace
@@ -16,7 +15,7 @@ class TestExporter(unittest.TestCase):
 
     def test_Zipkin_MiSim(self):
         # Source of example trace zipkin_trace.json: https://zipkin.io/pages/data_model.html
-        model_file = os.path.join('extractor', 'arch_models', 'test', 'zipkin_trace.json')
+        model_file = 'zipkin_trace.json'
         model = ZipkinTrace(model_file, False)
         if not model:
             return
@@ -33,7 +32,7 @@ class TestExporter(unittest.TestCase):
 
     def test_Jaeger_MiSim(self):
         # Source of example setup used for jaeger_trace.json: https://github.com/orcas-elite/example-setups
-        model_file = os.path.join('extractor', 'arch_models', 'test', 'jaeger_trace.json')
+        model_file = 'jaeger_trace.json'
         model = JaegerTrace(model_file, False)
         if not model:
             return
