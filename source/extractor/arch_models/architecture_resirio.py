@@ -2,8 +2,8 @@ import json
 import re
 from typing import Tuple, List
 
-from source.extractor.graph.graph import Graph, Node, Edge
-from source.extractor.arch_models.model import IModel, UnknownOperation
+from extractor.graph.graph import Graph, Node, Edge
+from extractor.arch_models.model import IModel, UnknownOperation
 
 
 class CyclicServiceOperations(BaseException):

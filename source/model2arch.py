@@ -1,16 +1,16 @@
 import pickle
 import argparse
 
-from source.extractor.controllers.analyzer import Analyzer
-from source.extractor.controllers.exporter import Exporter
-from source.extractor.controllers.validator import Validator
-from source.extractor.arch_models.architecture_resirio import Architecture
-from source.extractor.arch_models.architecture_misim import ArchitectureMiSim
-from source.extractor.arch_models.jaeger_trace import JaegerTrace
-from source.extractor.arch_models.misim_model import MiSimModel
-from source.extractor.arch_models.zipkin_trace import ZipkinTrace
-from source.input import InteractiveMain
-from source.util.parse import bool_from_string
+from extractor.controllers.analyzer import Analyzer
+from extractor.controllers.exporter import Exporter
+from extractor.controllers.validator import Validator
+from extractor.arch_models.architecture_resirio import Architecture
+from extractor.arch_models.architecture_misim import ArchitectureMiSim
+from extractor.arch_models.jaeger_trace import JaegerTrace
+from extractor.arch_models.misim_model import MiSimModel
+from extractor.arch_models.zipkin_trace import ZipkinTrace
+from input import InteractiveMain
+from util.parse import bool_from_string
 
 
 def cli():

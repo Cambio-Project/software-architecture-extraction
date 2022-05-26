@@ -1,4 +1,4 @@
-from source.extractor.graph.node import Node
+from extractor.graph.node import Node
 
 
 class Edge:

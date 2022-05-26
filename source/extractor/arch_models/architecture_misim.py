@@ -1,5 +1,5 @@
 import json
-from source.extractor.arch_models.model import IModel
+from extractor.arch_models.model import IModel
 
 
 class ArchitectureMiSim:

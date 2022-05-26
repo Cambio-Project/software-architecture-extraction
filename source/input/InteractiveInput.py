@@ -1,6 +1,6 @@
-from source.input.InteractiveModelInput import InteractiveModelInput
-from source.input.InteractiveTraceInput import InteractiveTraceInput
-from source.input.InteractiveSettingsInput import InteractiveSettingsInput
+from input.InteractiveModelInput import InteractiveModelInput
+from input.InteractiveTraceInput import InteractiveTraceInput
+from input.InteractiveSettingsInput import InteractiveSettingsInput
 
 
 # Class which forces the user to type all needed input via the command line when instantiated.

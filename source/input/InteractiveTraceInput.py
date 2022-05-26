@@ -1,7 +1,7 @@
 import json
 from os.path import exists
 
-from source.extractor.controllers.jaeger_network_manager import JaegerNetworkManager
+from extractor.controllers.jaeger_network_manager import JaegerNetworkManager
 
 
 # Class which forces the user putting in traces via the command line when instantiated.

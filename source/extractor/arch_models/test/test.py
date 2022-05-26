@@ -1,9 +1,9 @@
 import json
 import unittest
 
-from source.extractor.arch_models.jaeger_trace import JaegerTrace
-from source.extractor.arch_models.zipkin_trace import ZipkinTrace
-from source.extractor.arch_models.architecture_misim import ArchitectureMiSim
+from extractor.arch_models.jaeger_trace import JaegerTrace
+from extractor.arch_models.zipkin_trace import ZipkinTrace
+from extractor.arch_models.architecture_misim import ArchitectureMiSim
 
 
 class TestExporter(unittest.TestCase):

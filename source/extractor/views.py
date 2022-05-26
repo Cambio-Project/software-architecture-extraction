@@ -2,13 +2,13 @@ import json
 import zipfile
 
 from django.http import HttpResponse
-from source.extractor.arch_models.architecture_resirio import Architecture
-from source.extractor.arch_models.jaeger_trace import JaegerTrace
-from source.extractor.arch_models.misim_model import MiSimModel
-from source.extractor.arch_models.zipkin_trace import ZipkinTrace
-from source.extractor.controllers.exporter import Exporter
-from source.extractor.models.architecture import ArchitectureModel
-from source.util.log import error
+from extractor.arch_models.architecture_resirio import Architecture
+from extractor.arch_models.jaeger_trace import JaegerTrace
+from extractor.arch_models.misim_model import MiSimModel
+from extractor.arch_models.zipkin_trace import ZipkinTrace
+from extractor.controllers.exporter import Exporter
+from extractor.models.architecture import ArchitectureModel
+from util.log import error
 
 
 def upload(request):

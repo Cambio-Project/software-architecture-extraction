@@ -1,14 +1,14 @@
 import json
 
-from source.extractor.arch_models.circuit_breaker import CircuitBreaker
+from extractor.arch_models.circuit_breaker import CircuitBreaker
 
-from source.extractor.arch_models.model import IModel
+from extractor.arch_models.model import IModel
 from typing import Union, Any, Dict, List
 
 from typing import IO
 
-from source.extractor.arch_models.operation import Operation
-from source.extractor.arch_models.service import Service
+from extractor.arch_models.operation import Operation
+from extractor.arch_models.service import Service
 
 
 class ZipkinTrace(IModel):

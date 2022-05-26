@@ -1,7 +1,7 @@
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
-from source.extractor import views as views
+from extractor import views as views
 
 urlpatterns = [
     path('upload/', csrf_exempt(views.upload)),
