@@ -1,9 +1,9 @@
 import json
 import unittest
 
-from ...arch_models.jaeger_trace import JaegerTrace
-from ...arch_models.zipkin_trace import ZipkinTrace
-from ...arch_models.architecture_misim import ArchitectureMiSim
+from source.extractor.arch_models.jaeger_trace import JaegerTrace
+from source.extractor.arch_models.zipkin_trace import ZipkinTrace
+from source.extractor.arch_models.architecture_misim import ArchitectureMiSim
 
 
 class TestExporter(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestExporter(unittest.TestCase):
 
     def tearDown(self):
         pass
-        
+
     def test_Zipkin_MiSim(self):
         # Source of example trace zipkin_trace.json: https://zipkin.io/pages/data_model.html
         model_file = str('./extractor/arch_models/test/zipkin_trace.json')
