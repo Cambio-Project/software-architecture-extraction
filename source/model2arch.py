@@ -1,5 +1,6 @@
 import pickle
 import argparse
+import sys
 
 from extractor.controllers.analyzer import Analyzer
 from extractor.controllers.exporter import Exporter
@@ -141,4 +142,7 @@ def cli():
 
 
 if __name__ == '__main__':
-    cli()
+    if len(sys.argv) > 1:
+        cli()
+    else:
+        InteractiveMain.main()
