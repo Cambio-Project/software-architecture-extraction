@@ -23,11 +23,11 @@ class InteractiveInput:
         return "Model Input:\n" + str(self.model_input) + "\n\nTrace Input:\n" + str(self.trace_input) + "\n\nSettings:\n" + str(self.settings_input)
 
 
-def main():
+def manual_input_test():
     all_input = InteractiveInput()
     print("\nRegistered Input:")
     print(all_input)
 
 
 if __name__ == "__main__":
-    main()
+    manual_input_test()

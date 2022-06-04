@@ -46,11 +46,11 @@ class InteractiveModelInput:
             return "No model."
 
 
-def main():
+def manual_input_test():
     model_input = InteractiveModelInput()
     print("\nRegistered Model:")
     print(model_input)
 
 
 if __name__ == "__main__":
-    main()
+    manual_input_test()

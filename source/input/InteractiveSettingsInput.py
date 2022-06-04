@@ -67,11 +67,11 @@ class InteractiveSettingsInput:
         return output_string
 
 
-def main():
+def manual_input_test():
     settings_input = InteractiveSettingsInput()
     print("\nRegistered Settings:")
     print(settings_input)
 
 
 if __name__ == "__main__":
-    main()
+    manual_input_test()

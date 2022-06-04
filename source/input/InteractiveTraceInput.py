@@ -119,11 +119,11 @@ class InteractiveTraceInput:
         return output_string
 
 
-def main():
+def manual_input_test():
     trace_input = InteractiveTraceInput()
     print("\nRegistered trace-input:")
     print(trace_input)
 
 
 if __name__ == "__main__":
-    main()
+    manual_input_test()
