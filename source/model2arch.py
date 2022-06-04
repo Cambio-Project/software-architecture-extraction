@@ -51,94 +51,88 @@ def cli():
     parser.add_argument('--lightweight', dest='lightweight', action='store_true', required=False,
                         help='Exports the graph without meta information.')
 
-    # Interactive command line input
-    parser.add_argument('--interactive', dest='user_wants_interactive_cli', action='store_true', required=False)
-
     args = parser.parse_args()
 
-    if args.user_wants_interactive_cli:
-        InteractiveMain.main()
-    else:
-        model = None
-        arch = None
-        model_file = ''
-        model_name = ''
+    model = None
+    arch = None
+    model_file = ''
+    model_name = ''
 
-        # Transformation
-        if args.model:
-            model_file = args.model[0]
-            model = pickle.load(open(model_file, 'rb'))
-        elif args.misim:
-            model_file = args.misim[0]
-            model = MiSimModel(model_file)
-        elif args.jaeger:
-            model_file = args.jaeger[0]
-            model = JaegerTrace(model_file, args.multiple)
-        elif args.zipkin:
-            model_file = args.zipkin[0]
-            model = ZipkinTrace(model_file, args.multiple)
+    # Transformation
+    if args.model:
+        model_file = args.model[0]
+        model = pickle.load(open(model_file, 'rb'))
+    elif args.misim:
+        model_file = args.misim[0]
+        model = MiSimModel(model_file)
+    elif args.jaeger:
+        model_file = args.jaeger[0]
+        model = JaegerTrace(model_file, args.multiple)
+    elif args.zipkin:
+        model_file = args.zipkin[0]
+        model = ZipkinTrace(model_file, args.multiple)
 
-        if model:
-            model_name = model_file[model_file.rfind('/') + 1:]
-            model_name = model_name[:model_name.rfind('.')]
-            if args.export_architecture[0].lower() == 'misim':
-                arch = ArchitectureMiSim(model)
-            else:
-                arch = Architecture(model)
+    if model:
+        model_name = model_file[model_file.rfind('/') + 1:]
+        model_name = model_name[:model_name.rfind('.')]
+        if args.export_architecture[0].lower() == 'misim':
+            arch = ArchitectureMiSim(model)
+        else:
+            arch = Architecture(model)
 
-        # Validation
-        if args.validate_model and model:
-            success, exceptions = Validator.validate_model(model)
-            success &= model.valid
-            print('Validation of {} model: {} {}'.format(
-                model.type,
-                'Successful' if success else 'Failed',
-                '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
+    # Validation
+    if args.validate_model and model:
+        success, exceptions = Validator.validate_model(model)
+        success &= model.valid
+        print('Validation of {} model: {} {}'.format(
+            model.type,
+            'Successful' if success else 'Failed',
+            '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
 
-        if args.validate_architecture and arch:
-            success, exceptions = Validator.validate_architecture(arch)
-            print('Validation of architecture: {} {}'.format(
-                'Successful' if success else 'Failed',
-                '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
+    if args.validate_architecture and arch:
+        success, exceptions = Validator.validate_architecture(arch)
+        print('Validation of architecture: {} {}'.format(
+            'Successful' if success else 'Failed',
+            '' if not exceptions else '\n- ' + '\n- '.join(map(str, exceptions))))
 
-        # Analysis
-        if args.analyze_model and model:
-            model.hazards = Analyzer.analyze_model(model)
+    # Analysis
+    if args.analyze_model and model:
+        model.hazards = Analyzer.analyze_model(model)
 
-        # Export
-        if args.export_model:
-            if model_file:
-                pickle.dump(model, open(model_name + '_model_export.dat', 'wb+'))
+    # Export
+    if args.export_model:
+        if model_file:
+            pickle.dump(model, open(model_name + '_model_export.dat', 'wb+'))
 
-        if args.export_architecture:
+    if args.export_architecture:
 
-            stop = False
+        stop = False
 
-            if not model:
-                print('No model!')
-                stop = True
-            if not arch:
-                print('No architecture!')
-                stop = True
+        if not model:
+            print('No model!')
+            stop = True
+        if not arch:
+            print('No architecture!')
+            stop = True
 
-            if stop:
-                exit(1)
+        if stop:
+            exit(1)
 
-            export_type = 'js'
+        export_type = 'js'
+        model_type = export_type
+        pretty_print = False
+        if args.export_architecture[0].lower() == 'json':
+            export_type = 'json'
             model_type = export_type
-            pretty_print = False
-            if args.export_architecture[0].lower() == 'json':
-                export_type = 'json'
-                model_type = export_type
-            elif args.export_architecture[0].lower() == 'misim':
-                export_type = 'json'
-                model_type = 'MiSim'
-            if len(args.export_architecture) > 1 and bool_from_string(args.export_architecture[1]):
-                pretty_print = True
+        elif args.export_architecture[0].lower() == 'misim':
+            export_type = 'json'
+            model_type = 'MiSim'
+        if len(args.export_architecture) > 1 and bool_from_string(args.export_architecture[1]):
+            pretty_print = True
 
-            handle = open('{}_architecture_export.{}'.format(model_name, export_type), 'w+')
-            handle.write(Exporter.export_architecture(arch, model_type, pretty_print, args.lightweight))
-            handle.close()
+        handle = open('{}_architecture_export.{}'.format(model_name, export_type), 'w+')
+        handle.write(Exporter.export_architecture(arch, model_type, pretty_print, args.lightweight))
+        handle.close()
 
 
 if __name__ == '__main__':
