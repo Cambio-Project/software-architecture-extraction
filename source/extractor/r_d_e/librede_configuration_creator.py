@@ -41,6 +41,24 @@ class LibReDE_ConfigurationCreator:
     def create_input(self):
         self.content += "<input>\n"
         self.content += "   <dataSources name=\"Default\" type=\"tools.descartes.librede.datasource.csv.CsvDataSource\"/>\n"
+        for service in self.services:
+            self.content += "   <observations xsi: type = \"librede:FileTraceConfiguration\" dataSource = \"//@input/@dataSources.0\" file = \"r-d-e_input\\" + service.operation_name + "_" + service.host.name + "_response_times.csv\">\n"
+            self.content += "       <metric href = \"librede:metrics#RESPONSE_TIME\"/>\n"
+            self.content += "       <unit href = \"librede:units#SECONDS\"/>\n"
+            self.content += "       <interval>\n"
+            self.content += "           <unit href = \"librede:units#SECONDS\"/>\n"
+            self.content += "       </interval>\n"
+            self.content += "       <mappings entity = \"//@workloadDescription/@services." + str(service.index) + "\"/>\n"
+            self.content += "   </observations>\n"
+        for host in self.hosts:
+            self.content += "   <observations xsi: type = \"librede:FileTraceConfiguration\" aggregation = \"AVERAGE\" dataSource = \"//@input/@dataSources.0\" file = \"r-d-e_input\\" + host.name + "_CPU_UTILIZATION.csv\">\n"
+            self.content += "       <metric href = \"librede:metrics#UTILIZATION\"/>\n"
+            self.content += "       <unit href = \"librede:units#NONE\"/>\n"
+            self.content += "       <interval value = \"30.0\">\n"
+            self.content += "           <unit href = \"librede:units#SECONDS\"/>\n"
+            self.content += "       </interval>\n"
+            self.content += "       <mappings entity = \"//@workloadDescription/@resources." + str(host.index) + "\"/>\n"
+            self.content += "   </observations>\n"
         self.content += "</input>\n"
 
     def create_estimation(self):
