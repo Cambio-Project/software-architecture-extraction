@@ -1,4 +1,4 @@
-from extractor.r_d_e.LibReDE_Host import LibReDE_Host
+from extractor.r_d_e.librede_host import LibReDE_Host
 
 
 # Representation of a service for LibReDE.

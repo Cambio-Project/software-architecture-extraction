@@ -1,11 +1,11 @@
 import os
 
-from extractor.r_d_e.LibReDE_Host import LibReDE_Host, get_hosts_with_default_cpu_utilization
-from extractor.r_d_e.LibReDE_Service import LibReDE_Service, get_services
+from extractor.r_d_e.librede_host import LibReDE_Host, get_hosts_with_default_cpu_utilization
+from extractor.r_d_e.librede_service import LibReDE_Service, get_services
 
 
 # Creates all necessary .csv-Files at instantiation.
-class LibReDE_CSV_Creator:
+class LibReDE_Input_Creator:
 
     def __init__(self, trace):
         self.trace = trace
