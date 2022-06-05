@@ -16,8 +16,14 @@ class LibReDE_Service:
     def add_response_time(self, response_time: tuple[int, int]):
         self.response_times.append(response_time)
 
-    def get_csv_string(self) -> str:
-        pass
+    def get_csv_file_name(self) -> str:
+        return self.operation_name + "_" + self.host.name + "_response_times.csv"
+
+    def get_csv_file_content(self) -> str:
+        csv_file_content = ""
+        for response_time_entry in self.response_times:
+            csv_file_content += str(response_time_entry[0]) + "," + str(response_time_entry[1]) + "\n"
+        return csv_file_content
 
     def __str__(self):
         string_representation = "<" + self.operation_name + ">-operation at host: <" + self.host.name + "> with "
