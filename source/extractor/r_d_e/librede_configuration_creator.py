@@ -33,7 +33,7 @@ class LibReDE_ConfigurationCreator:
             self.content += "   <resources name=\"" + host.name + "\" " + host_demands + "/>\n"
         for service in self.services:
             services_resource = "resource=\"//@workloadDescription/@resources." + str(service.host.index) + "\""
-            self.content += "   <services name=\"" + service.operation_name + "\">\n"
+            self.content += "   <services name=\"" + service.operation_name + "_" + service.host.name + "\">\n"
             self.content += "       <tasks xsi:type=\"librede:ResourceDemand\" name=\"" + service.host.name + "\" " + services_resource + "/>\n"
             self.content += "   </services>\n"
         self.content += "</workloadDescription>\n"
