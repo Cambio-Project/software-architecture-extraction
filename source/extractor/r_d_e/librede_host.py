@@ -8,7 +8,12 @@ class LibReDE_Host:
 
     def __init__(self, name: str, start_time: int, end_time: int):
         self.name: str = name
+        self.index = -1
+        self.services = list()
         self.cpu_utilization: list[tuple[int, int]] = get_default_cpu_utilization(start_time, end_time)
+
+    def append_service(self, service):
+        self.services.append(service)
 
     def get_csv_file_name(self) -> str:
         return self.name + "_cpu_utilization.csv"

@@ -1,4 +1,4 @@
-from extractor.r_d_e.librede_host import LibReDE_Host
+import extractor.r_d_e.librede_host as host_l
 
 
 # Representation of a service for LibReDE.
@@ -8,8 +8,9 @@ from extractor.r_d_e.librede_host import LibReDE_Host
 # for an operation are needed.
 class LibReDE_Service:
 
-    def __init__(self, operation_name: str, host: LibReDE_Host):
+    def __init__(self, operation_name: str, host: host_l.LibReDE_Host):
         self.operation_name = operation_name
+        self.index = -1
         self.host = host
         self.response_times = list[tuple[int, int]]()
 
@@ -32,7 +33,7 @@ class LibReDE_Service:
 
 
 # Iterates over all spans and adds a tuple (time, response_time) in each iteration to the respective service.
-def get_services(trace, hosts: list[LibReDE_Host]) -> dict[str, list[LibReDE_Service]]:
+def get_services(trace, hosts: list[host_l.LibReDE_Host]) -> dict[str, list[LibReDE_Service]]:
     spans = trace["data"][0]["spans"]
     # Mapping between the operation_name and all its services.
     found_services = dict[str, list[LibReDE_Service]]()
@@ -47,7 +48,7 @@ def get_services(trace, hosts: list[LibReDE_Host]) -> dict[str, list[LibReDE_Ser
 def get_single_service_to_update(span, hosts, all_found_services) -> LibReDE_Service:
     operation_name: str = span["operationName"]
     process_id: str = span["processID"]
-    host: LibReDE_Host = get_host_with_name(process_id, hosts)
+    host: host_l.LibReDE_Host = get_host_with_name(process_id, hosts)
     # Registers the operation in the dict, if it hasn't been registered, yet.
     if not all_found_services.keys().__contains__(operation_name):
         all_found_services[operation_name] = list[LibReDE_Service]()
@@ -58,12 +59,13 @@ def get_single_service_to_update(span, hosts, all_found_services) -> LibReDE_Ser
     # Creates a new service of the existing operation but with the new host.
     else:
         new_service = LibReDE_Service(operation_name, host)
+        host.append_service(new_service)
         existing_services_of_operation.append(new_service)
         return new_service
 
 
 # Returns the LibReDE_Host with the given name out of the given list.
-def get_host_with_name(host_name: str, hosts: list[LibReDE_Host]) -> LibReDE_Host:
+def get_host_with_name(host_name: str, hosts: list[host_l.LibReDE_Host]) -> host_l.LibReDE_Host:
     for host in hosts:
         if host.name == host_name:
             return host
