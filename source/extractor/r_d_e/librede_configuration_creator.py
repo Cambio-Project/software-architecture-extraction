@@ -23,6 +23,9 @@ class LibReDE_ConfigurationCreator:
         self.create_validation()
         self.content += "</librede:LibredeConfiguration>"
 
+    def get_path_to_configuration_file(self) -> str:
+        return self.path_for_input_files + self.get_file_name()
+
     def get_file_name(self) -> str:
         return "LibReDE_Configuration_" + str(len(self.hosts)) + "_" + str(len(self.services)) + ".librede"
 

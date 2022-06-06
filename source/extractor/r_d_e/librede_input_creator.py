@@ -57,6 +57,9 @@ class LibReDE_Input_Creator:
             service.index = i
             i += 1
 
+    def get_path_to_configuration_file(self):
+        return self.configuration.get_path_to_configuration_file()
+
     def __str__(self) -> str:
         string_representation = ""
         for host in self.hosts:
