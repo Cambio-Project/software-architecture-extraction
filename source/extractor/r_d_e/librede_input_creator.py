@@ -14,9 +14,9 @@ class LibReDE_Input_Creator:
         self.services: list[LibReDE_Service] = extract_list_of_services(get_services(trace, self.hosts))
         fill_indices(self.hosts, self.services)
         self.configuration = LibReDE_ConfigurationCreator(self.hosts, self.services)
-        if not os.path.exists("r-d-e_input\\"):
-            os.mkdir("r-d-e_input")
-        create_csv_files_at("r-d-e_input\\", self.hosts, self.services, self.configuration)
+        if not os.path.exists("C:\\Users\\Gabriel\\Desktop\\r-d-e_input\\"):
+            os.mkdir("C:\\Users\\Gabriel\\Desktop\\r-d-e_input\\")
+        create_csv_files_at("C:\\Users\\Gabriel\\Desktop\\r-d-e_input\\", self.hosts, self.services, self.configuration)
 
     def __str__(self) -> str:
         string_representation = ""
