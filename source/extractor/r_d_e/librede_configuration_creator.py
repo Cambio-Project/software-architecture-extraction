@@ -40,7 +40,7 @@ class LibReDE_ConfigurationCreator:
         self.content += "</workloadDescription>\n"
 
     def create_input(self):
-        interval: int = 30000
+        interval: int = 300
         self.content += "<input>\n"
         self.content += "   <dataSources name=\"Default_Data_Source_Type\" type=\"tools.descartes.librede.datasource.csv.CsvDataSource\"/>\n"
         for service in self.services:
@@ -48,14 +48,14 @@ class LibReDE_ConfigurationCreator:
             self.content += "       <mappings entity=\"//@workloadDescription/@services." + str(service.index) + "\"/>\n"
             self.content += "   </observations>\n"
         for host in self.hosts:
-            self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" interval=\"" + str(interval) + "\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
+            self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" interval=\"" + str(interval) + "\" aggregation=\"AVERAGE\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
             self.content += "       <mappings entity=\"//@workloadDescription/@resources." + str(host.index) + "\"/>\n"
             self.content += "   </observations>\n"
         self.content += "</input>\n"
 
     def create_estimation(self):
         window: int = 60
-        step_size: int = 120000
+        step_size: int = 1200
         self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_time) + "\" endTimestamp=\"" + str(self.end_time) + "\">\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeRegressionApproach\"/>\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
@@ -72,8 +72,7 @@ class LibReDE_ConfigurationCreator:
 
     def create_validation(self):
         validation_folds: int = 5
-        validation_estimates: bool = True
-        self.content += "<validation validationFolds=\"" + str(validation_folds) + "\" validateEstimates=\"" + str(validation_estimates).lower() + "\">\n"
+        self.content += "<validation validationFolds=\"" + str(validation_folds) + ">\n"
         self.content += "   <validators type=\"tools.descartes.librede.validation.ResponseTimeValidator\"/>\n"
         self.content += "   <validators type=\"tools.descartes.librede.validation.UtilizationValidator\"/>\n"
         self.content += "</validation>\n"
