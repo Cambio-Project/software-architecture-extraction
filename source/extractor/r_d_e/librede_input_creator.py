@@ -15,24 +15,27 @@ def extract_list_of_services(services: dict[str, list[LibReDE_Service]]):
 
 
 # Creates all necessary .csv-Files and the LibReDE-Configuration at instantiation.
-class LibReDE_Input_Creator:
+class LibReDE_InputCreator:
 
     # Creates the output paths, the .csv-Files and the LibReDE_Configuration-File.
-    def __init__(self, trace, absolute_path_for_r_d_e_files: str):
+    def __init__(self, trace, path_for_librede_files: str):
         self.trace = trace
         self.hosts: list[LibReDE_Host] = get_hosts_with_default_cpu_utilization(trace)
         self.services: list[LibReDE_Service] = extract_list_of_services(get_services(trace, self.hosts))
-        self.absolute_path_to_input: str = absolute_path_for_r_d_e_files + "input\\"
-        self.absolute_path_to_output: str = absolute_path_for_r_d_e_files + "output\\"
+        self.absolute_path_to_input: str = path_for_librede_files + "input\\"
+        self.absolute_path_to_output: str = path_for_librede_files + "output\\"
         self.set_indices_to_hosts_and_services()
         self.configuration = LibReDE_ConfigurationCreator(self.hosts, self.services, self.absolute_path_to_input, self.absolute_path_to_output)
+        # Create necessary directories, in case they don't exist, yet.
+        if not os.path.exists(path_for_librede_files):
+            os.mkdir(path_for_librede_files)
         if not os.path.exists(self.absolute_path_to_input):
             os.mkdir(self.absolute_path_to_input)
         if not os.path.exists(self.absolute_path_to_output):
             os.mkdir(self.absolute_path_to_output)
         self.create_csv_files()
 
-    # Creates all .csv-Files out of the given hosts and services.
+    # Creates all .csv-Files necessary for LibReDE.
     def create_csv_files(self):
         # Create cpu_utilization-files for all processes
         for host in self.hosts:
@@ -46,7 +49,8 @@ class LibReDE_Input_Creator:
         new_csv_file = open(self.absolute_path_to_input + self.configuration.get_file_name(), "w")
         new_csv_file.write(self.configuration.content)
 
-    # Gives each service and host and index (not unique between hosts and services). LibReDE needs them for unambiguous identification.
+    # Gives each service and host and index (not unique between hosts and services).
+    # LibReDE needs them for unambiguous identification.
     def set_indices_to_hosts_and_services(self):
         i = 0
         for host in self.hosts:

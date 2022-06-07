@@ -2,7 +2,7 @@ from extractor.r_d_e.librede_host import LibReDE_Host
 from extractor.r_d_e.librede_service import LibReDE_Service
 
 
-# Creates a LibReDE_Configuration-File
+# Creates a LibReDE_Configuration-File out of the given hosts and services.
 class LibReDE_ConfigurationCreator:
 
     def __init__(self, hosts: list[LibReDE_Host], services: list[LibReDE_Service], path_for_input_files: str, path_for_output_files: str):
@@ -27,7 +27,7 @@ class LibReDE_ConfigurationCreator:
         return self.path_for_input_files + self.get_file_name()
 
     def get_file_name(self) -> str:
-        return "LibReDE_Configuration_" + str(len(self.hosts)) + "_" + str(len(self.services)) + ".librede"
+        return "LibReDE_Configuration_" + str(len(self.hosts)) + "hosts_" + str(len(self.services)) + "services.librede"
 
     def create_workload_description(self):
         self.content += "<workloadDescription>\n"
