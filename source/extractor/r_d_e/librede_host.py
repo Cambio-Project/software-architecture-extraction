@@ -1,8 +1,10 @@
 from extractor.r_d_e.default_cpu_utilization import get_default_cpu_utilization
 
-
 # Representation of a Host for LibReDE (basically equivalent to a process in a trace).
 # Contains the name of the process this represents and the cpu-utilization as a list of tuples (time,cpu-utilization).
+from extractor.r_d_e.util import get_start_and_end_time
+
+
 class LibReDE_Host:
 
     def __init__(self, name: str, cpu_utilization: list[tuple[int, float]]):
@@ -36,10 +38,8 @@ class LibReDE_Host:
 def get_hosts_with_default_cpu_utilization(trace) -> list[LibReDE_Host]:
     hosts = list[LibReDE_Host]()
     processes = trace["data"][0]["processes"]
-    start_time_of_trace = trace["data"][0]["spans"][0]["startTime"]
-    last_span = trace["data"][0]["spans"][len(trace["data"][0]["spans"]) - 1]
-    end_time_of_trace = last_span["startTime"] + last_span["duration"]
-    default_cpu_utilization = get_default_cpu_utilization(start_time_of_trace, end_time_of_trace)
+    start_and_end_time = get_start_and_end_time(trace)
+    default_cpu_utilization = get_default_cpu_utilization(start_and_end_time[0], start_and_end_time[1])
     for process_id, process in processes.items():
         hosts.append(LibReDE_Host(process_id, default_cpu_utilization))
     return hosts

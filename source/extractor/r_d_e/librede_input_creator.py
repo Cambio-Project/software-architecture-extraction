@@ -4,8 +4,10 @@ from extractor.r_d_e.librede_configuration_creator import LibReDE_ConfigurationC
 from extractor.r_d_e.librede_host import LibReDE_Host, get_hosts_with_default_cpu_utilization
 from extractor.r_d_e.librede_service import LibReDE_Service, get_services
 
-
 # Extracts all services out of the given dictionary.
+from extractor.r_d_e.util import get_start_and_end_time
+
+
 def extract_list_of_services(services: dict[str, list[LibReDE_Service]]):
     services_list = list[LibReDE_Service]()
     for key in services.keys():
@@ -25,7 +27,8 @@ class LibReDE_InputCreator:
         self.absolute_path_to_input: str = path_for_librede_files + "input\\"
         self.absolute_path_to_output: str = path_for_librede_files + "output\\"
         self.set_indices_to_hosts_and_services()
-        self.configuration = LibReDE_ConfigurationCreator(self.hosts, self.services, self.absolute_path_to_input, self.absolute_path_to_output)
+        start_and_end_time = get_start_and_end_time(trace)
+        self.configuration = LibReDE_ConfigurationCreator(self.hosts, self.services, start_and_end_time[0], start_and_end_time[1], self.absolute_path_to_input, self.absolute_path_to_output)
         # Create necessary directories, in case they don't exist, yet.
         if not os.path.exists(path_for_librede_files):
             os.mkdir(path_for_librede_files)

@@ -5,9 +5,11 @@ from extractor.r_d_e.librede_service import LibReDE_Service
 # Creates a LibReDE_Configuration-File out of the given hosts and services.
 class LibReDE_ConfigurationCreator:
 
-    def __init__(self, hosts: list[LibReDE_Host], services: list[LibReDE_Service], path_for_input_files: str, path_for_output_files: str):
+    def __init__(self, hosts: list[LibReDE_Host], services: list[LibReDE_Service], start_time: int, end_time: int, path_for_input_files: str, path_for_output_files: str):
         self.hosts = hosts
         self.services = services
+        self.start_time = start_time
+        self.end_time = end_time
         self.path_for_input_files = path_for_input_files
         self.path_for_output_files = path_for_output_files
         self.content = ""
@@ -54,9 +56,7 @@ class LibReDE_ConfigurationCreator:
     def create_estimation(self):
         window: int = 60
         step_size: int = 120000
-        start_timestamp: int = 1370087550000
-        end_timestamp: int = 1370090939000
-        self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(start_timestamp) + "\" endTimestamp=\"" + str(end_timestamp) + "\">\n"
+        self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_time) + "\" endTimestamp=\"" + str(self.end_time) + "\">\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeRegressionApproach\"/>\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
         self.content += "</estimation>\n"
