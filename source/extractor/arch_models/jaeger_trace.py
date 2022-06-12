@@ -1,4 +1,5 @@
 import json
+import re
 
 from extractor.arch_models.model import IModel
 from typing import Union, Any, Dict
@@ -11,8 +12,8 @@ from extractor.arch_models.circuit_breaker import CircuitBreaker
 
 
 class JaegerTrace(IModel):
-    def __init__(self, source: Union[str, IO, dict] = None, multiple: bool = False):
-        super().__init__(self.__class__.__name__, source, multiple)
+    def __init__(self, source: Union[str, IO, dict] = None, multiple: bool = False, pattern: str = None):
+        super().__init__(self.__class__.__name__, source, multiple, pattern)
 
     @staticmethod
     def _parse_logs(logs) -> Dict[int, Dict[str, str]]:
@@ -31,6 +32,10 @@ class JaegerTrace(IModel):
         # Store span_id: span
         span_ids = {}
         traces = model['data']
+
+        # Set default value for the call string pattern
+        if self._call_string is None:
+            self.set_call_string('^GET$')
 
         for trace in traces:
             # Identify all services (processes)
@@ -101,12 +106,14 @@ class JaegerTrace(IModel):
                         parent_operation = self._services[parent_service_name].operations[parent_operation_name]
                         parent_operation.add_dependency(operation)
 
+            # Handling of GET-Requests or similar.
+            # What kind of spans are ignored is specified with the call_string pattern.
             # A GET-request-dependency gets replaced with all the dependencies of this GET-request.
             for _, s in self.services.items():
                 for _, op in s.operations.items():
                     for dependency in op.dependencies:
-                        if dependency.name == 'GET':
-                            for new_dep in self.services[dependency.service.name].operations.get('GET').dependencies:
+                        if re.search(self._call_string, dependency.name):
+                            for new_dep in self.services[dependency.service.name].operations.get(dependency.name).dependencies:
                                 op.add_dependency(new_dep)
                             op.remove_dependency_with_duplicates(dependency)
 
@@ -114,7 +121,7 @@ class JaegerTrace(IModel):
             for _, s in self.services.items():
                 get_operations = []
                 for _, op in s.operations.items():
-                    if op.name == 'GET':
+                    if re.search(self._call_string, op.name):
                         get_operations.append(op)
                 s.remove_operations(get_operations)
 

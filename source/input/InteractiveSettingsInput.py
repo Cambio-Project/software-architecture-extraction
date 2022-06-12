@@ -18,6 +18,10 @@ class InteractiveSettingsInput:
         self.should_be_lightweight_export = False
         self.should_be_pretty_print = False
 
+        self.pattern = None
+
+        self.ask_for_call_string_pattern()
+        print()
         self.ask_for_analyses()
         print()
         self.ask_for_validations()
@@ -53,6 +57,11 @@ class InteractiveSettingsInput:
         self.resirio_export_should_be_js = True if resirio_export_data_type_answer == "js" else False
         self.should_be_lightweight_export = True if should_be_lightweight_answer == "y" else False
         self.should_be_pretty_print = True if should_print_pretty_answer == "y" else False
+
+    def ask_for_call_string_pattern(self):
+        print("Enter a Pattern for the spans that should ignored. E.g.: GET-Requests.")
+        print("Press Enter to use the default value (^GET$ for Jaeger and ^get$ for Zipkin")
+        self.pattern = input("Pattern as Python RegEx:")
 
     def __str__(self):
         output_string = "Analyse Model: " + str(self.should_analyse_model) + ", Analyse Architecture: " + str(

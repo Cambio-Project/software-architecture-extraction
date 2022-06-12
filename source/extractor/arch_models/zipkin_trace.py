@@ -1,4 +1,5 @@
 import json
+import re
 
 from extractor.arch_models.circuit_breaker import CircuitBreaker
 
@@ -13,8 +14,8 @@ from extractor.arch_models.service import Service
 
 class ZipkinTrace(IModel):
 
-    def __init__(self, source: Union[str, IO, list] = None, multiple: bool = False):
-        super().__init__(self.__class__.__name__, source, multiple)
+    def __init__(self, source: Union[str, IO, list] = None, multiple: bool = False, pattern: str = None):
+        super().__init__(self.__class__.__name__, source, multiple, pattern)
 
     def _parse_multiple(self, model: List[List[Dict[str, Any]]]) -> bool:
         multiple = [trace for trace_list in model for trace in trace_list]
@@ -23,6 +24,10 @@ class ZipkinTrace(IModel):
     def _parse(self, model: List[Dict[str, Any]]) -> bool:
         # Store span_id: span
         span_ids = {}
+
+        # Set default value for the call string pattern
+        if self._call_string is None:
+            self.set_call_string('^get$')
 
         # Store all services
         for span in model:
@@ -72,7 +77,7 @@ class ZipkinTrace(IModel):
                 return False
 
             operation_name = span['name']
-            if operation_name == 'get':
+            if re.search(self._call_string, operation_name):
                 continue
 
             if operation_name in self.services[service_name].operations:
@@ -100,7 +105,7 @@ class ZipkinTrace(IModel):
                 local = span.get('localEndpoint', {})
                 service_name = local.get('serviceName', '')
                 operation_name = span['name']
-                if operation_name == 'get':
+                if re.search(self._call_string, operation_name):
                     continue
 
                 operation = self._services[service_name].operations[operation_name]
@@ -111,7 +116,7 @@ class ZipkinTrace(IModel):
                 parent = parent_span.get('localEndpoint', {})
                 parent_service_name = parent.get('serviceName', '')
                 parent_operation_name = parent_span['name']
-                if parent_operation_name == 'get':
+                if re.search(self._call_string, parent_operation_name):
                     continue
 
                 parent_operation = self._services[parent_service_name].operations[parent_operation_name]

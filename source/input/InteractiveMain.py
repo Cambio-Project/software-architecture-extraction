@@ -13,15 +13,15 @@ from datetime import datetime
 
 
 # Creates the respective IModel implementation (generic model) from the given input.
-def create_generic_model(model_input, trace_input):
+def create_generic_model(model_input, trace_input, settings_input):
     if model_input.contains_resirio_model:
         return pickle.load(open(model_input.get_model_file_path(), 'rb'))
     elif model_input.contains_misim_model:
         return MiSimModel(model_input.get_model_file_path())
     elif trace_input.traces_are_jaeger:
-        return JaegerTrace(trace_input.traces, trace_input.contains_multiple_traces)
+        return JaegerTrace(trace_input.traces, trace_input.contains_multiple_traces, settings_input.pattern)
     elif trace_input.traces_are_zipkin:
-        return ZipkinTrace(trace_input.traces, trace_input.contains_multiple_traces)
+        return ZipkinTrace(trace_input.traces, trace_input.contains_multiple_traces, settings_input.pattern)
 
 
 # Creates the architecture for RESIRIO or MiSim out of the generic model.
@@ -77,7 +77,7 @@ def main():
     trace_input = user_input.trace_input
     settings_input = user_input.settings_input
 
-    generic_model = create_generic_model(model_input, trace_input)
+    generic_model = create_generic_model(model_input, trace_input, settings_input)
     architecture = create_architecture(settings_input, generic_model)
     validate(settings_input, generic_model, architecture)
     analyse(settings_input, generic_model)
