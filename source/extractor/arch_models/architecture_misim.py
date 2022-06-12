@@ -47,6 +47,11 @@ class ArchitectureMiSim:
                                   'operation': operation,
                                   'probability': probability}
 
+                    # add a custom latency if the model contains latencies for this dependency
+                    if len(d.latencies) > 0:
+                        custom_latency = str(d.get_latency_mean())
+                        dependency['custom_delay'] = custom_latency
+
                     dependencies.append(dependency)
 
                 # if a circuit breaker is present, add the corresponding attributes
