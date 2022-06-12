@@ -98,6 +98,12 @@ class Operation:
                 return True
         return False
 
+    def get_dependency_with_operation(self, operation):
+        for dependency in self._dependencies:
+            if dependency.name == operation.name and dependency.service == operation.service:
+                return dependency
+        return None
+
     def remove_dependency_with_duplicates(self, dependency):
         while self._dependencies.__contains__(dependency):
             self._dependencies.remove(dependency)

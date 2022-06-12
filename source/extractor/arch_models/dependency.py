@@ -1,3 +1,5 @@
+import numpy as np
+
 class Dependency:
     """
     Class that represents a dependency of a specific Operation
@@ -32,3 +34,8 @@ class Dependency:
 
     def add_latency(self, latency):
         self._latencies.append(latency)
+
+    # returns the mean of all network latencies of this dependency in ms
+    def get_latency_mean(self):
+        latencies = [x / 1000 for x in self._latencies]
+        return np.mean(latencies)

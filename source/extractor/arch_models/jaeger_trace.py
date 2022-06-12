@@ -104,9 +104,15 @@ class JaegerTrace(IModel):
                         parent_service_name = process_ids[parent_pid]
                         parent_operation_name = parent_span['operationName']
 
+                        latency = span['startTime'] - parent_span['startTime']
+
                         parent_operation = self._services[parent_service_name].operations[parent_operation_name]
                         if not parent_operation.contains_operation_as_dependency(operation):
                             parent_operation.add_dependency(Dependency(operation))
+
+                        # add a custom latency to the dependency if the calling span is a GET-Request or similar
+                        if re.search(self._call_string, parent_operation.name):
+                            parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
             # Handling of GET-Requests or similar.
             # What kind of spans are ignored is specified with the call_string pattern.
