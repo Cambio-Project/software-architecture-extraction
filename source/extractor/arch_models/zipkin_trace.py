@@ -26,6 +26,8 @@ class ZipkinTrace(IModel):
         # Store span_id: span
         span_ids = {}
 
+        client_span_ids = {}
+
         # Set default value for the call string pattern
         if self._call_string is None:
             self.set_call_string('^get$')
@@ -34,6 +36,9 @@ class ZipkinTrace(IModel):
         for span in model:
             if span.get('kind', None) != 'CLIENT':
                 span_ids[span['id']] = span
+            else:
+                client_span_ids[span['id']] = span
+
             local = span.get('localEndpoint', {})
             remote = span.get('remoteEndpoint', {})
 
@@ -103,6 +108,7 @@ class ZipkinTrace(IModel):
             if span.get('parentId', 0) in span_ids:
 
                 # Callee
+                ID = span['id']
                 local = span.get('localEndpoint', {})
                 service_name = local.get('serviceName', '')
                 operation_name = span['name']
@@ -124,6 +130,12 @@ class ZipkinTrace(IModel):
 
                 if not parent_operation.contains_operation_as_dependency(operation):
                     parent_operation.add_dependency(Dependency(operation))
+
+                # add a custom latency to the dependency if a client span is present for this span
+                if client_span_ids.keys().__contains__(ID):
+                    client_span = client_span_ids[ID]
+                    latency = span['timestamp'] - client_span['timestamp']
+                    parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
         return True
 

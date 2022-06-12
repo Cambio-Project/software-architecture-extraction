@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Dependency:
     """
     Class that represents a dependency of a specific Operation
