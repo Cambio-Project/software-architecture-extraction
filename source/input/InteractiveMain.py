@@ -29,7 +29,7 @@ def create_architecture(settings_input, generic_model):
     if settings_input.should_export_for_resirio:
         return Architecture(generic_model)
     else:
-        return ArchitectureMiSim(generic_model)
+        return ArchitectureMiSim(generic_model, settings_input.latency, settings_input.custom_latency_format)
 
 
 def validate(settings_input, generic_model, architecture):

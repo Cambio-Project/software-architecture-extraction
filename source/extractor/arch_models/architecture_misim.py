@@ -8,8 +8,10 @@ class ArchitectureMiSim:
     the format of a MiSim model.
     """
 
-    def __init__(self, model: IModel):
+    def __init__(self, model: IModel, network_latency, custom_latency_format):
         self._model = model
+        self._network_latency = network_latency
+        self._custom_latency_format = custom_latency_format
 
     def export(self) -> str:
         """
@@ -49,8 +51,12 @@ class ArchitectureMiSim:
 
                     # add a custom latency if the model contains latencies for this dependency
                     if len(d.latencies) > 0:
-                        custom_latency = str(d.get_latency_mean())
-                        dependency['custom_delay'] = custom_latency
+                        if self._custom_latency_format == 'm':
+                            custom_latency = d.get_latency_mean()
+                            dependency['custom_delay'] = custom_latency
+                        elif self._custom_latency_format == 'mstd':
+                            custom_latency = d.get_latency_mean_with_std()
+                            dependency['custom_delay'] = custom_latency
 
                     dependencies.append(dependency)
 
@@ -80,6 +86,8 @@ class ArchitectureMiSim:
                 'capacity': capacity,
                 'operations': operations
             })
-
-        result = {'microservices': microservices}
+        result = {}
+        if self._network_latency != "":
+            result['network_latency'] = self._network_latency
+        result['microservices'] = microservices
         return json.dumps(result, indent=2)

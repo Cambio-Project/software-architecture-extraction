@@ -39,4 +39,8 @@ class Dependency:
     # returns the mean of all network latencies of this dependency in ms
     def get_latency_mean(self):
         latencies = [x / 1000 for x in self._latencies]
-        return np.mean(latencies)
+        return str(np.mean(latencies))
+
+    def get_latency_mean_with_std(self):
+        latencies = [x / 1000 for x in self._latencies]
+        return str(np.mean(latencies)) + '+-' + str(np.std(latencies))
