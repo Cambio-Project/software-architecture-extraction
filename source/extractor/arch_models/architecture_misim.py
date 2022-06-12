@@ -41,15 +41,13 @@ class ArchitectureMiSim:
                 for d in dependencies_of_operation:
                     service = d.service.name
                     operation = d.name
-                    probability = 1.0
+                    probability = d.probability
 
                     dependency = {'service': service,
                                   'operation': operation,
                                   'probability': probability}
 
-                    # eliminate duplicate dependencies
-                    if dependency not in dependencies:
-                        dependencies.append(dependency)
+                    dependencies.append(dependency)
 
                 # if a circuit breaker is present, add the corresponding attributes
                 if circuit_breaker is not None:

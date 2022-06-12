@@ -1,6 +1,7 @@
 import json
 import re
 
+from extractor.arch_models.dependency import Dependency
 from extractor.arch_models.model import IModel
 from typing import Union, Any, Dict
 
@@ -104,7 +105,8 @@ class JaegerTrace(IModel):
                         parent_operation_name = parent_span['operationName']
 
                         parent_operation = self._services[parent_service_name].operations[parent_operation_name]
-                        parent_operation.add_dependency(operation)
+                        if not parent_operation.contains_operation_as_dependency(operation):
+                            parent_operation.add_dependency(Dependency(operation))
 
             # Handling of GET-Requests or similar.
             # What kind of spans are ignored is specified with the call_string pattern.

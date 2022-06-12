@@ -1,5 +1,6 @@
 from typing import Dict, List
 from extractor.arch_models.circuit_breaker import CircuitBreaker
+from extractor.arch_models.dependency import Dependency
 
 
 class Operation:
@@ -8,10 +9,10 @@ class Operation:
     def __init__(self, name: str):
         self._id = Operation.ID
         self._name = name
-        self._dependencies = []
+        self._dependencies: [Dependency] = []
         self._service = None
         self._circuit_breaker = None
-        
+
         # Runtime 
         self._durations = {}
         self._tags = {}
@@ -50,11 +51,11 @@ class Operation:
     @property
     def dependencies(self) -> List:
         return self._dependencies
-    
+
     @property
     def durations(self) -> Dict:
         return self._durations
-        
+
     @property
     def logs(self) -> Dict[str, Dict]:
         return self._logs
@@ -90,6 +91,12 @@ class Operation:
     def remove_dependencies(self, dependencies: List):
         for dependency in dependencies:
             self._dependencies.remove(dependency)
+
+    def contains_operation_as_dependency(self, operation):
+        for dependency in self._dependencies:
+            if dependency.name == operation.name and dependency.service == operation.service:
+                return True
+        return False
 
     def remove_dependency_with_duplicates(self, dependency):
         while self._dependencies.__contains__(dependency):

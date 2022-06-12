@@ -2,6 +2,7 @@ import json
 import re
 
 from extractor.arch_models.circuit_breaker import CircuitBreaker
+from extractor.arch_models.dependency import Dependency
 
 from extractor.arch_models.model import IModel
 from typing import Union, Any, Dict, List
@@ -121,14 +122,8 @@ class ZipkinTrace(IModel):
 
                 parent_operation = self._services[parent_service_name].operations[parent_operation_name]
 
-                skip = False
-                for dependency in parent_operation.dependencies:
-                    if dependency.name == operation_name:
-                        skip = True
-                        break
-
-                if not skip:
-                    parent_operation.add_dependency(operation)
+                if not parent_operation.contains_operation_as_dependency(operation):
+                    parent_operation.add_dependency(Dependency(operation))
 
         return True
 

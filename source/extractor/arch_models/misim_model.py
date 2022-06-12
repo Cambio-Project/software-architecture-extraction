@@ -2,6 +2,7 @@ import json
 
 from typing import IO, Union, Dict, Any
 
+from extractor.arch_models.dependency import Dependency
 from extractor.arch_models.model import IModel, UnknownOperation, WrongFormatException
 from extractor.arch_models.operation import Operation
 from extractor.arch_models.service import Service
@@ -47,7 +48,8 @@ class MiSimModel(IModel):
 
                         try:
                             operation = self._services[dependency_service].operations[dependency_operation]
-                            self._services[ms_name].operations[ms_operation_name].add_dependency(operation)
+                            if not self._services[ms_name].operations[ms_operation_name].contains_operation_as_dependency(operation):
+                                self._services[ms_name].operations[ms_operation_name].add_dependency(Dependency(operation))
                         except KeyError:
                             raise UnknownOperation(dependency_service, dependency_operation)
             return True
