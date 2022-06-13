@@ -70,6 +70,10 @@ class JaegerTrace(IModel):
                 if not self.services[service_name].hosts.__contains__(host):
                     self.services[service_name].add_host(host)
 
+                # Ignore GET-Requests or similar
+                if re.search(self._call_string, operation_name):
+                    continue
+
                 if operation_name in self._services[service_name].operations:
                     operation = self._services[service_name].operations[operation_name]
                 else:
@@ -95,6 +99,10 @@ class JaegerTrace(IModel):
                         service_name = process_ids[pid]
                         operation_name = span['operationName']
 
+                        # Ignore GET-Requests or similar
+                        if re.search(self._call_string, operation_name):
+                            continue
+
                         operation = self._services[service_name].operations[operation_name]
 
                         # Caller
@@ -105,33 +113,34 @@ class JaegerTrace(IModel):
                         parent_operation_name = parent_span['operationName']
 
                         latency = span['startTime'] - parent_span['startTime']
+                        add_latency = False
 
-                        parent_operation = self._services[parent_service_name].operations[parent_operation_name]
+                        parent_operation = None
+
+                        # Handling of GET-Requests or similar.
+                        # What kind of spans are ignored is specified with the call_string pattern.
+                        # If the parent operation matches the pattern the true parent operation (the calling operation)
+                        # has to be the grandparent operation of the current operation.
+                        if re.search(self._call_string, parent_operation_name):
+                            for ref in parent_span['references']:
+                                if ref['refType'] == 'CHILD_OF':
+                                    grandparent_id = ref['spanID']
+                                    grandparent_span = span_ids[grandparent_id]
+                                    grandparent_pid = grandparent_span['processID']
+                                    grandparent_service_name = process_ids[grandparent_pid]
+                                    grandparent_operation_name = grandparent_span['operationName']
+                                    parent_operation = self._services[grandparent_service_name].operations[
+                                        grandparent_operation_name]
+                                    add_latency = True
+                        else:
+                            parent_operation = self._services[parent_service_name].operations[parent_operation_name]
+
                         if not parent_operation.contains_operation_as_dependency(operation):
                             parent_operation.add_dependency(Dependency(operation))
 
                         # add a custom latency to the dependency if the calling span is a GET-Request or similar
-                        if re.search(self._call_string, parent_operation.name):
+                        if add_latency:
                             parent_operation.get_dependency_with_operation(operation).add_latency(latency)
-
-            # Handling of GET-Requests or similar.
-            # What kind of spans are ignored is specified with the call_string pattern.
-            # A GET-request-dependency gets replaced with all the dependencies of this GET-request.
-            for _, s in self.services.items():
-                for _, op in s.operations.items():
-                    for dependency in op.dependencies:
-                        if re.search(self._call_string, dependency.name):
-                            for new_dep in self.services[dependency.service.name].operations.get(dependency.name).dependencies:
-                                op.add_dependency(new_dep)
-                            op.remove_dependency_with_duplicates(dependency)
-
-            # Delete all GET-operations from the model
-            for _, s in self.services.items():
-                get_operations = []
-                for _, op in s.operations.items():
-                    if re.search(self._call_string, op.name):
-                        get_operations.append(op)
-                s.remove_operations(get_operations)
 
         return True
 
