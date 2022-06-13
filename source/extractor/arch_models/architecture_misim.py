@@ -30,6 +30,8 @@ class ArchitectureMiSim:
             capacity = 1000
             operations = []
 
+            operation_has_CB = False
+
             # get all operations of this microservice
             operations_of_microservice = sorted(s.operations.items(), key=lambda x: x[0])
             for _, o in operations_of_microservice:
@@ -60,24 +62,28 @@ class ArchitectureMiSim:
 
                     dependencies.append(dependency)
 
-                # if a circuit breaker is present, add the corresponding attributes
+                # if a circuit breaker is present, set the flag to add the CB later into the patterns array
                 if circuit_breaker is not None:
-                    circuit_breaker_dict = {
-                        "rollingWindow": circuit_breaker.rolling_window,
-                        "requestVolumeThreshold": circuit_breaker.request_volume_threshold,
-                        "errorThresholdPercentage": circuit_breaker.error_threshold_percentage,
-                        "sleepWindow": circuit_breaker.sleep_window,
-                        "timeout": circuit_breaker.timeout
-                    }
-                else:
-                    circuit_breaker_dict = None
+                    operation_has_CB = True
 
                 operations.append({
                     'name': op_name,
                     'demand': demand,
-                    'circuitBreaker': circuit_breaker_dict,
                     'dependencies': dependencies
                 })
+
+                # If at least one Operation implements a circuit breaker, add a default CB to the patterns array
+                if operation_has_CB:
+                    circuit_breaker_dict = {
+                        "type": "circuitbreaker",
+                        "config": {
+                            "requestVolumeThreshold": circuit_breaker.request_volume_threshold,
+                            "threshold": circuit_breaker.threshold,
+                            "rollingWindow": circuit_breaker.rolling_window,
+                            "sleepWindow": circuit_breaker.sleep_window,
+                        }
+                    }
+                    patterns.append(circuit_breaker_dict)
 
             microservices.append({
                 'name': name,
