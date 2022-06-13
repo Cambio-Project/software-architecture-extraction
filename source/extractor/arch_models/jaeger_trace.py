@@ -80,7 +80,16 @@ class JaegerTrace(IModel):
                     operation = Operation(operation_name)
                     self._services[service_name].add_operation(operation)
 
-                operation.durations[span_id] = span.get('duration', -1)
+                duration = span.get('duration', -1)
+
+                # store the response time (duration) of the operation
+                if duration != -1:
+                    if operation.response_times.keys().__contains__(host):
+                        operation.response_times[host].append((span['startTime'], duration))
+                    else:
+                        operation.response_times[host] = [(span['startTime'], duration)]
+
+                operation.durations[span_id] = duration
                 operation.tags[span_id] = {tag['key']: tag['value'] for tag in span.get('tags', {})}
                 operation.logs[span_id] = JaegerTrace._parse_logs(span.get('logs', {}))
 

@@ -73,6 +73,7 @@ class ZipkinTrace(IModel):
                 else:
                     if not self._services[remote_endpoint].hosts.__contains__(remote_host):
                         self._services[remote_endpoint].add_host(remote_host)
+
         # Add operations
         for span in model:
             local = span.get('localEndpoint', {})
@@ -91,6 +92,15 @@ class ZipkinTrace(IModel):
             else:
                 operation = Operation(operation_name)
                 self._services[service_name].add_operation(operation)
+
+            duration = span.get('duration', -1)
+
+            # store the response time (duration) of the operation
+            if duration != -1:
+                if operation.response_times.keys().__contains__(local_host):
+                    operation.response_times[local_host].append((span['timestamp'], duration))
+                else:
+                    operation.response_times[local_host] = [(span['timestamp'], duration)]
 
             span_id = span['id']
             operation.durations[span_id] = span.get('duration', -1)

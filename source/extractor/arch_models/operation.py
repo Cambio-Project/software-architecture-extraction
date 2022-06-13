@@ -12,6 +12,7 @@ class Operation:
         self._dependencies: [Dependency] = []
         self._service = None
         self._circuit_breaker = None
+        self._response_times = {}
 
         # Runtime 
         self._durations = {}
@@ -51,6 +52,10 @@ class Operation:
     @property
     def dependencies(self) -> List:
         return self._dependencies
+
+    @property
+    def response_times(self) -> Dict:
+        return self._response_times
 
     @property
     def durations(self) -> Dict:
