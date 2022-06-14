@@ -48,12 +48,13 @@ class IModel:
     IModel provides a validation method that checks for validity of the model.
     This validation checks the semantic of the model.
     """
-    def __init__(self, model_type: str, source: Union[str, IO] = None, multiple: bool = False):
+    def __init__(self, model_type: str, source: Union[str, IO] = None, multiple: bool = False, pattern: str = None):
         self._model_type = model_type
         self._services = {}
         self._valid = False
         self._hazards = {}
         self._stimuli = []
+        self._call_string = pattern
 
         if source:
             try:
@@ -86,6 +87,13 @@ class IModel:
     @property
     def hazards(self) -> Dict[str, List[Hazard]]:
         return self._hazards
+
+    @property
+    def call_string(self):
+        return self._call_string
+
+    def set_call_string(self, call_pattern):
+        self._call_string = call_pattern
 
     @hazards.setter
     def hazards(self, hazards: Dict[str, List[Hazard]]):

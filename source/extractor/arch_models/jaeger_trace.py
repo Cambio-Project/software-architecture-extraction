@@ -1,5 +1,7 @@
 import json
+import re
 
+from extractor.arch_models.dependency import Dependency
 from extractor.arch_models.model import IModel
 from typing import Union, Any, Dict
 
@@ -11,8 +13,8 @@ from extractor.arch_models.circuit_breaker import CircuitBreaker
 
 
 class JaegerTrace(IModel):
-    def __init__(self, source: Union[str, IO, dict] = None, multiple: bool = False):
-        super().__init__(self.__class__.__name__, source, multiple)
+    def __init__(self, source: Union[str, IO, dict] = None, multiple: bool = False, pattern: str = None):
+        super().__init__(self.__class__.__name__, source, multiple, pattern)
 
     @staticmethod
     def _parse_logs(logs) -> Dict[int, Dict[str, str]]:
@@ -31,6 +33,10 @@ class JaegerTrace(IModel):
         # Store span_id: span
         span_ids = {}
         traces = model['data']
+
+        # Set default value for the call string pattern
+        if self._call_string is None:
+            self.set_call_string('^GET$')
 
         for trace in traces:
             # Identify all services (processes)
@@ -64,13 +70,26 @@ class JaegerTrace(IModel):
                 if not self.services[service_name].hosts.__contains__(host):
                     self.services[service_name].add_host(host)
 
+                # Ignore GET-Requests or similar
+                if re.search(self._call_string, operation_name):
+                    continue
+
                 if operation_name in self._services[service_name].operations:
                     operation = self._services[service_name].operations[operation_name]
                 else:
                     operation = Operation(operation_name)
                     self._services[service_name].add_operation(operation)
 
-                operation.durations[span_id] = span.get('duration', -1)
+                duration = span.get('duration', -1)
+
+                # store the response time (duration) of the operation
+                if duration != -1:
+                    if operation.response_times.keys().__contains__(host):
+                        operation.response_times[host].append((span['startTime'], duration))
+                    else:
+                        operation.response_times[host] = [(span['startTime'], duration)]
+
+                operation.durations[span_id] = duration
                 operation.tags[span_id] = {tag['key']: tag['value'] for tag in span.get('tags', {})}
                 operation.logs[span_id] = JaegerTrace._parse_logs(span.get('logs', {}))
 
@@ -89,6 +108,10 @@ class JaegerTrace(IModel):
                         service_name = process_ids[pid]
                         operation_name = span['operationName']
 
+                        # Ignore GET-Requests or similar
+                        if re.search(self._call_string, operation_name):
+                            continue
+
                         operation = self._services[service_name].operations[operation_name]
 
                         # Caller
@@ -98,25 +121,35 @@ class JaegerTrace(IModel):
                         parent_service_name = process_ids[parent_pid]
                         parent_operation_name = parent_span['operationName']
 
-                        parent_operation = self._services[parent_service_name].operations[parent_operation_name]
-                        parent_operation.add_dependency(operation)
+                        latency = span['startTime'] - parent_span['startTime']
+                        add_latency = False
 
-            # A GET-request-dependency gets replaced with all the dependencies of this GET-request.
-            for _, s in self.services.items():
-                for _, op in s.operations.items():
-                    for dependency in op.dependencies:
-                        if dependency.name == 'GET':
-                            for new_dep in self.services[dependency.service.name].operations.get('GET').dependencies:
-                                op.add_dependency(new_dep)
-                            op.remove_dependency_with_duplicates(dependency)
+                        parent_operation = None
 
-            # Delete all GET-operations from the model
-            for _, s in self.services.items():
-                get_operations = []
-                for _, op in s.operations.items():
-                    if op.name == 'GET':
-                        get_operations.append(op)
-                s.remove_operations(get_operations)
+                        # Handling of GET-Requests or similar.
+                        # What kind of spans are ignored is specified with the call_string pattern.
+                        # If the parent operation matches the pattern the true parent operation (the calling operation)
+                        # has to be the grandparent operation of the current operation.
+                        if re.search(self._call_string, parent_operation_name):
+                            for ref in parent_span['references']:
+                                if ref['refType'] == 'CHILD_OF':
+                                    grandparent_id = ref['spanID']
+                                    grandparent_span = span_ids[grandparent_id]
+                                    grandparent_pid = grandparent_span['processID']
+                                    grandparent_service_name = process_ids[grandparent_pid]
+                                    grandparent_operation_name = grandparent_span['operationName']
+                                    parent_operation = self._services[grandparent_service_name].operations[
+                                        grandparent_operation_name]
+                                    add_latency = True
+                        else:
+                            parent_operation = self._services[parent_service_name].operations[parent_operation_name]
+
+                        if not parent_operation.contains_operation_as_dependency(operation):
+                            parent_operation.add_dependency(Dependency(operation))
+
+                        # add a custom latency to the dependency if the calling span is a GET-Request or similar
+                        if add_latency:
+                            parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
         return True
 

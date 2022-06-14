@@ -8,8 +8,10 @@ class ArchitectureMiSim:
     the format of a MiSim model.
     """
 
-    def __init__(self, model: IModel):
+    def __init__(self, model: IModel, network_latency, custom_latency_format):
         self._model = model
+        self._network_latency = network_latency
+        self._custom_latency_format = custom_latency_format
 
     def export(self) -> str:
         """
@@ -28,6 +30,8 @@ class ArchitectureMiSim:
             capacity = 1000
             operations = []
 
+            operation_has_CB = False
+
             # get all operations of this microservice
             operations_of_microservice = sorted(s.operations.items(), key=lambda x: x[0])
             for _, o in operations_of_microservice:
@@ -41,34 +45,45 @@ class ArchitectureMiSim:
                 for d in dependencies_of_operation:
                     service = d.service.name
                     operation = d.name
-                    probability = 1.0
+                    probability = d.probability
 
                     dependency = {'service': service,
                                   'operation': operation,
                                   'probability': probability}
 
-                    # eliminate duplicate dependencies
-                    if dependency not in dependencies:
-                        dependencies.append(dependency)
+                    # add a custom latency if the model contains latencies for this dependency
+                    if len(d.latencies) > 0:
+                        if self._custom_latency_format == 'm':
+                            custom_latency = d.get_latency_mean()
+                            dependency['custom_delay'] = custom_latency
+                        elif self._custom_latency_format == 'mstd':
+                            custom_latency = d.get_latency_mean_with_std()
+                            dependency['custom_delay'] = custom_latency
 
-                # if a circuit breaker is present, add the corresponding attributes
+                    dependencies.append(dependency)
+
+                # if a circuit breaker is present, set the flag to add the CB later into the patterns array
                 if circuit_breaker is not None:
-                    circuit_breaker_dict = {
-                        "rollingWindow": circuit_breaker.rolling_window,
-                        "requestVolumeThreshold": circuit_breaker.request_volume_threshold,
-                        "errorThresholdPercentage": circuit_breaker.error_threshold_percentage,
-                        "sleepWindow": circuit_breaker.sleep_window,
-                        "timeout": circuit_breaker.timeout
-                    }
-                else:
-                    circuit_breaker_dict = None
+                    operation_has_CB = True
 
                 operations.append({
                     'name': op_name,
                     'demand': demand,
-                    'circuitBreaker': circuit_breaker_dict,
                     'dependencies': dependencies
                 })
+
+                # If at least one Operation implements a circuit breaker, add a default CB to the patterns array
+                if operation_has_CB:
+                    circuit_breaker_dict = {
+                        "type": "circuitbreaker",
+                        "config": {
+                            "requestVolumeThreshold": circuit_breaker.request_volume_threshold,
+                            "threshold": circuit_breaker.threshold,
+                            "rollingWindow": circuit_breaker.rolling_window,
+                            "sleepWindow": circuit_breaker.sleep_window,
+                        }
+                    }
+                    patterns.append(circuit_breaker_dict)
 
             microservices.append({
                 'name': name,
@@ -77,6 +92,8 @@ class ArchitectureMiSim:
                 'capacity': capacity,
                 'operations': operations
             })
-
-        result = {'microservices': microservices}
+        result = {}
+        if self._network_latency != "":
+            result['network_latency'] = self._network_latency
+        result['microservices'] = microservices
         return json.dumps(result, indent=2)

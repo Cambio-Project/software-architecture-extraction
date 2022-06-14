@@ -1,6 +1,8 @@
 import json
+import re
 
 from extractor.arch_models.circuit_breaker import CircuitBreaker
+from extractor.arch_models.dependency import Dependency
 
 from extractor.arch_models.model import IModel
 from typing import Union, Any, Dict, List
@@ -13,8 +15,8 @@ from extractor.arch_models.service import Service
 
 class ZipkinTrace(IModel):
 
-    def __init__(self, source: Union[str, IO, list] = None, multiple: bool = False):
-        super().__init__(self.__class__.__name__, source, multiple)
+    def __init__(self, source: Union[str, IO, list] = None, multiple: bool = False, pattern: str = None):
+        super().__init__(self.__class__.__name__, source, multiple, pattern)
 
     def _parse_multiple(self, model: List[List[Dict[str, Any]]]) -> bool:
         multiple = [trace for trace_list in model for trace in trace_list]
@@ -24,10 +26,19 @@ class ZipkinTrace(IModel):
         # Store span_id: span
         span_ids = {}
 
+        client_span_ids = {}
+
+        # Set default value for the call string pattern
+        if self._call_string is None:
+            self.set_call_string('^get$')
+
         # Store all services
         for span in model:
             if span.get('kind', None) != 'CLIENT':
                 span_ids[span['id']] = span
+            else:
+                client_span_ids[span['id']] = span
+
             local = span.get('localEndpoint', {})
             remote = span.get('remoteEndpoint', {})
 
@@ -62,6 +73,7 @@ class ZipkinTrace(IModel):
                 else:
                     if not self._services[remote_endpoint].hosts.__contains__(remote_host):
                         self._services[remote_endpoint].add_host(remote_host)
+
         # Add operations
         for span in model:
             local = span.get('localEndpoint', {})
@@ -72,7 +84,7 @@ class ZipkinTrace(IModel):
                 return False
 
             operation_name = span['name']
-            if operation_name == 'get':
+            if re.search(self._call_string, operation_name):
                 continue
 
             if operation_name in self.services[service_name].operations:
@@ -80,6 +92,15 @@ class ZipkinTrace(IModel):
             else:
                 operation = Operation(operation_name)
                 self._services[service_name].add_operation(operation)
+
+            duration = span.get('duration', -1)
+
+            # store the response time (duration) of the operation
+            if duration != -1:
+                if operation.response_times.keys().__contains__(local_host):
+                    operation.response_times[local_host].append((span['timestamp'], duration))
+                else:
+                    operation.response_times[local_host] = [(span['timestamp'], duration)]
 
             span_id = span['id']
             operation.durations[span_id] = span.get('duration', -1)
@@ -97,10 +118,11 @@ class ZipkinTrace(IModel):
             if span.get('parentId', 0) in span_ids:
 
                 # Callee
+                ID = span['id']
                 local = span.get('localEndpoint', {})
                 service_name = local.get('serviceName', '')
                 operation_name = span['name']
-                if operation_name == 'get':
+                if re.search(self._call_string, operation_name):
                     continue
 
                 operation = self._services[service_name].operations[operation_name]
@@ -111,19 +133,19 @@ class ZipkinTrace(IModel):
                 parent = parent_span.get('localEndpoint', {})
                 parent_service_name = parent.get('serviceName', '')
                 parent_operation_name = parent_span['name']
-                if parent_operation_name == 'get':
+                if re.search(self._call_string, parent_operation_name):
                     continue
 
                 parent_operation = self._services[parent_service_name].operations[parent_operation_name]
 
-                skip = False
-                for dependency in parent_operation.dependencies:
-                    if dependency.name == operation_name:
-                        skip = True
-                        break
+                if not parent_operation.contains_operation_as_dependency(operation):
+                    parent_operation.add_dependency(Dependency(operation))
 
-                if not skip:
-                    parent_operation.add_dependency(operation)
+                # add a custom latency to the dependency if a client span is present for this span
+                if client_span_ids.keys().__contains__(ID):
+                    client_span = client_span_ids[ID]
+                    latency = span['timestamp'] - client_span['timestamp']
+                    parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
         return True
 
