@@ -1,11 +1,15 @@
-from extractor.r_d_e.librede_host import LibReDE_Host
-from extractor.r_d_e.librede_service import LibReDE_Service
+from extractor.r_d_e.librede_host import LibredeHost
+from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 
 
 # Creates a LibReDE_Configuration-File out of the given hosts and services.
 class LibReDE_ConfigurationCreator:
 
+<<<<<<< HEAD
     def __init__(self, hosts: list[LibReDE_Host], services: list[LibReDE_Service], start_time: int, end_time: int, path_for_input_files: str, path_for_output_files: str):
+=======
+    def __init__(self, hosts: list[LibredeHost], services: list[LibredeServiceOperation], path_for_input_files: str, path_for_output_files: str):
+>>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699
         self.hosts = hosts
         self.services = services
         self.start_time = start_time
@@ -45,11 +49,16 @@ class LibReDE_ConfigurationCreator:
         self.content += "   <dataSources name=\"Default_Data_Source_Type\" type=\"tools.descartes.librede.datasource.csv.CsvDataSource\"/>\n"
         for service in self.services:
             self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"RESPONSE_TIME\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + service.get_csv_file_name() + "\">\n"
-            self.content += "       <mappings entity=\"//@workloadDescription/@services." + str(service.index) + "\"/>\n"
+            self.content += "       <mappings entity=\"//@workloadDescription/@services." + str(service.id) + "\"/>\n"
             self.content += "   </observations>\n"
         for host in self.hosts:
+<<<<<<< HEAD
             self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" interval=\"" + str(interval) + "\" aggregation=\"AVERAGE\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
             self.content += "       <mappings entity=\"//@workloadDescription/@resources." + str(host.index) + "\"/>\n"
+=======
+            self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" interval=\"" + str(interval) + "\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
+            self.content += "       <mappings entity=\"//@workloadDescription/@resources." + str(host.id) + "\"/>\n"
+>>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699
             self.content += "   </observations>\n"
         self.content += "</input>\n"
 
