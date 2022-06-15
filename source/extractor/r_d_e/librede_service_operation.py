@@ -52,6 +52,7 @@ def get_operations(model: IModel, hosts):
                     continue
 
                 operation_for_librede = LibredeServiceOperation(operation.name, librede_host)
+                librede_host.add_service(operation_for_librede)
 
                 # get the response times from the model
                 response_times = operation.response_times[host]
