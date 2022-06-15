@@ -13,7 +13,7 @@ class Operation:
         self._service = None
         self._circuit_breaker = None
 
-        # stores {host1 : { [(timestamp1, response time 1), (timestamp2, response time 2), ...], host2: [(..),..], ...}
+        # stores {host1 :  [(timestamp1, response time 1), (timestamp2, response time 2), ...], host2: [(..),..], ...}
         self._response_times = {}
 
         # Runtime 
