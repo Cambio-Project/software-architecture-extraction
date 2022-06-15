@@ -38,7 +38,7 @@ class LibReDE_ConfigurationCreator:
         for service in self.services:
             self.content += "   <services name=\"operation_" + service.operation_name + "_id" + str(service.id) + "\">\n"
             self.content += "       <tasks xsi:type=\"librede:ResourceDemand\" resource=\"//@workloadDescription/@resources." + str(service.host.id) + "\"/>\n"
-            self.content += "   <services/>\n"
+            self.content += "   </services>\n"
         self.content += "</workloadDescription>\n"
 
     def create_input(self):
@@ -116,7 +116,7 @@ def calculate_demand_string_for_host(host) -> str:
     demands = "demands=\""
     for i in range(0, len(host.services)):
         service = host.services[i]
-        demands += "//@workloadDescription/@services." + str(service.id) + "/@tasks." + str(host.id)
+        demands += "//@workloadDescription/@services." + str(service.id) + "/@tasks.0"
         if i < len(host.services) - 1:
             demands += " "
     return demands + "\""
