@@ -5,15 +5,9 @@ from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 # Creates a LibReDE_Configuration-File out of the given hosts and services.
 class LibReDE_ConfigurationCreator:
 
-<<<<<<< HEAD
-    def __init__(self, hosts: list[LibReDE_Host], services: list[LibReDE_Service], start_time: int, end_time: int, path_for_input_files: str, path_for_output_files: str):
-=======
     def __init__(self, hosts: list[LibredeHost], services: list[LibredeServiceOperation], path_for_input_files: str, path_for_output_files: str):
->>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699
         self.hosts = hosts
         self.services = services
-        self.start_time = start_time
-        self.end_time = end_time
         self.path_for_input_files = path_for_input_files
         self.path_for_output_files = path_for_output_files
         self.content = ""
@@ -44,7 +38,7 @@ class LibReDE_ConfigurationCreator:
         self.content += "</workloadDescription>\n"
 
     def create_input(self):
-        interval: int = 300
+        interval: int = 30000
         self.content += "<input>\n"
         self.content += "   <dataSources name=\"Default_Data_Source_Type\" type=\"tools.descartes.librede.datasource.csv.CsvDataSource\"/>\n"
         for service in self.services:
@@ -52,20 +46,17 @@ class LibReDE_ConfigurationCreator:
             self.content += "       <mappings entity=\"//@workloadDescription/@services." + str(service.id) + "\"/>\n"
             self.content += "   </observations>\n"
         for host in self.hosts:
-<<<<<<< HEAD
-            self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" interval=\"" + str(interval) + "\" aggregation=\"AVERAGE\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
-            self.content += "       <mappings entity=\"//@workloadDescription/@resources." + str(host.index) + "\"/>\n"
-=======
             self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" interval=\"" + str(interval) + "\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
             self.content += "       <mappings entity=\"//@workloadDescription/@resources." + str(host.id) + "\"/>\n"
->>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699
             self.content += "   </observations>\n"
         self.content += "</input>\n"
 
     def create_estimation(self):
         window: int = 60
-        step_size: int = 1200
-        self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_time) + "\" endTimestamp=\"" + str(self.end_time) + "\">\n"
+        step_size: int = 120000
+        start_timestamp: int = 1370087550000
+        end_timestamp: int = 1370090939000
+        self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(start_timestamp) + "\" endTimestamp=\"" + str(end_timestamp) + "\">\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeRegressionApproach\"/>\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
         self.content += "</estimation>\n"
@@ -81,7 +72,8 @@ class LibReDE_ConfigurationCreator:
 
     def create_validation(self):
         validation_folds: int = 5
-        self.content += "<validation validationFolds=\"" + str(validation_folds) + ">\n"
+        validation_estimates: bool = True
+        self.content += "<validation validationFolds=\"" + str(validation_folds) + "\" validateEstimates=\"" + str(validation_estimates).lower() + "\">\n"
         self.content += "   <validators type=\"tools.descartes.librede.validation.ResponseTimeValidator\"/>\n"
         self.content += "   <validators type=\"tools.descartes.librede.validation.UtilizationValidator\"/>\n"
         self.content += "</validation>\n"

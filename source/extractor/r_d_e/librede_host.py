@@ -1,17 +1,8 @@
 import sys
 
-<<<<<<< HEAD
-# Representation of a Host for LibReDE (basically equivalent to a process in a trace).
-# Contains the name of the process this represents and the cpu-utilization as a list of tuples (time,cpu-utilization).
-from extractor.r_d_e.util import get_start_and_end_time
-
-
-class LibReDE_Host:
-=======
 from extractor.arch_models.model import IModel
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 
->>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699
 
 # Representation of a Host for LibReDE (e.g. a container running an instance of a service).
 class LibredeHost:
@@ -46,16 +37,6 @@ class LibredeHost:
         return self.name + " with " + str(len(self.cpu_utilization)) + " cpu-utilization-entries."
 
 
-<<<<<<< HEAD
-def get_hosts_with_default_cpu_utilization(trace) -> list[LibReDE_Host]:
-    hosts = list[LibReDE_Host]()
-    processes = trace["data"][0]["processes"]
-    start_and_end_time = get_start_and_end_time(trace)
-    default_cpu_utilization = get_default_cpu_utilization(start_and_end_time[0], start_and_end_time[1])
-    for process_id, process in processes.items():
-        hosts.append(LibReDE_Host(process_id, default_cpu_utilization))
-    return hosts
-=======
 # Gets all hosts of the generic model and creates a Librede host for each one
 def get_hosts(model: IModel) -> list[LibredeHost]:
     all_hosts = []
@@ -69,4 +50,3 @@ def get_hosts(model: IModel) -> list[LibredeHost]:
         hosts_for_librede.append(LibredeHost(host))
 
     return hosts_for_librede
->>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699

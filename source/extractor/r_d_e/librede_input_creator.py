@@ -6,17 +6,10 @@ from extractor.r_d_e.librede_host import LibredeHost, get_hosts
 from extractor.r_d_e.default_cpu_utilization import get_default_cpu_utilization
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation, get_operations
 
+
 # Extracts all services out of the given dictionary.
-<<<<<<< HEAD
-from extractor.r_d_e.util import get_start_and_end_time
-
-
-def extract_list_of_services(services: dict[str, list[LibReDE_Service]]):
-    services_list = list[LibReDE_Service]()
-=======
 def extract_list_of_services(services: dict[str, list[LibredeServiceOperation]]):
     services_list = list[LibredeServiceOperation]()
->>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699
     for key in services.keys():
         for single_service in services[key]:
             services_list.append(single_service)
@@ -41,13 +34,8 @@ class LibredeInputCreator:
         self.absolute_path_to_input: str = path_for_librede_files + "input\\"
         self.absolute_path_to_output: str = path_for_librede_files + "output\\"
         self.set_indices_to_hosts_and_services()
-<<<<<<< HEAD
-        start_and_end_time = get_start_and_end_time(trace)
-        self.configuration = LibReDE_ConfigurationCreator(self.hosts, self.services, start_and_end_time[0], start_and_end_time[1], self.absolute_path_to_input, self.absolute_path_to_output)
-=======
         self.configuration = LibReDE_ConfigurationCreator(self.hosts, self.operations_on_host,
                                                           self.absolute_path_to_input, self.absolute_path_to_output)
->>>>>>> cfb79567ba16e29ff6dada8b0d02c0c3794cb699
         # Create necessary directories, in case they don't exist, yet.
         if not os.path.exists(path_for_librede_files):
             os.mkdir(path_for_librede_files)

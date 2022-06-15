@@ -95,5 +95,3 @@ def get_maximum_timestamp(times):
         if time_pair[0] > maximum:
             maximum = time_pair[0]
     return maximum
-
-
