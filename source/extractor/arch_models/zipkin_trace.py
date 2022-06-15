@@ -95,6 +95,13 @@ class ZipkinTrace(IModel):
 
             duration = span.get('duration', -1)
 
+            # calculate host of operation
+            local = span.get('localEndpoint', {})
+            local_host = local.get('ipv4') or local.get('ipv6')
+            local_port = local.get('port', None)
+            if local_port is not None:
+                local_host = str(local_host) + ':' + str(local_port)
+
             # store the response time (duration) of the operation
             if duration != -1:
                 if operation.response_times.keys().__contains__(local_host):
