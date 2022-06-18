@@ -10,6 +10,7 @@ from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
 from extractor.arch_models.zipkin_trace import ZipkinTrace
+from extractor.arch_models.open_xtrace import OpenXTrace
 from input import InteractiveMain
 from util.parse import bool_from_string
 
@@ -26,6 +27,8 @@ def cli():
                         help='Converts a Jager trace.')
     parser.add_argument('--zipkin', dest='zipkin', type=str, nargs=1, required=False, metavar='zipkin_json_trace',
                         help='Converts a Zipkin trace.')
+    parser.add_argument('--openxtrace', dest='openxtrace', type=str, nargs=1, required=False, metavar='openxtrace_json_trace',
+                        help='Converts a OPENXTrace trace.')    
     parser.add_argument('--multiple', dest='multiple', action='store_true', required=False,
                         help='Can be used for Zipkin or Jaeger, when multiple traces are defined.')
 
@@ -71,6 +74,9 @@ def cli():
     elif args.zipkin:
         model_file = args.zipkin[0]
         model = ZipkinTrace(model_file, args.multiple)
+    elif args.openxtrace:
+        model_file = args.openxtrace[0]
+        model = OpenXTrace(model_file, args.multiple)
 
     if model:
         model_name = model_file[model_file.rfind('/') + 1:]
