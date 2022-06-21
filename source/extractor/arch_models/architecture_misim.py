@@ -27,7 +27,7 @@ class ArchitectureMiSim:
             name = s.name
             instances = len(s.hosts)
             patterns = []
-            capacity = 1000
+            capacity = s.capacity
             operations = []
 
             operation_has_CB = False
@@ -36,7 +36,7 @@ class ArchitectureMiSim:
             operations_of_microservice = sorted(s.operations.items(), key=lambda x: x[0])
             for _, o in operations_of_microservice:
                 op_name = o.name
-                demand = 100
+                demand = o.demand
                 circuit_breaker = o.circuit_breaker
                 dependencies = []
 

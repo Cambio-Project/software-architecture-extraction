@@ -12,6 +12,7 @@ class Operation:
         self._dependencies: [Dependency] = []
         self._service = None
         self._circuit_breaker = None
+        self._demand = 100
 
         # stores {host1 :  [(timestamp1, response time 1), (timestamp2, response time 2), ...], host2: [(..),..], ...}
         self._response_times = {}
@@ -58,6 +59,10 @@ class Operation:
     @property
     def response_times(self) -> Dict:
         return self._response_times
+
+    @property
+    def demand(self):
+        return self._demand
 
     @property
     def durations(self) -> Dict:
@@ -117,3 +122,6 @@ class Operation:
 
     def add_circuit_breaker(self, circuitBreaker: CircuitBreaker):
         self._circuit_breaker = circuitBreaker
+
+    def set_demand(self, demand):
+        self._demand = demand

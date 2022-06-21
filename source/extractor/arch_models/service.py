@@ -11,6 +11,7 @@ class Service:
         self._name = name
         self._operations = {}
         self._hosts = []
+        self._capacity = 1000
 
         # Runtime
         self._tags = {}
@@ -45,6 +46,13 @@ class Service:
     @property
     def hosts(self):
         return self._hosts
+
+    @property
+    def capacity(self):
+        return self._capacity
+
+    def set_capacity(self, capacity):
+        self._capacity = capacity
 
     @tags.setter
     def tags(self, tags: Dict[str, str]):
