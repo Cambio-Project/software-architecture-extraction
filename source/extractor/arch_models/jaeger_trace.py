@@ -35,7 +35,7 @@ class JaegerTrace(IModel):
         traces = model['data']
 
         # Set default value for the call string pattern
-        if self._call_string is None:
+        if self._call_string == "":
             self.set_call_string('^GET$')
 
         for trace in traces:
@@ -79,6 +79,9 @@ class JaegerTrace(IModel):
                 else:
                     operation = Operation(operation_name)
                     self._services[service_name].add_operation(operation)
+
+                # Track the amount times this operation gets called
+                operation.add_span(span_id)
 
                 duration = span.get('duration', -1)
 
@@ -150,6 +153,10 @@ class JaegerTrace(IModel):
                         # add a custom latency to the dependency if the calling span is a GET-Request or similar
                         if add_latency:
                             parent_operation.get_dependency_with_operation(operation).add_latency(latency)
+
+                        parent_operation.get_dependency_with_operation(operation).add_span(span['spanID'])
+
+        self.calculate_dependency_probabilities()
 
         return True
 
