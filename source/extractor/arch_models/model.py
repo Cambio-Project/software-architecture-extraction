@@ -109,6 +109,13 @@ class IModel:
 
     # Public
 
+    def calculate_dependency_probabilities(self):
+        # iterate through all dependencies and call the method for calculating the probability
+        for service in self.services.values():
+            for operation in service.operations.values():
+                for dependency in operation.dependencies:
+                    dependency.calculate_probability(len(operation.spans))
+
     def validate(self, check_everything=False) -> Tuple[bool, List[BaseException]]:
         valid = True
         stack = []

@@ -13,6 +13,7 @@ class Operation:
         self._service = None
         self._circuit_breaker = None
         self._demand = 100
+        self._spans = set()
 
         # stores {host1 :  [(timestamp1, response time 1), (timestamp2, response time 2), ...], host2: [(..),..], ...}
         self._response_times = {}
@@ -76,6 +77,10 @@ class Operation:
     def circuit_breaker(self) -> CircuitBreaker:
         return self._circuit_breaker
 
+    @property
+    def spans(self):
+        return self._spans
+
     @logs.setter
     def logs(self, logs: Dict[str, Dict]):
         self._logs = logs
@@ -125,3 +130,6 @@ class Operation:
 
     def set_demand(self, demand):
         self._demand = demand
+
+    def add_span(self, span):
+        self._spans.add(span)
