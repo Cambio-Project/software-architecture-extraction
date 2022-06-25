@@ -29,7 +29,7 @@ class ZipkinTrace(IModel):
         client_span_ids = {}
 
         # Set default value for the call string pattern
-        if self._call_string is None:
+        if self._call_string == "":
             self.set_call_string('^get$')
 
         # Store all services
@@ -93,6 +93,9 @@ class ZipkinTrace(IModel):
                 operation = Operation(operation_name)
                 self._services[service_name].add_operation(operation)
 
+            # Track the amount times this operation gets called
+            operation.add_span(span['id'])
+
             duration = span.get('duration', -1)
 
             # calculate host of operation
@@ -153,6 +156,10 @@ class ZipkinTrace(IModel):
                     client_span = client_span_ids[ID]
                     latency = span['timestamp'] - client_span['timestamp']
                     parent_operation.get_dependency_with_operation(operation).add_latency(latency)
+
+                parent_operation.get_dependency_with_operation(operation).add_span(span['id'])
+
+                self.calculate_dependency_probabilities()
 
         return True
 
