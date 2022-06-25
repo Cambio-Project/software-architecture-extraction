@@ -7,15 +7,6 @@ from extractor.r_d_e.default_cpu_utilization import get_default_cpu_utilization
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation, get_operations
 
 
-# Extracts all services out of the given dictionary.
-def extract_list_of_services(services: dict[str, list[LibredeServiceOperation]]):
-    services_list = list[LibredeServiceOperation]()
-    for key in services.keys():
-        for single_service in services[key]:
-            services_list.append(single_service)
-    return services_list
-
-
 # adds a default cpu utilization to all hosts
 def add_default_cpu_utilization(all_hosts: list[LibredeHost]):
     for host in all_hosts:
@@ -35,7 +26,8 @@ class LibredeInputCreator:
         self.absolute_path_to_output: str = path_for_librede_files + "output\\"
         self.set_indices_to_hosts_and_services()
         self.configuration = LibReDE_ConfigurationCreator(self.hosts, self.operations_on_host,
-                                                          self.absolute_path_to_input, self.absolute_path_to_output)
+                                                          self.absolute_path_to_input, self.absolute_path_to_output,
+                                                          self.get_start_timestamp(model), self.get_end_timestamp(model))
         # Create necessary directories, in case they don't exist, yet.
         if not os.path.exists(path_for_librede_files):
             os.mkdir(path_for_librede_files)
@@ -74,6 +66,31 @@ class LibredeInputCreator:
         for operation in self.operations_on_host:
             operation.id = i
             i += 1
+
+    def get_start_timestamp(self, model: IModel) -> int:
+        first_operation = list(list(model.services.values())[0].operations.values())[0]
+        minimum = list(first_operation.response_times.values())[0][0][0]
+        for service in model.services.values():
+            for operation in service.operations.values():
+                hosts_of_operation = operation.response_times.keys()
+                for host in hosts_of_operation:
+                    response_times = operation.response_times[host]
+                    for response_time in response_times:
+                        if response_time[0] < minimum:
+                            minimum = response_time[0]
+        return minimum
+
+    def get_end_timestamp(self, model: IModel) -> int:
+        maximum = 0
+        for service in model.services.values():
+            for operation in service.operations.values():
+                hosts_of_operation = operation.response_times.keys()
+                for host in hosts_of_operation:
+                    response_times = operation.response_times[host]
+                    for response_time in response_times:
+                        if response_time[0] > maximum:
+                            maximum = response_time[0]
+        return maximum
 
     def get_path_to_configuration_file(self):
         return self.configuration.get_path_to_configuration_file()

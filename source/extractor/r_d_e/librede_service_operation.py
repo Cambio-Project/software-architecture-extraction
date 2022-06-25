@@ -14,16 +14,13 @@ class LibredeServiceOperation:
         self.host = host
         self.response_times = []
 
-    # Adds a new response time to this service.
-    def add_response_time(self, response_time: tuple[int, int]):
-        self.response_times.append(response_time)
-
     def get_csv_file_name(self) -> str:
         return "operation" + str(self.id) + "_response_times.csv"
 
     # Transforms the response-times in a .csv-format for LibReDE looking like:
     # <time0>,<response-time0>\n<time1>,<response-time1> etc.
     def get_csv_file_content(self) -> str:
+        print(self.get_csv_file_name() + str(len(self.response_times)))
         csv_file_content = ""
         for response_time_entry in self.response_times:
             csv_file_content += str(response_time_entry[0]) + "," + str(response_time_entry[1]) + "\n"
@@ -58,7 +55,7 @@ def get_operations(model: IModel, hosts):
                 response_times = operation.response_times[host]
 
                 # calculate the minimum and the maximum timestamps of the response time entries
-                # if they exceed the current boundaries of the corresponding host the boundaries are updated
+                # if they exceed the current boundaries of the corresponding host, the boundaries are updated
                 minimum_timestamp = get_minimum_timestamp(response_times)
                 maximum_timestamp = get_maximum_timestamp(response_times)
 
