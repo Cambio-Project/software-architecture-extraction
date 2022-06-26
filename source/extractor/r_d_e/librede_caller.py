@@ -1,5 +1,6 @@
 import os
 import pathlib
+import shutil
 
 from extractor.arch_models.model import IModel
 from extractor.arch_models.operation import Operation
@@ -17,16 +18,21 @@ from extractor.r_d_e.librede_output_parser import LibredeOutputParser
 def calculate_and_add_demands_with_librede(model: IModel):
     print("Start calculating resource-demands...")
     path_to_librede_installation: str = input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\"): ")
-    librede_bat_file: str = path_to_librede_installation + "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\librede.bat"
+    path_to_librede_bat_file: str = path_to_librede_installation + "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
 
     path_to_librede_files: str = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
     librede_input_creator = LibredeInputCreator(model, path_to_librede_files)
     print("\nExtracted information:")
     print(librede_input_creator)
 
-    full_command: str = librede_bat_file + " -c \"" + librede_input_creator.get_path_to_configuration_file() + "\""
-    print("Run <--" + full_command + "-->")
-    os.system(full_command)
+    old_dir = os.getcwd()
+    os.chdir(path_to_librede_bat_file)
+    shutil.copy(librede_input_creator.get_path_to_configuration_file(), path_to_librede_bat_file)
+    command: str = "librede.bat" + " -c \"" + librede_input_creator.configuration.get_file_name() + "\""
+    print("Run <--" + command + "-->")
+    os.system(command)
+    os.remove(path_to_librede_bat_file + librede_input_creator.configuration.get_file_name())
+    os.chdir(old_dir)
 
     librede_output_parser = LibredeOutputParser(librede_input_creator.operations_on_host, path_to_librede_files + "output\\")
     results_of_librede: dict[LibredeServiceOperation, float] = librede_output_parser.get_results_of_librede()
