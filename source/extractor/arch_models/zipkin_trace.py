@@ -29,7 +29,7 @@ class ZipkinTrace(IModel):
         client_span_ids = {}
 
         # Set default value for the call string pattern
-        if self._call_string == "":
+        if self._call_string == "" or self._call_string is None:
             self.set_call_string('^get$')
 
         # Store all services

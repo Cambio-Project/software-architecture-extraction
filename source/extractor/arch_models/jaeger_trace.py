@@ -35,7 +35,7 @@ class JaegerTrace(IModel):
         traces = model['data']
 
         # Set default value for the call string pattern
-        if self._call_string == "":
+        if self._call_string == "" or self._call_string is None:
             self.set_call_string('^GET$')
 
         for trace in traces:

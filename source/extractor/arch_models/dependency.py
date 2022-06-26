@@ -58,4 +58,5 @@ class Dependency:
         # divided by the amount of executions of the parent.
         # Example:
         # If the parent operation is executed 2 times but this dependency only occurs once, the probability is 0.5
-        self._probability = len(self._spans) / parent_executions
+        # if the parent operation executes this dependency more than once, the probability is still 1.0
+        self._probability = min(1.0, len(self._spans) / parent_executions)
