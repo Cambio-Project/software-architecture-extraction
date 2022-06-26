@@ -1,4 +1,5 @@
 from extractor.arch_models.model import IModel
+from extractor.arch_models.service import Service
 
 
 # Representation of an operation of a service for LibReDE.
@@ -8,10 +9,11 @@ from extractor.arch_models.model import IModel
 # For each distinct operation, host pair a new instance of a LibredeServiceOperation is created.
 class LibredeServiceOperation:
 
-    def __init__(self, operation_name: str, host):
+    def __init__(self, operation_name: str, host, service: Service):
         self.operation_name = operation_name
         self.id = -1
         self.host = host
+        self.service = service
         self.response_times = []
 
     def get_csv_file_name(self) -> str:
@@ -48,7 +50,7 @@ def get_operations(model: IModel, hosts):
                     print("Host not found")
                     continue
 
-                operation_for_librede = LibredeServiceOperation(operation.name, librede_host)
+                operation_for_librede = LibredeServiceOperation(operation.name, librede_host, service)
                 librede_host.add_service(operation_for_librede)
 
                 # get the response times from the model

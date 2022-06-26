@@ -67,7 +67,7 @@ class LibReDE_ConfigurationCreator:
         self.content += "</estimation>\n"
 
     def create_output(self):
-        output_file_name_prefix: str = "generation"
+        output_file_name_prefix: str = ""
         self.content += "<output>\n"
         self.content += "   <exporters name=\"CSV_Export\" type=\"tools.descartes.librede.export.csv.CsvExporter\">\n"
         self.content += "       <parameters name=\"OutputDirectory\" value=\"" + self.path_for_output_files + "\"/>\n"

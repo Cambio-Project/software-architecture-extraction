@@ -4,11 +4,13 @@ from extractor.arch_models.architecture_resirio import Architecture
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
+from extractor.arch_models.model import IModel
 from extractor.arch_models.zipkin_trace import ZipkinTrace
 from extractor.controllers.analyzer import Analyzer
 from extractor.controllers.exporter import Exporter
 from extractor.controllers.validator import Validator
-from extractor.r_d_e.librede_caller import call_librede
+from extractor.r_d_e.librede_caller import calculate_and_add_demands_with_librede
+from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 from input.InteractiveInput import InteractiveInput
 from datetime import datetime
 
@@ -79,7 +81,7 @@ def main():
     settings_input = user_input.settings_input
 
     generic_model = create_generic_model(model_input, trace_input, settings_input)
-    call_librede(generic_model)
+    calculate_and_add_demands_with_librede(generic_model)
     architecture = create_architecture(settings_input, generic_model)
     validate(settings_input, generic_model, architecture)
     analyse(settings_input, generic_model)
