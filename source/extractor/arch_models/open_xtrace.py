@@ -47,7 +47,6 @@ class OpenXTrace(IModel):
                 service.tags = {}
                 service.add_host(root_host)
                 self._services[root_service] = service
-        
             
             if operation in self.services[root_service].operations:
                 operation = self.services[root_service].operations[operation]
@@ -61,7 +60,7 @@ class OpenXTrace(IModel):
 
                 if not operation.contains_operation_as_dependency(dependency):
                     operation.add_dependency(Dependency(dependency))
-
+            
         return True
 
     def _parse_children(self, model: List[Dict[str, Any]]) -> Operation:
@@ -82,6 +81,8 @@ class OpenXTrace(IModel):
             service.tags = {}
             service.add_host(host)
             self._services[service_name] = service
+        elif not self._services[service_name].hosts.__contains__(host):
+            self._services[service_name].add_host(host)
 
         if operation in self.services[service_name].operations:
             operation = self.services[service_name].operations[operation]
