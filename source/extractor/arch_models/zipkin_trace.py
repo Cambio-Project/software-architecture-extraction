@@ -78,6 +78,7 @@ class ZipkinTrace(IModel):
         for span in model:
             local = span.get('localEndpoint', {})
             service_name = local.get('serviceName', '')
+            span_id = span['id']
 
             # Unknown service
             if not service_name:
@@ -94,7 +95,7 @@ class ZipkinTrace(IModel):
                 self._services[service_name].add_operation(operation)
 
             # Track the amount times this operation gets called
-            operation.add_span(span['id'])
+            operation.add_span(span_id)
 
             duration = span.get('duration', -1)
 
@@ -112,8 +113,7 @@ class ZipkinTrace(IModel):
                 else:
                     operation.response_times[local_host] = [(span['timestamp'], duration)]
 
-            span_id = span['id']
-            operation.durations[span_id] = span.get('duration', -1)
+            operation.durations[span_id] = duration
             operation.tags[span_id] = span.get('tags', {})
             operation.logs[span_id] = {a['timestamp']: {'log': a['value']} for a in span.get('annotations', {})}
 
