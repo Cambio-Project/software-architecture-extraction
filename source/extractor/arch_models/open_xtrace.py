@@ -2,7 +2,9 @@ from curses.ascii import NUL
 import json
 from distutils.util import strtobool 
 from pickle import TRUE
-import re
+from tokenize import String
+
+from django.test import tag
 
 from extractor.arch_models.circuit_breaker import CircuitBreaker
 from extractor.arch_models.dependency import Dependency
@@ -31,29 +33,19 @@ class OpenXTrace(IModel):
         # Store all services
         for span in model:
             span = span.get("rootOfTrace", {})
-            root_service = span.get('application', '')
-            root_port = span.get('port', '')
-            root_host = span.get('host', '')
-            operation = span.get("businessTransaction", '')
-            rootnode = span.get("rootOfSubTrace", {})
-            children = rootnode.get("children", {})
+            service_name = span.get('application', '')
+            node = span.get("rootOfSubTrace", {})
+            children = node.get("children", {})
 
-            if root_port is not None:
-                if root_port != -1 and not root_host.__contains__(root_port):
-                    root_host = str(root_host) + ':' + str(root_port)
+            host = self.checkPort(span)
 
-            if root_service not in self._services:
-                service = Service(root_service)
+            if service_name not in self._services:
+                service = Service(service_name)
                 service.tags = {}
-                service.add_host(root_host)
-                self._services[root_service] = service
+                service.add_host(host)
+                self._services[service_name] = service
             
-            if operation in self.services[root_service].operations:
-                operation = self.services[root_service].operations[operation]
-            else:
-                operation = Operation(operation)
-                self.addCircuitBreaker(rootnode, operation) 
-                self._services[root_service].add_operation(operation)   
+            operation = self.calculateOperations(span, host)
 
             for child in children:
                 dependency = self._parse_children(child)
@@ -64,17 +56,12 @@ class OpenXTrace(IModel):
         return True
 
     def _parse_children(self, model: List[Dict[str, Any]]) -> Operation:
-        model = model.get('targetSubTrace', {})
-        service_name = model.get('application', '')
-        port = model.get('port', '')
-        host = model.get('host', '')
-        operation = model.get("businessTransaction", '')
-        rootnode = model.get("rootOfSubTrace", {})
-        children = rootnode.get("children", {})
+        child = model.get('targetSubTrace', {})
+        service_name = child.get('application', '')
+        node = child.get("rootOfSubTrace", {})
+        children = node.get("children", {})
 
-        if port is not None:
-            if port != -1 and not host.__contains__(port):
-                host = str(host) + ':' + str(port)
+        host = self.checkPort(child)
 
         if service_name not in self._services:
             service = Service(service_name)
@@ -84,12 +71,7 @@ class OpenXTrace(IModel):
         elif not self._services[service_name].hosts.__contains__(host):
             self._services[service_name].add_host(host)
 
-        if operation in self.services[service_name].operations:
-            operation = self.services[service_name].operations[operation]
-        else:
-            operation = Operation(operation)
-            self.addCircuitBreaker(rootnode, operation)
-            self._services[service_name].add_operation(operation)
+        operation = self.calculateOperations(model, host)
 
         for child in children:        
            dependency = self._parse_children(child)
@@ -99,6 +81,7 @@ class OpenXTrace(IModel):
 
         return operation
 
+    # Checks if a circuitBreaker pattern exists and adds it to the operation
     def addCircuitBreaker(self, model: List[Dict[str, Any]], operation : Operation) :
         pattern = "additionalInformation.pattern.circuitBreaker"
         if pattern in model:
@@ -106,6 +89,63 @@ class OpenXTrace(IModel):
             boolean = strtobool(circuitbreaker)
             if bool(boolean) is True:
                 operation.add_circuit_breaker(CircuitBreaker())
+
+    # Looks up if a port is specified and adds it to the host
+    def checkPort(self, model: List[Dict[str, Any]]) -> String:
+        port = model.get('port', '')
+        host = model.get('host', '')
+        if port is not None:
+            if port != -1 and not host.__contains__(port):
+                host = str(host) + ':' + str(port)
+        return host
+
+    #
+    def calculateOperations(self, model: List[Dict[str, Any]], host) -> Operation:
+        child = model.get('targetSubTrace', {})
+        service_name = child.get('application', '')
+        operation = child.get("businessTransaction", '')
+        node = child.get("rootOfSubTrace", {})
+        duration = child.get('responseTime', -1) / 1000
+        identifier = node.get('identifier')
+        if "rootOfSubTrace" in model:
+            operation = model.get("businessTransaction", '')
+            service_name = model.get('application', '')
+            node = model.get("rootOfSubTrace", {})
+            duration = model.get('responseTime', -1) / 1000
+            identifier = node.get('identifier')
+
+        if operation in self.services[service_name].operations:
+            operation = self.services[service_name].operations[operation]
+        else:
+            operation = Operation(operation)
+            self.addCircuitBreaker(node, operation)
+            self._services[service_name].add_operation(operation)
+
+        # Track the amount times this operation gets called
+        operation.add_span(identifier)
+
+        # store the response time (duration) of the operation
+        if duration != -1:
+            if operation.response_times.keys().__contains__(host):
+                operation.response_times[host].append((node['timeStamp'], duration))
+            else:
+                operation.response_times[host] = [(node['timeStamp'], duration)]
+        
+        operation.durations[identifier] = duration
+        
+        tags = self.filterAdditionalInformation(model)
+        tags.update(self.filterAdditionalInformation(node))
+     
+        operation.tags[identifier] = tags
+        return operation
+
+    def filterAdditionalInformation(self, model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        tags = dict()
+        filtertags = dict(filter(lambda item: "additionalInformation" in item[0], model.items()))
+        for key in filtertags:
+            newKey = key.replace('additionalInformation.', '')
+            tags[newKey] = filtertags.get(key)
+        return tags
 
     def read_multiple(self, source: Union[str, IO, list] = None) -> bool:
         if isinstance(source, str):
