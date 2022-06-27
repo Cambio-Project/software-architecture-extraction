@@ -1,5 +1,6 @@
 from curses.ascii import NUL
 import json
+from distutils.util import strtobool 
 from pickle import TRUE
 import re
 
@@ -27,20 +28,16 @@ class OpenXTrace(IModel):
 
 
     def _parse(self, model: List[Dict[str, Any]]) -> bool:
-        # Store span_id: span
-        span_ids = {}
-
-        client_span_ids = {}
-
-        # Set default value for the call string pattern
-        if self._call_string is None:
-            self.set_call_string('^get$')
         # Store all services
         for span in model:
             span = span.get("rootOfTrace", {})
             root_service = span.get('application', '')
             root_port = span.get('port', '')
             root_host = span.get('host', '')
+            operation = span.get("businessTransaction", '')
+            rootnode = span.get("rootOfSubTrace", {})
+            children = rootnode.get("children", {})
+
             if root_port is not None:
                 if root_port != -1 and not root_host.__contains__(root_port):
                     root_host = str(root_host) + ':' + str(root_port)
@@ -50,17 +47,14 @@ class OpenXTrace(IModel):
                 service.tags = {}
                 service.add_host(root_host)
                 self._services[root_service] = service
+        
             
-            operation = span.get("businessTransaction", '')
-
             if operation in self.services[root_service].operations:
                 operation = self.services[root_service].operations[operation]
             else:
                 operation = Operation(operation)
-                self._services[root_service].add_operation(operation)
-
-            rootnode = span.get("rootOfSubTrace", {})
-            children = rootnode.get("children", {})
+                self.addCircuitBreaker(rootnode, operation) 
+                self._services[root_service].add_operation(operation)   
 
             for child in children:
                 dependency = self._parse_children(child)
@@ -75,6 +69,9 @@ class OpenXTrace(IModel):
         service_name = model.get('application', '')
         port = model.get('port', '')
         host = model.get('host', '')
+        operation = model.get("businessTransaction", '')
+        rootnode = model.get("rootOfSubTrace", {})
+        children = rootnode.get("children", {})
 
         if port is not None:
             if port != -1 and not host.__contains__(port):
@@ -86,16 +83,12 @@ class OpenXTrace(IModel):
             service.add_host(host)
             self._services[service_name] = service
 
-        operation = model.get("businessTransaction", '')
-
         if operation in self.services[service_name].operations:
             operation = self.services[service_name].operations[operation]
         else:
             operation = Operation(operation)
+            self.addCircuitBreaker(rootnode, operation)
             self._services[service_name].add_operation(operation)
-
-        rootnode = model.get("rootOfSubTrace", {})
-        children = rootnode.get("children", {})
 
         for child in children:        
            dependency = self._parse_children(child)
@@ -105,6 +98,13 @@ class OpenXTrace(IModel):
 
         return operation
 
+    def addCircuitBreaker(self, model: List[Dict[str, Any]], operation : Operation) :
+        pattern = "additionalInformation.pattern.circuitBreaker"
+        if pattern in model:
+            circuitbreaker = model.get(pattern, '')
+            boolean = strtobool(circuitbreaker)
+            if bool(boolean) is True:
+                operation.add_circuit_breaker(CircuitBreaker())
 
     def read_multiple(self, source: Union[str, IO, list] = None) -> bool:
         if isinstance(source, str):
