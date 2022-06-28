@@ -144,6 +144,7 @@ class JaegerTrace(IModel):
                                     parent_operation = self._services[grandparent_service_name].operations[
                                         grandparent_operation_name]
                                     add_latency = True
+                                    parent_span = grandparent_span
                         else:
                             parent_operation = self._services[parent_service_name].operations[parent_operation_name]
 
@@ -154,7 +155,10 @@ class JaegerTrace(IModel):
                         if add_latency:
                             parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
-                        parent_operation.get_dependency_with_operation(operation).add_span(span['spanID'])
+                        # keep track of spans that call this operation in order to calculate probabilities later
+                        if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(parent_span):
+                            parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
+                            parent_operation.get_dependency_with_operation(operation).add_call()
 
         self.calculate_dependency_probabilities()
 

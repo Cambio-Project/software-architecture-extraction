@@ -157,7 +157,10 @@ class ZipkinTrace(IModel):
                     latency = span['timestamp'] - client_span['timestamp']
                     parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
-                parent_operation.get_dependency_with_operation(operation).add_span(span['id'])
+                # keep track of spans that call this operation in order to calculate probabilities later
+                if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(parent_span):
+                    parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
+                    parent_operation.get_dependency_with_operation(operation).add_call()
 
                 self.calculate_dependency_probabilities()
 

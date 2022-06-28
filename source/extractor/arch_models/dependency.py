@@ -12,7 +12,8 @@ class Dependency:
         self._name = operation.name
         self._probability = 1.0
         self._latencies = []
-        self._spans = set()
+        self._calling_spans = []
+        self._calls = 0
 
     @property
     def operation(self):
@@ -35,8 +36,8 @@ class Dependency:
         return self._latencies
 
     @property
-    def spans(self):
-        return self._spans
+    def calling_spans(self):
+        return self._calling_spans
 
     def add_latency(self, latency):
         self._latencies.append(latency)
@@ -50,13 +51,15 @@ class Dependency:
         latencies = [x / 1000 for x in self._latencies]
         return str(np.mean(latencies)) + '+-' + str(np.std(latencies))
 
-    def add_span(self, span):
-        self._spans.add(span)
+    def add_calling_span(self, span):
+        self._calling_spans.append(span)
+
+    def add_call(self):
+        self._calls = self._calls + 1
 
     def calculate_probability(self, parent_executions):
         # Probability of a dependency is defined as the total amount executions of the operation of this dependency
         # divided by the amount of executions of the parent.
         # Example:
         # If the parent operation is executed 2 times but this dependency only occurs once, the probability is 0.5
-        # if the parent operation executes this dependency more than once, the probability is still 1.0
-        self._probability = min(1.0, len(self._spans) / parent_executions)
+        self._probability = min(1.0, self._calls / parent_executions)
