@@ -1,3 +1,2 @@
 pandas
 requests
-python3-distutils
