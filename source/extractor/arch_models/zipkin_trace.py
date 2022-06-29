@@ -162,7 +162,11 @@ class ZipkinTrace(IModel):
                     parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
                     parent_operation.get_dependency_with_operation(operation).add_call()
 
-                self.calculate_dependency_probabilities()
+                # add this call to the call history of the parent span in order to detect retries later
+                parent_operation.retry.add_call_history_entry(
+                    parent_span['id'], {span['timestamp']: (operation_name, span['tags'].get('error', False))})
+
+        self.subsequent_calculations()
 
         return True
 

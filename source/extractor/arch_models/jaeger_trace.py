@@ -160,7 +160,13 @@ class JaegerTrace(IModel):
                             parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
                             parent_operation.get_dependency_with_operation(operation).add_call()
 
-        self.calculate_dependency_probabilities()
+                        # add this call to the call history of the parent span in order to detect retries later
+                        tags = {tag['key']: tag['value'] for tag in span['tags']}
+                        parent_operation.retry.add_call_history_entry(
+                            parent_span['spanID'],
+                            {span['startTime']: (operation_name, tags.get('error', False))})
+
+        self.subsequent_calculations()
 
         return True
 
