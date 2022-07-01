@@ -127,6 +127,10 @@ class JaegerTrace(IModel):
                         latency = span['startTime'] - parent_span['startTime']
                         add_latency = False
 
+                        # save start time and end time (needed for retry detection)
+                        start_time = span['startTime']
+                        end_time = start_time + span['duration']
+
                         parent_operation = None
 
                         # Handling of GET-Requests or similar.
@@ -144,6 +148,11 @@ class JaegerTrace(IModel):
                                     parent_operation = self._services[grandparent_service_name].operations[
                                         grandparent_operation_name]
                                     add_latency = True
+
+                                    # update start- and end time
+                                    start_time = parent_span['startTime']
+                                    end_time = start_time + parent_span['duration']
+
                                     parent_span = grandparent_span
                         else:
                             parent_operation = self._services[parent_service_name].operations[parent_operation_name]
@@ -156,7 +165,8 @@ class JaegerTrace(IModel):
                             parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
                         # keep track of spans that call this operation in order to calculate probabilities later
-                        if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(parent_span):
+                        if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(
+                                parent_span):
                             parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
                             parent_operation.get_dependency_with_operation(operation).add_call()
 
@@ -164,7 +174,7 @@ class JaegerTrace(IModel):
                         tags = {tag['key']: tag['value'] for tag in span['tags']}
                         parent_operation.retry.add_call_history_entry(
                             parent_span['spanID'],
-                            {span['startTime']: (operation_name, tags.get('error', False))})
+                            {span['startTime']: (operation_name, tags.get('error', False), start_time, end_time)})
 
         self.subsequent_calculations()
 

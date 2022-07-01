@@ -151,20 +151,30 @@ class ZipkinTrace(IModel):
                 if not parent_operation.contains_operation_as_dependency(operation):
                     parent_operation.add_dependency(Dependency(operation))
 
+                # save start time and end time (needed for retry detection)
+                start_time = span['timestamp']
+                end_time = start_time + span['duration']
+
                 # add a custom latency to the dependency if a client span is present for this span
                 if client_span_ids.keys().__contains__(ID):
                     client_span = client_span_ids[ID]
                     latency = span['timestamp'] - client_span['timestamp']
                     parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
+                    # update start- and end time
+                    start_time = client_span['timestamp']
+                    end_time = start_time + client_span['duration']
+
                 # keep track of spans that call this operation in order to calculate probabilities later
-                if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(parent_span):
+                if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(
+                        parent_span):
                     parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
                     parent_operation.get_dependency_with_operation(operation).add_call()
 
                 # add this call to the call history of the parent span in order to detect retries later
                 parent_operation.retry.add_call_history_entry(
-                    parent_span['id'], {span['timestamp']: (operation_name, span['tags'].get('error', False))})
+                    parent_span['id'],
+                    {span['timestamp']: (operation_name, span['tags'].get('error', False), start_time, end_time)})
 
         self.subsequent_calculations()
 
