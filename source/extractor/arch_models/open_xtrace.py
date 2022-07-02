@@ -1,4 +1,4 @@
-from curses.ascii import NUL
+#from curses.ascii import NUL
 import json
 from distutils.util import strtobool 
 from pickle import TRUE
