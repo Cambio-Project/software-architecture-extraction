@@ -1,10 +1,7 @@
-from curses.ascii import NUL
 import json
 from distutils.util import strtobool 
 from pickle import TRUE
 from tokenize import String
-
-from django.test import tag
 
 from extractor.arch_models.circuit_breaker import CircuitBreaker
 from extractor.arch_models.dependency import Dependency
@@ -16,7 +13,6 @@ from typing import IO
 
 from extractor.arch_models.operation import Operation
 from extractor.arch_models.service import Service
-
 
 class OpenXTrace(IModel):
 
@@ -41,18 +37,15 @@ class OpenXTrace(IModel):
 
             if service_name not in self._services:
                 service = Service(service_name)
-                service.tags = {}
+                service.tags = { "servicename" : service_name, "ipv4" : host}
                 service.add_host(host)
                 self._services[service_name] = service
             
             operation = self.calculateOperations(span, host)
-
             for child in children:
                 dependency = self._parse_children(child)
-
                 if not operation.contains_operation_as_dependency(dependency):
                     operation.add_dependency(Dependency(dependency))
-            
         return True
 
     def _parse_children(self, model: List[Dict[str, Any]]) -> Operation:
@@ -65,20 +58,17 @@ class OpenXTrace(IModel):
 
         if service_name not in self._services:
             service = Service(service_name)
-            service.tags = {}
+            service.tags = { "serviceName" : service_name, "ipv4" : host}
             service.add_host(host)
             self._services[service_name] = service
         elif not self._services[service_name].hosts.__contains__(host):
             self._services[service_name].add_host(host)
 
         operation = self.calculateOperations(model, host)
-
         for child in children:        
-           dependency = self._parse_children(child)
-
-           if not operation.contains_operation_as_dependency(dependency):
-            operation.add_dependency(Dependency(dependency))
-
+            dependency = self._parse_children(child)
+            if not operation.contains_operation_as_dependency(dependency):
+                operation.add_dependency(Dependency(dependency))
         return operation
 
     # Checks if a circuitBreaker pattern exists and adds it to the operation
