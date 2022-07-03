@@ -71,9 +71,29 @@ class TestZipkinOpenXTrace(unittest.TestCase):
 
 
         zipkin_nodes = exportmodel_zipkin["nodes"]
-        openxtrace_nodes = exportmodel_openxtrace["nodes"]
         zipkin_edges = exportmodel_zipkin["edges"]
+        openxtrace_nodes = exportmodel_openxtrace["nodes"]
         openxtrace_edges = exportmodel_openxtrace["edges"]
         self.assertEqual(len(zipkin_nodes), len(openxtrace_nodes))
         self.assertEqual(len(zipkin_edges), len(openxtrace_edges))
+        
+        for zipkin in zipkin_edges:
+            zipkin = zipkin_edges[zipkin]
+            label = zipkin["label"]
+            source = zipkin_nodes[str(zipkin["source"])]
+            target = zipkin_nodes[str(zipkin["target"])]
+            index = -1
+            for openxtrace in openxtrace_edges:
+                idx = openxtrace
+                openxtrace = openxtrace_edges[openxtrace]
+                tmp = openxtrace["label"]
+                tmp_source = openxtrace_nodes[str(openxtrace["source"])]
+                tmp_target = openxtrace_nodes[str(openxtrace["target"])]
+                if tmp == label and source["label"] == tmp_source["label"] and target["label"] == tmp_target["label"]:
+                    index = idx
+                    self.assertEqual(zipkin["data"]["tags"], openxtrace["data"]["tags"])
+                    self.assertEqual(zipkin["data"]["logs"], openxtrace["data"]["logs"])
+                    self.assertEqual(zipkin["data"]["duration"], openxtrace["data"]["duration"])
+            
+            self.assertNotEqual(index, -1)
 
