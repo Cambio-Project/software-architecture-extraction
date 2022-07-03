@@ -64,8 +64,6 @@ class RetrySequence:
         y = self.get_timings_from_sequence()
         y = [y_i / 1000000 for y_i in y]
 
-
-
         # Check if we have reached the maximum backoff during the retry sequence:
         maxBackoff_index = detect_max_backoff_index(y)
 
@@ -114,10 +112,10 @@ class RetrySequence:
             self._base = result_linear[0]
             self._baseBackoff = result_linear[1]
 
-        print("Operation:" + self._operation_name)
-        print("Strategy: " + self._strategy)
-        print("Base: " + str(self._base))
-        print("Base backoff: " + str(self._baseBackoff))
+        # print("Operation:" + self._operation_name)
+        # print("Strategy: " + self._strategy)
+        # print("Base: " + str(self._base))
+        # print("Base backoff: " + str(self._baseBackoff))
 
     # extracts the time intervals between all calls from a sequence of calls with start and end time
     def get_timings_from_sequence(self):
