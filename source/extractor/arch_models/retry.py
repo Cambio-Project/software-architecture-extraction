@@ -4,16 +4,43 @@ import numpy as np
 import scipy.optimize
 from scipy.optimize import OptimizeWarning
 
+# Threshold that is used to detect if the retry sequence has reached the maximum backoff value
+MAX_BACKOFF_DETECTION_THRESHOLD = 0.01
+JITTER_DETECTION_THRESHOLD = 0.01
 
-def assume_linear(xi, base, backoff):
-    return base * xi + backoff
+
+# Function for estimating the backoff strategy based on a linear function
+def assume_linear(xi, base, baseBackoff):
+    return base * xi + baseBackoff
 
 
-def assume_exponential(xi, base, backoff):
-    return backoff * (base ** xi)
+# Function for estimating the backoff strategy based on an exponential function
+def assume_exponential(xi, base, baseBackoff):
+    return baseBackoff * (base ** xi)
+
+
+# This method calculated the difference between two consecutive time intervals. If the difference is lower than the
+# MAX_BACKOFF_DETECTION_THRESHOLD, the index where the thresholding begins is returned.
+def detect_max_backoff_index(timings):
+    last_interval = None
+    current_interval_index = 0
+    for interval in timings:
+        if last_interval is not None:
+            if (interval - last_interval) < MAX_BACKOFF_DETECTION_THRESHOLD:
+                # if the difference between the two intervals is very small, we have reached the threshold
+                return current_interval_index - 1
+        last_interval = interval
+        current_interval_index += 1
+    return None
 
 
 class RetrySequence:
+    """
+    This class represents a Retry Sequence: Such a sequence consists of all (times of) calls made during retrying a
+    failing Operation
+    The class offers methods that can be used to estimate the parameters of the function used for the timings of the
+    retry.
+    """
 
     def __init__(self, operation_name):
         self._operation_name = operation_name
@@ -21,6 +48,7 @@ class RetrySequence:
         self._strategy = None
         self._base = None
         self._baseBackoff = None
+        self._maxBackoff = None
 
     def add_call_entry(self, entry):
         self._sequence.append(entry)
@@ -29,14 +57,37 @@ class RetrySequence:
     def sequence(self):
         return self._sequence
 
+    # Tries to estimate all parameters of the function that was used to for the time intervals between the retries
     def estimate_parameters(self):
         warnings.simplefilter("ignore", OptimizeWarning)
 
         y = self.get_timings_from_sequence()
         y = [y_i / 1000000 for y_i in y]
+
+
+
+        # Check if we have reached the maximum backoff during the retry sequence:
+        maxBackoff_index = detect_max_backoff_index(y)
+
+        if maxBackoff_index is not None:
+            # If we have reached the maximum backoff, all data points after the threshold is reached get eliminated
+            # in order to get a better estimation for the parameters later.
+
+            maxBackoff_values = y[maxBackoff_index:len(y)]
+            self._maxBackoff = np.mean(maxBackoff_values)
+
+            y = y[0:(maxBackoff_index + 1)]
+            y[len(y) - 1] = self._maxBackoff  # replace the last entry in the array with estimated maximum Backoff
+
+            print("y after slicing:" + str(y))
+
         x = [i for i in range(0, len(y))]
 
-        # try to estimate fit a linear and an exponential function to the data points
+        if len(y) < 2:
+            print("Not enough data available for estimation")
+            return
+
+        # try to fit a linear and an exponential function to the data points
         result_linear, _ = scipy.optimize.curve_fit(assume_linear, x, y, p0=(0, y[0]))
         result_exponential, _ = scipy.optimize.curve_fit(assume_exponential, x, y, p0=(0, y[0]))
 
@@ -51,20 +102,24 @@ class RetrySequence:
         mse_exp = np.mean(error_exp)
         mse_lin = np.mean(error_lin)
 
+        print(str(mse_exp) + "    " + str(mse_lin))
+
+        # Use the estimation that has the smaller error
         if mse_exp < mse_lin:
             self._strategy = "exponential"
-            self._base = round(result_exponential[0], 5)
-            self._baseBackoff = round(result_exponential[1], 5)
+            self._base = result_exponential[0]
+            self._baseBackoff = result_exponential[1]
         else:
             self._strategy = "linear"
-            self._base = round(result_linear[0], 1)
-            self._baseBackoff = round(result_linear[1], 1)
+            self._base = result_linear[0]
+            self._baseBackoff = result_linear[1]
 
-        # print("Operation:" + self._operation_name)
-        # print("Strategy: " + self._strategy)
-        # print("Base: " + str(self._base))
-        # print("Base backoff: " + str(self._baseBackoff))
+        print("Operation:" + self._operation_name)
+        print("Strategy: " + self._strategy)
+        print("Base: " + str(self._base))
+        print("Base backoff: " + str(self._baseBackoff))
 
+    # extracts the time intervals between all calls from a sequence of calls with start and end time
     def get_timings_from_sequence(self):
         timings = []
 
@@ -83,6 +138,10 @@ class RetrySequence:
 
 
 class Retry:
+    """
+    Class that represents the retry pattern of an operation in the generic model. It stores all retry sequences that
+    have been detected int the traces with the corresponding estimated function parameters
+    """
 
     def __init__(self):
         self._call_history = {}  # maps {spanID: {timestamp: (Operation, hasError, startTime, endTime)}}
@@ -101,6 +160,7 @@ class Retry:
         else:
             self._call_history[span] = entry
 
+    # This Method tries to detect a retry. If it finds one, the whole Retry Sequence is extracted.
     def detect_retry(self):
         for entry in self._call_history.values():
             last_call = (None, None, None)

@@ -162,7 +162,9 @@ class TestRetry(unittest.TestCase):
         sequence.add_call_entry((1656349751353000, 1656349751359823, True))
         sequence.add_call_entry((1656349756361000, 1656349756365687, False))
         sequence.estimate_parameters()
-        print("Strategy: " + sequence._strategy)
+        print(sequence.get_timings_from_sequence())
+        print("Strategy: " + str(sequence._strategy))
         print("Base: " + str(sequence._base))
         print("Base backoff: " + str(sequence._baseBackoff))
+        print("Max Backoff: " + str(sequence._maxBackoff))
 
