@@ -31,6 +31,7 @@ class Architecture:
 
         # Add edges
         for _, s in self._model.services.items():
+            temp = None
             for _, o in s.operations.items():
                 source = self._graph.node(s.id)
 
