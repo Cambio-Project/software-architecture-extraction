@@ -16,7 +16,7 @@ class TestZipkinOpenXTrace(unittest.TestCase):
         pass
 
     def test_Zipkin_OpenXTrace_MiSim(self):
-        model_file_zipkin = os.path.join('extractor', 'arch_models', 'test', 'zipkin_trace_for_openxtrace.json')
+        model_file_zipkin = os.path.join('source','extractor', 'arch_models', 'test', 'zipkin_trace_for_openxtrace.json')
         model_zipkin = ZipkinTrace(model_file_zipkin, False, "")
         if not model_zipkin:
             return
@@ -25,7 +25,7 @@ class TestZipkinOpenXTrace(unittest.TestCase):
         arch_zipkin = ArchitectureMiSim(model_zipkin, "", "")
         exportmodel_zipkin = json.loads(arch_zipkin.export())
 
-        model_file_openxtrace = os.path.join('extractor', 'arch_models', 'test', 'open_xtrace_from_zipkin.json')
+        model_file_openxtrace = os.path.join('source','extractor', 'arch_models', 'test', 'open_xtrace_from_zipkin.json')
         model_openxtrace = OpenXTrace(model_file_openxtrace, False, "")
         if not model_openxtrace:
             return
@@ -51,7 +51,7 @@ class TestZipkinOpenXTrace(unittest.TestCase):
         self.assertEqual(exportmodel_openxtrace, exportmodel_zipkin)
 
     def test_Zipkin_OpenXTrace_Resirio(self):
-        model_file_zipkin = os.path.join('extractor', 'arch_models', 'test', 'zipkin_trace_for_openxtrace.json')
+        model_file_zipkin = os.path.join('source','extractor', 'arch_models', 'test', 'zipkin_trace_for_openxtrace.json')
         model_zipkin = ZipkinTrace(model_file_zipkin, False, "")
         if not model_zipkin:
             return
@@ -60,7 +60,7 @@ class TestZipkinOpenXTrace(unittest.TestCase):
         arch_zipkin = Architecture(model_zipkin)
         exportmodel_zipkin = json.loads(arch_zipkin.export())
 
-        model_file_openxtrace = os.path.join('extractor', 'arch_models', 'test', 'open_xtrace_from_zipkin.json')
+        model_file_openxtrace = os.path.join('source','extractor', 'arch_models', 'test', 'open_xtrace_from_zipkin.json')
         model_openxtrace = OpenXTrace(model_file_openxtrace, False, "")
         if not model_openxtrace:
             return

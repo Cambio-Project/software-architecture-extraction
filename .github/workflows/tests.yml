@@ -23,6 +23,5 @@ jobs:
         pip install -r requirements.txt
         
     - name: Run Tests
-      run: cd source
-      run: python ./test.py
+      run: python ./source/test.py
         
