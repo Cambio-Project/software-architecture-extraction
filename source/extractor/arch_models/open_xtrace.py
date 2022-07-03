@@ -95,13 +95,13 @@ class OpenXTrace(IModel):
         service_name = child.get('application', '')
         operation = child.get("businessTransaction", '')
         node = child.get("rootOfSubTrace", {})
-        duration = child.get('responseTime', -1) / 1000
+        duration = int(child.get('responseTime', -1) / 1000)
         identifier = node.get('identifier')
         if "rootOfSubTrace" in model:
             operation = model.get("businessTransaction", '')
             service_name = model.get('application', '')
             node = model.get("rootOfSubTrace", {})
-            duration = model.get('responseTime', -1) / 1000
+            duration = int(model.get('responseTime', -1) / 1000)
             identifier = node.get('identifier')
 
         if operation in self.services[service_name].operations:
