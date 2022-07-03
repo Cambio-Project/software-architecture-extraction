@@ -1,6 +1,7 @@
 from typing import Dict, List
 from extractor.arch_models.circuit_breaker import CircuitBreaker
 from extractor.arch_models.dependency import Dependency
+from extractor.arch_models.retry import Retry
 
 
 class Operation:
@@ -14,6 +15,7 @@ class Operation:
         self._circuit_breaker = None
         self._demand = 100
         self._spans = set()
+        self._retry = Retry()
 
         # stores {host1 :  [(timestamp1, response time 1), (timestamp2, response time 2), ...], host2: [(..),..], ...}
         self._response_times = {}
@@ -80,6 +82,10 @@ class Operation:
     @property
     def spans(self):
         return self._spans
+
+    @property
+    def retry(self):
+        return self._retry
 
     @logs.setter
     def logs(self, logs: Dict[str, Dict]):

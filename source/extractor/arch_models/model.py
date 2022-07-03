@@ -109,11 +109,18 @@ class IModel:
 
     # Public
 
-    def calculate_dependency_probabilities(self):
-        # iterate through all dependencies and call the method for calculating the probability
+    def subsequent_calculations(self):
+        """
+        This method executes two subsequent operations that need to be done one the finished generic model:
+        It calculates all the probabilities of the dependencies and calls the retry-detection method of each
+        operation.
+        """
         for service in self.services.values():
             for operation in service.operations.values():
+                # call the retry-detection method of each operation
+                operation.retry.detect_retry()
                 for dependency in operation.dependencies:
+                    # iterate through all dependencies and call the method for calculating the probability
                     dependency.calculate_probability(len(operation.spans))
 
     def validate(self, check_everything=False) -> Tuple[bool, List[BaseException]]:

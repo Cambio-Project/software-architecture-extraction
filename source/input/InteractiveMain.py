@@ -22,9 +22,9 @@ def create_generic_model(model_input, trace_input, settings_input):
     elif model_input.contains_misim_model:
         return MiSimModel(model_input.get_model_file_path())
     elif trace_input.traces_are_jaeger:
-        return JaegerTrace(trace_input.traces, trace_input.contains_multiple_traces, settings_input.pattern)
+        return JaegerTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
     elif trace_input.traces_are_zipkin:
-        return ZipkinTrace(trace_input.traces, trace_input.contains_multiple_traces, settings_input.pattern)
+        return ZipkinTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
 
 
 # Creates the architecture for RESIRIO or MiSim out of the generic model.
@@ -57,13 +57,16 @@ def analyse(settings_input, generic_model):
 
 def export(settings_input, generic_model, architecture):
     current_date = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-    name_of_output_file = ("RESIRIO" if settings_input.should_export_for_resirio else "MiSim") + "-extraction_" + current_date
+    name_of_output_file = (
+                              "RESIRIO" if settings_input.should_export_for_resirio else "MiSim") + "-extraction_" + current_date
     if settings_input.should_store_in_pickle_format:
-        pickle.dump(generic_model, open(name_of_output_file + "_pickle_export.dat", 'wb+'))  # stores the generic model in a binary format
+        pickle.dump(generic_model, open(name_of_output_file + "_pickle_export.dat",
+                                        'wb+'))  # stores the generic model in a binary format
     export_file_type = "json" if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else "js"
     export_type = export_file_type if settings_input.should_export_for_resirio else "MiSim"
     output_file = open(name_of_output_file + "." + export_file_type, 'w+')  # creates output file
-    output_file.write(Exporter.export_architecture(architecture, export_type, settings_input.should_be_pretty_print, settings_input.should_be_lightweight_export))
+    output_file.write(Exporter.export_architecture(architecture, export_type, settings_input.should_be_pretty_print,
+                                                   settings_input.should_be_lightweight_export))
     output_file.close()
 
 
@@ -81,7 +84,7 @@ def main():
     settings_input = user_input.settings_input
 
     generic_model = create_generic_model(model_input, trace_input, settings_input)
-    calculate_and_add_demands_with_librede(generic_model)
+    # calculate_and_add_demands_with_librede(generic_model)
     architecture = create_architecture(settings_input, generic_model)
     validate(settings_input, generic_model, architecture)
     analyse(settings_input, generic_model)
