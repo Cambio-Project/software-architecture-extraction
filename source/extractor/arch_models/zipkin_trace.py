@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import json
 import re
 
@@ -114,7 +115,7 @@ class ZipkinTrace(IModel):
                     operation.response_times[local_host] = [(span['timestamp'], duration)]
 
             operation.durations[span_id] = duration
-            operation.tags[span_id] = span.get('tags', {})
+            operation.tags[span_id] = OrderedDict(sorted(span.get('tags', {}).items(), key=lambda t: t[0])) 
             operation.logs[span_id] = {a['timestamp']: {'log': a['value']} for a in span.get('annotations', {})}
 
             for s in operation.tags.items():

@@ -7,7 +7,7 @@ from extractor.arch_models.circuit_breaker import CircuitBreaker
 from extractor.arch_models.dependency import Dependency
 
 from extractor.arch_models.model import IModel
-from typing import Union, Any, Dict, List
+from typing import OrderedDict, Union, Any, Dict, List
 
 from typing import IO
 
@@ -32,7 +32,6 @@ class OpenXTrace(IModel):
             service_name = span.get('application', '')
             node = span.get("rootOfSubTrace", {})
             children = node.get("children", {})
-
             host = self.checkPort(span)
 
             if service_name not in self._services:
@@ -96,13 +95,14 @@ class OpenXTrace(IModel):
         operation = child.get("businessTransaction", '')
         node = child.get("rootOfSubTrace", {})
         duration = int(child.get('responseTime', -1) / 1000)
-        identifier = node.get('identifier')
         if "rootOfSubTrace" in model:
             operation = model.get("businessTransaction", '')
-            service_name = model.get('application', '')
             node = model.get("rootOfSubTrace", {})
+            service_name = model.get('application', '')
             duration = int(model.get('responseTime', -1) / 1000)
-            identifier = node.get('identifier')
+        identifier = node.get('identifier')
+        httpmethod = node.get("requestMethod", "")
+        httppath = node.get("uri", "")
 
         if operation in self.services[service_name].operations:
             operation = self.services[service_name].operations[operation]
@@ -125,8 +125,13 @@ class OpenXTrace(IModel):
         
         tags = self.filterAdditionalInformation(model)
         tags.update(self.filterAdditionalInformation(node))
-     
-        operation.tags[identifier] = tags
+        if (not "http.method" in tags) and httpmethod != "":
+            tags["http.method"] = httpmethod
+        if (not "http.path" in tags) and httppath != "":
+            tags["http.path"]= httppath
+        operation.tags[identifier] = OrderedDict(sorted(tags.items(), key=lambda t: t[0]))
+        operation.logs[identifier] = {}
+
         return operation
 
     def filterAdditionalInformation(self, model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
