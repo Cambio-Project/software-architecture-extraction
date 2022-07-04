@@ -1,13 +1,12 @@
 import json
 from distutils.util import strtobool 
-from pickle import TRUE
 from tokenize import String
 
 from extractor.arch_models.circuit_breaker import CircuitBreaker
 from extractor.arch_models.dependency import Dependency
 
 from extractor.arch_models.model import IModel
-from typing import OrderedDict, Union, Any, Dict, List
+from typing import OrderedDict, Tuple, Union, Any, Dict, List
 
 from typing import IO
 
@@ -40,14 +39,15 @@ class OpenXTrace(IModel):
                 service.add_host(host)
                 self._services[service_name] = service
             
-            operation = self.calculateOperations(span, host)
+            tupel = self.calculateOperations(span, host)
+            operation = tupel[0]
             for child in children:
-                dependency = self._parse_children(child)
+                dependency = self._parse_children(child)[0]
                 if not operation.contains_operation_as_dependency(dependency):
                     operation.add_dependency(Dependency(dependency))
         return True
 
-    def _parse_children(self, model: List[Dict[str, Any]]) -> Operation:
+    def _parse_children(self, model: List[Dict[str, Any]]) -> Tuple[Operation, int]:
         child = model.get('targetSubTrace', {})
         service_name = child.get('application', '')
         node = child.get("rootOfSubTrace", {})
@@ -63,12 +63,21 @@ class OpenXTrace(IModel):
         elif not self._services[service_name].hosts.__contains__(host):
             self._services[service_name].add_host(host)
 
-        operation = self.calculateOperations(model, host)
+        tupel = self.calculateOperations(model, host)
+        operation = tupel[0]
+        latency = tupel[1]
         for child in children:        
             dependency = self._parse_children(child)
-            if not operation.contains_operation_as_dependency(dependency):
-                operation.add_dependency(Dependency(dependency))
-        return operation
+            child_dependency = dependency[0]
+            child_latency = dependency[1]
+            if not operation.contains_operation_as_dependency(child_dependency):
+                tmp = Dependency(child_dependency)
+                operation.add_dependency(tmp)
+                if latency != None:
+                    tmp.add_latency(child_latency)
+            elif latency != None:
+                operation.get_dependency_with_operation(dependency).add_latency(latency)
+        return operation, latency
 
     # Checks if a circuitBreaker pattern exists and adds it to the operation
     def addCircuitBreaker(self, model: List[Dict[str, Any]], operation : Operation) :
@@ -89,7 +98,8 @@ class OpenXTrace(IModel):
         return host
 
     #
-    def calculateOperations(self, model: List[Dict[str, Any]], host) -> Operation:
+    def calculateOperations(self, model: List[Dict[str, Any]], host) -> Tuple[Operation, int]: 
+        latency = None
         child = model.get('targetSubTrace', {})
         service_name = child.get('application', '')
         operation = child.get("businessTransaction", '')
@@ -100,6 +110,8 @@ class OpenXTrace(IModel):
             node = model.get("rootOfSubTrace", {})
             service_name = model.get('application', '')
             duration = int(model.get('responseTime', -1) / 1000)
+        else:
+            latency = int((node['timeStamp']- model['timeStamp']) * 1000)
         identifier = node.get('identifier')
         httpmethod = node.get("requestMethod", "")
         httppath = node.get("uri", "")
@@ -126,13 +138,13 @@ class OpenXTrace(IModel):
         tags = self.filterAdditionalInformation(model)
         tags.update(self.filterAdditionalInformation(node))
         if (not "http.method" in tags) and httpmethod != "":
-            tags["http.method"] = httpmethod
+            tags["http.method"] = httpmethod 
         if (not "http.path" in tags) and httppath != "":
             tags["http.path"]= httppath
         operation.tags[identifier] = OrderedDict(sorted(tags.items(), key=lambda t: t[0]))
         operation.logs[identifier] = {}
 
-        return operation
+        return operation, latency
 
     def filterAdditionalInformation(self, model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         tags = dict()
