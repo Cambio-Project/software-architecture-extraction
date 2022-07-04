@@ -285,11 +285,16 @@ class Retry:
 
             for sequence in self.retry_sequences:
                 if sequence.strategy == bestStrategy:
-                    maxTryValues.append(sequence.maxTries)
-                    baseValues.append(sequence.base)
-                    baseBackoffValues.append(sequence.baseBackoff)
-                    maxBackoffValues.append(sequence.maxBackoff)
-                    errors.append(sequence.error)
+                    if sequence.maxTries:
+                        maxTryValues.append(sequence.maxTries)
+                    if sequence.base:
+                        baseValues.append(sequence.base)
+                    if sequence.baseBackoff:
+                        baseBackoffValues.append(sequence.baseBackoff)
+                    if sequence.maxBackoff:
+                        maxBackoffValues.append(sequence.maxBackoff)
+                    if sequence.error:
+                        errors.append(sequence.error)
 
             self._strategy = bestStrategy
             if len(maxTryValues) > 0:
