@@ -17,7 +17,9 @@ from extractor.r_d_e.librede_output_parser import LibredeOutputParser
 # Adds the demands in the generic model.
 def calculate_and_add_demands_with_librede(model: IModel):
     print("Start calculating resource-demands...")
-    path_to_librede_installation: str = input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\"): ")
+    path_to_librede_installation: str = input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\") [type <help>, for how to install]: ")
+    if path_to_librede_installation == "help":
+        path_to_librede_installation = help_and_ask_for_librede_installation_path()
     path_to_librede_bat_file: str = path_to_librede_installation + "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
 
     path_to_librede_files: str = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
@@ -38,6 +40,17 @@ def calculate_and_add_demands_with_librede(model: IModel):
     results_of_librede: dict[LibredeServiceOperation, float] = librede_output_parser.get_results_of_librede()
     for service_operation in results_of_librede.keys():
         add_demand_to_operation(service_operation, results_of_librede[service_operation])
+
+
+def help_and_ask_for_librede_installation_path():
+    print("-------------------------------------------------")
+    print("You have to manually install/build LibReDE (else its not runnable from console).")
+    print("  1. Clone their repository")
+    print("  2. Stay at the master branch (or go to commit \"f16c2c1\", depends whether they updated their repository)")
+    print("  3. Call <mvn clean install -DskipTests> in the folder \"tools.descartes.librede.releng\"")
+    print("  4. Type the path to the repository")
+    print("-------------------------------------------------")
+    return input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\"): ")
 
 
 # Sets the demand of the given operation.
