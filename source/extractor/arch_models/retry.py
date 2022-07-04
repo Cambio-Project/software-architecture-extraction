@@ -43,19 +43,44 @@ class RetrySequence:
     """
 
     def __init__(self, operation_name):
-        self._operation_name = operation_name
         self._sequence = []  # stores (startTimeOfCall, EndTimeOfCall, Error)
         self._strategy = None
+        self._maxTries = None
         self._base = None
         self._baseBackoff = None
         self._maxBackoff = None
+        self._error = None
 
-    def add_call_entry(self, entry):
-        self._sequence.append(entry)
+    @property
+    def error(self):
+        return self._error
 
     @property
     def sequence(self):
         return self._sequence
+
+    @property
+    def strategy(self):
+        return self._strategy
+
+    @property
+    def maxTries(self):
+        return self._maxTries
+
+    @property
+    def base(self):
+        return self._base
+
+    @property
+    def baseBackoff(self):
+        return self._baseBackoff
+
+    @property
+    def maxBackoff(self):
+        return self._maxBackoff
+
+    def add_call_entry(self, entry):
+        self._sequence.append(entry)
 
     # Tries to estimate all parameters of the function that was used to for the time intervals between the retries
     def estimate_parameters(self):
@@ -107,15 +132,22 @@ class RetrySequence:
             self._strategy = "exponential"
             self._base = result_exponential[0]
             self._baseBackoff = result_exponential[1]
+            self._error = mse_exp
         else:
             self._strategy = "linear"
             self._base = result_linear[0]
             self._baseBackoff = result_linear[1]
+            self._error = mse_lin
+
+        if self._sequence[len(self._sequence) - 1][2]:
+            # if the sequence ends with an error, the maximum amount of retry attempts has been reached
+            self._maxTries = len(self._sequence)
 
         # print("Operation:" + self._operation_name)
         # print("Strategy: " + self._strategy)
         # print("Base: " + str(self._base))
         # print("Base backoff: " + str(self._baseBackoff))
+        # print("Max Tries: " + str(self._maxTries))
 
     # extracts the time intervals between all calls from a sequence of calls with start and end time
     def get_timings_from_sequence(self):
@@ -144,6 +176,40 @@ class Retry:
     def __init__(self):
         self._call_history = {}  # maps {spanID: {timestamp: (Operation, hasError, startTime, endTime)}}
         self._retry_sequences = []
+        self._strategy = None
+        self._maxTries = None
+        self._base = None
+        self._baseBackoff = None
+        self._maxBackoff = None
+        self._error = None
+
+    @property
+    def operationName(self):
+        return self._operationName
+
+    @property
+    def strategy(self):
+        return self._strategy
+
+    @property
+    def maxTries(self):
+        return self._maxTries
+
+    @property
+    def base(self):
+        return self._base
+
+    @property
+    def baseBackoff(self):
+        return self._baseBackoff
+
+    @property
+    def maxBackoff(self):
+        return self._maxBackoff
+
+    @property
+    def error(self):
+        return self._error
 
     @property
     def retry_sequences(self) -> list[RetrySequence]:
@@ -191,5 +257,56 @@ class Retry:
 
                 last_call = current_call
 
-        for entry in self.retry_sequences:
-            entry.estimate_parameters()
+        for sequence in self.retry_sequences:
+            sequence.estimate_parameters()
+
+        if self.has_retry():
+            self.set_results()
+
+    # If there are multiple retry sequences, the results get merged. In case of conflicting strategies, the strategy
+    # with the lowest error from the estimation is taken and all the values of the all sequences that follow the same
+    # strategy are averaged.
+    # It is assumed that the calling operation uses the same Retry configuration for all operations that it calls.
+    def set_results(self):
+        if len(self._retry_sequences) > 1:
+            maxTryValues = []
+            baseValues = []
+            baseBackoffValues = []
+            maxBackoffValues = []
+            errors = []
+
+            bestStrategy = None
+            currentError = None
+            # search for strategy with the lowest error
+            for sequence in self.retry_sequences:
+                if (currentError is None) or sequence.error < currentError:
+                    bestStrategy = sequence.strategy
+                    currentError = sequence.error
+
+            for sequence in self.retry_sequences:
+                if sequence.strategy == bestStrategy:
+                    maxTryValues.append(sequence.maxTries)
+                    baseValues.append(sequence.base)
+                    baseBackoffValues.append(sequence.baseBackoff)
+                    maxBackoffValues.append(sequence.maxBackoff)
+                    errors.append(sequence.error)
+
+            self._strategy = bestStrategy
+            if len(maxTryValues) > 0:
+                self._maxTries = np.mean(maxTryValues)
+            if len(baseValues) > 0:
+                self._base = np.mean(baseValues)
+            if len(baseBackoffValues) > 0:
+                self._baseBackoff = np.mean(baseBackoffValues)
+            if len(maxBackoffValues) > 0:
+                self._maxBackoff = np.mean(maxBackoffValues)
+            if len(errors) > 0:
+                self._base = np.mean(errors)
+        else:
+            sequence = self._retry_sequences[0]
+            self._strategy = sequence.strategy
+            self._maxTries = sequence.maxTries
+            self._base = sequence.base
+            self._baseBackoff = sequence.baseBackoff
+            self._maxBackoff = sequence.maxBackoff
+            self._error = sequence.error

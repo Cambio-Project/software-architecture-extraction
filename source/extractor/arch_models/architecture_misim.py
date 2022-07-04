@@ -30,6 +30,8 @@ class ArchitectureMiSim:
             capacity = s.capacity
             operations = []
 
+            retries_of_operations = []
+
             operation_has_CB = False
 
             # get all operations of this microservice
@@ -38,6 +40,8 @@ class ArchitectureMiSim:
                 op_name = o.name
                 demand = o.demand
                 circuit_breaker = o.circuit_breaker
+                if o.retry.has_retry():
+                    retries_of_operations.append(o.retry)
                 dependencies = []
 
                 # Get all dependencies of this operation
@@ -85,6 +89,9 @@ class ArchitectureMiSim:
                     }
                     patterns.append(circuit_breaker_dict)
 
+            if len(retries_of_operations) > 0:
+                patterns.append(build_retry_description(retries_of_operations))
+
             microservices.append({
                 'name': name,
                 'instances': instances,
@@ -97,3 +104,34 @@ class ArchitectureMiSim:
             result['network_latency'] = self._network_latency
         result['microservices'] = microservices
         return json.dumps(result, indent=2)
+
+
+def build_retry_description(retries):
+    if len(retries) > 1:
+        # if several operations of a service implement a retry the one with the lowest error is taken for the
+        # architecture description
+        retry = None
+        current_error = None
+        for retry_item in retries:
+            if (current_error is None) or retry_item.error < current_error:
+                retry = retry_item
+    else:
+        retry = retries[0]
+
+    output = {"type": "retry"}
+    if retry.maxTries:
+        output["config"] = {}
+        output["config"]["maxTries"] = retry.maxTries
+    strategy_description = {"type": retry.strategy}
+    if retry.baseBackoff or retry.maxBackoff or retry.base:
+        config_description = {}
+        if retry.baseBackoff:
+            config_description["baseBackoff"] = retry.baseBackoff
+        if retry.maxBackoff:
+            config_description["maxBackoff"] = retry.maxBackoff
+        if retry.base:
+            config_description["base"] = retry.base
+        strategy_description["config"] = config_description
+    output["strategy"] = strategy_description
+
+    return output
