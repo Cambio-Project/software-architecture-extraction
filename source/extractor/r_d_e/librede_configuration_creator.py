@@ -45,10 +45,12 @@ class LibReDE_ConfigurationCreator:
         for service in self.services:
             self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"RESPONSE_TIME\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + service.get_csv_file_name() + "\">\n"
             self.content += "       <mappings entity=\"//@workloadDescription/@services." + str(service.id) + "\"/>\n"
+            self.content += "       <unit href=\"librede:units#MICROSECONDS\"/>\n"
             self.content += "   </observations>\n"
         for host in self.hosts:
             self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
             self.content += "       <mappings entity=\"//@workloadDescription/@resources." + str(host.id) + "\"/>\n"
+            self.content += "       <unit href=\"librede:units#MICROSECONDS\"/>\n"
             self.content += "   </observations>\n"
         self.content += "</input>\n"
 
