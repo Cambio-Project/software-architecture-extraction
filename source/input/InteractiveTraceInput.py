@@ -34,7 +34,7 @@ class InteractiveTraceInput:
             limit = input("Please enter a limit (integer) how many traces you wish to retrieve: ")
             self.traces = zipkin_network_manager.get_traces(int(limit))
         else:
-            self.ask_for_traces()
+            self.ask_for_traces_via_command_line()
 
     def ask_for_trace_type(self):
         trace_input_type = input("Your traces are from Jaeger or Zipkin? <j> or <z>: ")
@@ -56,35 +56,37 @@ class InteractiveTraceInput:
             "Do you want to directly import your traces from the Zipkin HTTP API? <y> or <n>: ")
         self.use_zipkin_network = True if should_use_zipkin_network == "y" else False
 
-    # Asks the user for trace locations and adds the content of each trace file to self.traces['data'].
+    # Asks the user for trace locations and adds the content of each trace file to self.traces.
     # The user can put in any number of traces, but at least one.
-    def ask_for_traces(self):
-        trace_file_path_input: str = input("Path to your " + self.get_trace_type() + "-trace file: ")
-        user_gave_a_valid_trace: bool = self.set_trace_if_exists(trace_file_path_input)
-        while not user_gave_a_valid_trace:
-            trace_file_path_input: str = input("Path to your " + self.get_trace_type() + "-trace file: ")
-            user_gave_a_valid_trace: bool = self.set_trace_if_exists(trace_file_path_input)
-        cli_input = None
-        if self.traces_are_jaeger:
-            cli_input = self.traces['data']
-        elif self.traces_are_zipkin:
-            cli_input = self.traces
+    def ask_for_traces_via_command_line(self):
+        self.traces = {'data': []} if self.traces_are_jaeger else []
+        trace_file_path_input: str = input("Path to a " + self.get_trace_type() + "-trace file: ")
+        self.add_trace_if_exists(trace_file_path_input)
+        while True:
+            trace_file_path_input: str = input("Path to a " + self.get_trace_type() + "-trace file (<Enter> to stop): ")
+            if trace_file_path_input == "":
+                break
+            self.add_trace_if_exists(trace_file_path_input)
+        self.contains_multiple_traces = self.get_number_of_traces() > 0
 
-        if len(cli_input) == 0:
-            pass  # TODO need at least one trace
-
-    # Adds the file at the given path as a trace to self.traces. If the trace doesn't exist and error is printed.
-    def set_trace_if_exists(self, trace_file_path):
+    # Adds the trace of the given file to self.traces.
+    # If the trace doesn't exist, an error is printed.
+    def add_trace_if_exists(self, trace_file_path):
         if exists(trace_file_path):
             trace_file_handler = open(trace_file_path, "r")
             trace_file_as_json = json.loads(trace_file_handler.read())
-            self.traces = trace_file_as_json
-            self.contains_multiple_traces = len(trace_file_as_json) > 1
+            input_trace_list = trace_file_as_json["data"] if self.traces_are_jaeger else trace_file_as_json
+            for single_trace in input_trace_list:
+                self.get_list_of_traces().append(single_trace)
             trace_file_handler.close()
-            return True
         else:
             print("File <" + trace_file_path + "> doesn't exist!\n")
-            return False
+
+    def get_list_of_traces(self):
+        return self.traces["data"] if self.traces_are_jaeger else self.traces
+
+    def get_traces(self):
+        return self.traces
 
     def get_trace_type(self):
         if self.traces_are_jaeger:
@@ -94,17 +96,7 @@ class InteractiveTraceInput:
 
     # Calculates the number of traces which were put in at instantiation.
     def get_number_of_traces(self):
-        if self.traces_are_jaeger:
-            return len(self.traces['data'])
-        elif self.traces_are_zipkin:
-            return len(self.traces)
-
-    # Returns the variable containing all traces which were put in at instantiation.
-    def get_traces(self):
-        if self.traces_are_jaeger:
-            return self.traces["data"]
-        elif self.traces_are_zipkin:
-            return self.traces
+        return len(self.get_list_of_traces())
 
     def __str__(self):
         output_string = "Use " + str(self.get_number_of_traces()) + " " + self.get_trace_type() + "-Traces.\n"
