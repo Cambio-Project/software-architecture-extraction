@@ -99,10 +99,8 @@ class RetrySequence:
             maxBackoff_values = y[maxBackoff_index:len(y)]
             self._maxBackoff = np.mean(maxBackoff_values)
 
-            y = y[0:(maxBackoff_index + 1)]
-            y[len(y) - 1] = self._maxBackoff  # replace the last entry in the array with estimated maximum Backoff
-
-            print("y after slicing:" + str(y))
+            y = y[0:maxBackoff_index]
+            # print("y after slicing:" + str(y))
 
         x = [i for i in range(0, len(y))]
 
@@ -125,7 +123,7 @@ class RetrySequence:
         mse_exp = np.mean(error_exp)
         mse_lin = np.mean(error_lin)
 
-        print(str(mse_exp) + "    " + str(mse_lin))
+        # print(str(mse_exp) + "    " + str(mse_lin))
 
         # Use the estimation that has the smaller error
         if mse_exp < mse_lin:
