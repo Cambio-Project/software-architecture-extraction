@@ -4,13 +4,12 @@ from extractor.arch_models.architecture_resirio import Architecture
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
-from extractor.arch_models.model import IModel
 from extractor.arch_models.zipkin_trace import ZipkinTrace
 from extractor.controllers.analyzer import Analyzer
 from extractor.controllers.exporter import Exporter
 from extractor.controllers.validator import Validator
-from extractor.r_d_e.librede_caller import calculate_and_add_demands_with_librede
-from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
+from extractor.r_d_e.librede_caller import LibredeCaller
+from extractor.r_d_e.librede_input_creator import LibredeInputCreator
 from input.InteractiveInput import InteractiveInput
 from datetime import datetime
 
@@ -70,21 +69,31 @@ def export(settings_input, generic_model, architecture):
     output_file.close()
 
 
+def ask_user_whether_he_wants_a_summary_of_the_input(user_input: InteractiveInput, librede_input: LibredeInputCreator):
+    print()
+    answer_of_user = input("Do you want a summary of all input (yours and of LibReDE)? <y> or <n>: ")
+    if answer_of_user == "y":
+        print()
+        print("--------------------------------------------------------")
+        print(str(user_input))
+        print()
+        print("LibReDE-input:")
+        print(str(librede_input), end="")
+        print("--------------------------------------------------------")
+
+
 # 1. Asks the user for all input in an interactive way via the command line.
 # 2. Prints all registered input to check whether everything is like the user wants.
 # 3. Validation, Analyses, Export
 def main():
     user_input = InteractiveInput()
-    print("----")
-    print("Registered input:")
-    print(user_input)
-    print("----")
     model_input = user_input.model_input
     trace_input = user_input.trace_input
     settings_input = user_input.settings_input
 
     generic_model = create_generic_model(model_input, trace_input, settings_input)
-    # calculate_and_add_demands_with_librede(generic_model)
+    librede_caller = LibredeCaller(generic_model)
+    ask_user_whether_he_wants_a_summary_of_the_input(user_input, librede_caller.librede_input)
     architecture = create_architecture(settings_input, generic_model)
     validate(settings_input, generic_model, architecture)
     analyse(settings_input, generic_model)

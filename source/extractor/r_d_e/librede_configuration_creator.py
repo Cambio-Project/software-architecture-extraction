@@ -2,8 +2,10 @@ from extractor.r_d_e.librede_host import LibredeHost
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 
 
-# Creates a LibReDE_Configuration-File out of the given hosts and services.
-class LibReDE_ConfigurationCreator:
+class LibredeConfigurationCreator:
+    """
+    Creates a LibReDE_Configuration-File out of the given hosts and services.
+    """
 
     def __init__(self, hosts: list[LibredeHost], services: list[LibredeServiceOperation], path_for_input_files: str, path_for_output_files: str, start_timestamp: int, end_timestamp: int):
         self.hosts = hosts
@@ -20,6 +22,9 @@ class LibReDE_ConfigurationCreator:
 
     def get_file_name(self) -> str:
         return "LibReDE_Configuration_" + str(len(self.hosts)) + "hosts_" + str(len(self.services)) + "services.librede"
+
+    def get_xml_content(self):
+        return self.content
 
     def create_content(self):
         self.content += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -45,18 +50,16 @@ class LibReDE_ConfigurationCreator:
         for service in self.services:
             self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"RESPONSE_TIME\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + service.get_csv_file_name() + "\">\n"
             self.content += "       <mappings entity=\"//@workloadDescription/@services." + str(service.id) + "\"/>\n"
-            self.content += "       <unit href=\"librede:units#MICROSECONDS\"/>\n"
             self.content += "   </observations>\n"
         for host in self.hosts:
             self.content += "   <observations xsi:type=\"librede:FileTraceConfiguration\" metric=\"UTILIZATION\" dataSource=\"//@input/@dataSources.0\" file=\"" + self.path_for_input_files + host.get_csv_file_name() + "\">\n"
             self.content += "       <mappings entity=\"//@workloadDescription/@resources." + str(host.id) + "\"/>\n"
-            self.content += "       <unit href=\"librede:units#MICROSECONDS\"/>\n"
             self.content += "   </observations>\n"
         self.content += "</input>\n"
 
     def create_estimation(self):
         window: int = 60
-        step_size: int = 60000
+        step_size: int = 120000
         self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_timestamp) + "\" endTimestamp=\"" + str(self.end_timestamp) + "\">\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeApproximationApproach\"/>\n"

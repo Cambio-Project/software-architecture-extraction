@@ -2,37 +2,40 @@ from extractor.arch_models.model import IModel
 from extractor.arch_models.service import Service
 
 
-# Representation of an operation of a service for LibReDE.
-#
-# A service in LibReDE is an operation of a service in the generic model.
-# A service can have multiple instances, so an operation of a service can be processed on different hosts.
-# For each distinct operation, host pair a new instance of a LibredeServiceOperation is created.
 class LibredeServiceOperation:
+    """
+    Representation of an operation of a service for LibReDE.
+    A service in LibReDE is an operation of a service in the generic model.
+    A service can have multiple instances, so an operation of a service can be processed on different hosts.
+    For each distinct operation, host pair a new instance of a LibredeServiceOperation is created.
+    """
 
     def __init__(self, operation_name: str, host, service: Service):
         self.operation_name = operation_name
-        self.id = -1
+        self.id = -1  # id for unambiguous identification for LibReDE, will be set later
         self.host = host
         self.service = service
-        self.response_times = []
+        self.response_times = list[tuple[float, float]]()
 
     def get_csv_file_name(self) -> str:
-        return "operation" + str(self.id) + "_response_times.csv"
+        return "operation_id" + str(self.id) + "_response_times.csv"
 
     # Transforms the response-times in a .csv-format for LibReDE looking like:
     # <time0>,<response-time0>\n<time1>,<response-time1> etc.
+    # Needs to be done with a list, because concatenation of many, long strings reduces the performance.
     def get_csv_file_content(self) -> str:
-        print(self.get_csv_file_name() + str(len(self.response_times)))
-        csv_file_content = ""
+        csv_file_content_elements = list[str]()
         for response_time_entry in self.response_times:
-            csv_file_content += str(response_time_entry[0]) + "," + str(response_time_entry[1]) + "\n"
-        return csv_file_content
+            csv_file_content_elements.append(str(response_time_entry[0]) + "," + str(response_time_entry[1]) + "\n")
+        return "".join(csv_file_content_elements)
 
     def __str__(self):
-        string_representation = "<" + self.operation_name + ">-operation at host: <" + self.host.name + "> with "
-        string_representation += str(len(self.response_times)) + " " + (
-            "calls" if len(self.response_times) > 1 or len(self.response_times) == 0 else "call")
+        string_representation = "operation: <" + self.operation_name + "> (id " + str(self.id) + ") at host: <" + self.host.name + "> with "
+        string_representation += str(len(self.response_times)) + " " + ("response-time-entries" if len(self.response_times) > 1 or len(self.response_times) == 0 else "response-time-entry")
         return string_representation
+
+    def sort_response_times(self):
+        self.response_times = sorted(self.response_times, key=lambda response_time_entry: response_time_entry[0])
 
 
 # Iterates over all operations of the model creates a LibredeServiceOperation object for each distinct
