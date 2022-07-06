@@ -286,6 +286,48 @@ class TestRetry(unittest.TestCase):
         self.assertEqual(4, retry.maxBackoff)
         self.assertEqual(0.2, retry.error)
 
+    def test_result_merging5(self):
+        # Two similar, non-conflicting sequences with different amounts of estimated parameters and one sequence with
+        # a different strategy and a hight error
+        sequence1 = RetrySequence("1")
+        sequence1._strategy = "exponential"
+        sequence1._maxTries = 5
+        sequence1._base = 2
+        sequence1._baseBackoff = 1
+        sequence1._maxBackoff = 4
+        sequence1._error = 0.1
+
+        sequence2 = RetrySequence("1")
+        sequence2._strategy = "exponential"
+        sequence2._maxTries = None
+        sequence2._base = 2.2
+        sequence2._baseBackoff = 1.2
+        sequence2._maxBackoff = None
+        sequence2._error = 0.3
+
+        sequence3 = RetrySequence("2")
+        sequence3._strategy = "linear"
+        sequence3._maxTries = 6
+        sequence3._base = 5
+        sequence3._baseBackoff = 7
+        sequence3._maxBackoff = 10
+        sequence3._error = 0.8
+
+        retry = Retry()
+        retry._retry_sequences.append(sequence1)
+        retry._retry_sequences.append(sequence2)
+        retry._retry_sequences.append(sequence3)
+        retry.set_results()
+
+        # expected results are the averaged values of both sequences and the values of sequence1 where sequence2 has
+        # no estimation. The values of the third sequence should be ignored
+        self.assertEqual("exponential", retry.strategy)
+        self.assertEqual(5, retry.maxTries)
+        self.assertEqual(2.1, retry.base)
+        self.assertEqual(1.1, retry.baseBackoff)
+        self.assertEqual(4, retry.maxBackoff)
+        self.assertEqual(0.2, retry.error)
+
     def test_retry_description1(self):
         # one retry, description is expected to contain the same values
         retry1 = Retry()
