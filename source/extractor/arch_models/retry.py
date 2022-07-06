@@ -1,12 +1,12 @@
+import sys
 import warnings
-
+from copy import copy
 import numpy as np
 import scipy.optimize
 from scipy.optimize import OptimizeWarning
 
 # Threshold that is used to detect if the retry sequence has reached the maximum backoff value
 MAX_BACKOFF_DETECTION_THRESHOLD = 0.01
-JITTER_DETECTION_THRESHOLD = 0.01
 
 
 # Function for estimating the backoff strategy based on a linear function
@@ -44,6 +44,7 @@ class RetrySequence:
 
     def __init__(self, operation_name):
         self._sequence = []  # stores (startTimeOfCall, EndTimeOfCall, Error)
+        self._operation_name = operation_name
         self._strategy = None
         self._maxTries = None
         self._base = None
@@ -88,6 +89,7 @@ class RetrySequence:
 
         y = self.get_timings_from_sequence()
         y = [y_i / 1000000 for y_i in y]
+        old_y = copy(y)
 
         # Check if we have reached the maximum backoff during the retry sequence:
         maxBackoff_index = detect_max_backoff_index(y)
@@ -95,18 +97,40 @@ class RetrySequence:
         if maxBackoff_index is not None:
             # If we have reached the maximum backoff, all data points after the threshold is reached get eliminated
             # in order to get a better estimation for the parameters later.
-
             maxBackoff_values = y[maxBackoff_index:len(y)]
             self._maxBackoff = np.mean(maxBackoff_values)
 
             y = y[0:maxBackoff_index]
-            # print("y after slicing:" + str(y))
+
+        # handle edge cases
+        if len(y) < 2:
+            if len(y) == 0:
+                if self._maxBackoff is not None:
+                    # The backoff Strategy is constant
+                    self._strategy = "linear"
+                    self._base = 0
+                    self._baseBackoff = self._maxBackoff
+
+                    error_lin = np.square(old_y - self._maxBackoff)
+                    mse_lin = np.mean(error_lin)
+                    self._error = mse_lin
+                    return
+                else:
+                    return
+            elif len(y) == 1:
+                if self._maxBackoff is None:
+                    # Only one data point available, assuming a constant backoff strategy
+                    self._strategy = "linear"
+                    self._base = 0
+                    self._baseBackoff = y[0]
+                    self._error = sys.maxsize  # maximum uncertainty
+                    return
+                else:
+                    # One data point and a max backoff available, continue with estimation with those two points.
+                    # This will, however lead to an uncertain result
+                    y.append(self._maxBackoff)
 
         x = [i for i in range(0, len(y))]
-
-        if len(y) < 2:
-            print("Not enough data available for estimation")
-            return
 
         # try to fit a linear and an exponential function to the data points
         result_linear, _ = scipy.optimize.curve_fit(assume_linear, x, y, p0=(0, y[0]))
@@ -123,8 +147,6 @@ class RetrySequence:
         mse_exp = np.mean(error_exp)
         mse_lin = np.mean(error_lin)
 
-        # print(str(mse_exp) + "    " + str(mse_lin))
-
         # Use the estimation that has the smaller error
         if mse_exp < mse_lin:
             self._strategy = "exponential"
@@ -140,12 +162,6 @@ class RetrySequence:
         if self._sequence[len(self._sequence) - 1][2]:
             # if the sequence ends with an error, the maximum amount of retry attempts has been reached
             self._maxTries = len(self._sequence)
-
-        # print("Operation:" + self._operation_name)
-        # print("Strategy: " + self._strategy)
-        # print("Base: " + str(self._base))
-        # print("Base backoff: " + str(self._baseBackoff))
-        # print("Max Tries: " + str(self._maxTries))
 
     # extracts the time intervals between all calls from a sequence of calls with start and end time
     def get_timings_from_sequence(self):
@@ -180,10 +196,6 @@ class Retry:
         self._baseBackoff = None
         self._maxBackoff = None
         self._error = None
-
-    @property
-    def operationName(self):
-        return self._operationName
 
     @property
     def strategy(self):
@@ -283,20 +295,20 @@ class Retry:
 
             for sequence in self.retry_sequences:
                 if sequence.strategy == bestStrategy:
-                    if sequence.maxTries:
+                    if sequence.maxTries is not None:
                         maxTryValues.append(sequence.maxTries)
-                    if sequence.base:
+                    if sequence.base is not None:
                         baseValues.append(sequence.base)
-                    if sequence.baseBackoff:
+                    if sequence.baseBackoff is not None:
                         baseBackoffValues.append(sequence.baseBackoff)
-                    if sequence.maxBackoff:
+                    if sequence.maxBackoff is not None:
                         maxBackoffValues.append(sequence.maxBackoff)
-                    if sequence.error:
+                    if sequence.error is not None:
                         errors.append(sequence.error)
 
             self._strategy = bestStrategy
             if len(maxTryValues) > 0:
-                self._maxTries = np.mean(maxTryValues)
+                self._maxTries = max(maxTryValues)
             if len(baseValues) > 0:
                 self._base = np.mean(baseValues)
             if len(baseBackoffValues) > 0:
@@ -304,7 +316,7 @@ class Retry:
             if len(maxBackoffValues) > 0:
                 self._maxBackoff = np.mean(maxBackoffValues)
             if len(errors) > 0:
-                self._base = np.mean(errors)
+                self._error = np.mean(errors)
         else:
             sequence = self._retry_sequences[0]
             self._strategy = sequence.strategy

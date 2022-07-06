@@ -114,6 +114,7 @@ def build_retry_description(retries):
         current_error = None
         for retry_item in retries:
             if (current_error is None) or retry_item.error < current_error:
+                current_error = retry_item.error
                 retry = retry_item
     else:
         retry = retries[0]
@@ -125,11 +126,11 @@ def build_retry_description(retries):
     strategy_description = {"type": retry.strategy}
     if retry.baseBackoff or retry.maxBackoff or retry.base:
         config_description = {}
-        if retry.baseBackoff:
+        if retry.baseBackoff is not None:
             config_description["baseBackoff"] = retry.baseBackoff
-        if retry.maxBackoff:
+        if retry.maxBackoff is not None:
             config_description["maxBackoff"] = retry.maxBackoff
-        if retry.base:
+        if retry.base is not None:
             config_description["base"] = retry.base
         strategy_description["config"] = config_description
     output["strategy"] = strategy_description
