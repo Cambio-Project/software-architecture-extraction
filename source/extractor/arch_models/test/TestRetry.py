@@ -1,5 +1,6 @@
 import unittest
 
+from extractor.arch_models import architecture_misim
 from extractor.arch_models.retry import Retry, RetrySequence
 
 
@@ -156,7 +157,7 @@ class TestRetry(unittest.TestCase):
         self.assertEqual(retry.has_retry(), False)
         self.assertListEqual(retry.retry_sequences, [])
 
-    def test_timings(self):
+    def test_timings1(self):
         sequence = RetrySequence("name")
         sequence.add_call_entry((1656349746228000, 1656349746343243, True))
         sequence.add_call_entry((1656349751353000, 1656349751359823, True))
@@ -167,4 +168,166 @@ class TestRetry(unittest.TestCase):
         print("Base: " + str(sequence._base))
         print("Base backoff: " + str(sequence._baseBackoff))
         print("Max Backoff: " + str(sequence._maxBackoff))
+        print("Error: " + str(sequence._error))
 
+    def test_result_merging1(self):
+        # Two similar, non-conflicting sequences
+        sequence1 = RetrySequence("1")
+        sequence1._strategy = "exponential"
+        sequence1._maxTries = 5
+        sequence1._base = 2
+        sequence1._baseBackoff = 1
+        sequence1._maxBackoff = 4
+        sequence1._error = 0.1
+
+        sequence2 = RetrySequence("1")
+        sequence2._strategy = "exponential"
+        sequence2._maxTries = 5
+        sequence2._base = 2.2
+        sequence2._baseBackoff = 1.2
+        sequence2._maxBackoff = 4.2
+        sequence2._error = 0.3
+
+        retry = Retry()
+        retry._retry_sequences.append(sequence1)
+        retry._retry_sequences.append(sequence2)
+        retry.set_results()
+
+        # expected results are the averaged values of both sequences
+        self.assertEqual("exponential", retry.strategy)
+        self.assertEqual(5, retry.maxTries)
+        self.assertEqual(2.1, retry.base)
+        self.assertEqual(1.1, retry.baseBackoff)
+        self.assertEqual(4.1, retry.maxBackoff)
+        self.assertEqual(0.2, retry.error)
+
+    def test_result_merging2(self):
+        # Two different, conflicting sequences.
+        sequence1 = RetrySequence("1")
+        sequence1._strategy = "exponential"
+        sequence1._maxTries = 5
+        sequence1._base = 2
+        sequence1._baseBackoff = 1
+        sequence1._maxBackoff = 4
+        sequence1._error = 0.1
+
+        sequence2 = RetrySequence("1")
+        sequence2._strategy = "linear"
+        sequence2._maxTries = 3
+        sequence2._base = 7
+        sequence2._baseBackoff = 2
+        sequence2._maxBackoff = 4
+        sequence2._error = 0.4
+
+        retry = Retry()
+        retry._retry_sequences.append(sequence1)
+        retry._retry_sequences.append(sequence2)
+        retry.set_results()
+
+        # expected results are the values of the sequence with lower error
+        self.assertEqual("exponential", retry.strategy)
+        self.assertEqual(5, retry.maxTries)
+        self.assertEqual(2, retry.base)
+        self.assertEqual(1, retry.baseBackoff)
+        self.assertEqual(4, retry.maxBackoff)
+        self.assertEqual(0.1, retry.error)
+
+    def test_result_merging3(self):
+        # only one sequence
+        sequence1 = RetrySequence("1")
+        sequence1._strategy = "exponential"
+        sequence1._maxTries = 5
+        sequence1._base = 2
+        sequence1._baseBackoff = 1
+        sequence1._maxBackoff = 4
+        sequence1._error = 0.1
+
+        retry = Retry()
+        retry._retry_sequences.append(sequence1)
+        retry.set_results()
+
+        # expected results are the values of sequence1
+        self.assertEqual("exponential", retry.strategy)
+        self.assertEqual(5, retry.maxTries)
+        self.assertEqual(2, retry.base)
+        self.assertEqual(1, retry.baseBackoff)
+        self.assertEqual(4, retry.maxBackoff)
+        self.assertEqual(0.1, retry.error)
+
+    def test_result_merging4(self):
+        # Two similar, non-conflicting sequences with different amounts of estimated parameters
+        sequence1 = RetrySequence("1")
+        sequence1._strategy = "exponential"
+        sequence1._maxTries = 5
+        sequence1._base = 2
+        sequence1._baseBackoff = 1
+        sequence1._maxBackoff = 4
+        sequence1._error = 0.1
+
+        sequence2 = RetrySequence("1")
+        sequence2._strategy = "exponential"
+        sequence2._maxTries = None
+        sequence2._base = 2.2
+        sequence2._baseBackoff = 1.2
+        sequence2._maxBackoff = None
+        sequence2._error = 0.3
+
+        retry = Retry()
+        retry._retry_sequences.append(sequence1)
+        retry._retry_sequences.append(sequence2)
+        retry.set_results()
+
+        # expected results are the averaged values of both sequences and the values of sequence1 where sequence2 has
+        # no estimation
+        self.assertEqual("exponential", retry.strategy)
+        self.assertEqual(5, retry.maxTries)
+        self.assertEqual(2.1, retry.base)
+        self.assertEqual(1.1, retry.baseBackoff)
+        self.assertEqual(4, retry.maxBackoff)
+        self.assertEqual(0.2, retry.error)
+
+    def test_retry_description1(self):
+        # one retry, description is expected to contain the same values
+        retry1 = Retry()
+        retry1._strategy = "exponential"
+        retry1._maxTries = 5
+        retry1._base = 2
+        retry1._baseBackoff = 1
+        retry1._maxBackoff = 4
+        retry1._error = 0.1
+
+        self.assertEqual(
+            {'type': 'retry', 'config': {'maxTries': 5},
+             'strategy': {'type': 'exponential', 'config': {'baseBackoff': 1, 'maxBackoff': 4, 'base': 2}}}
+            , architecture_misim.build_retry_description([retry1]))
+
+    def test_retry_description2(self):
+        # 3 retries, description is expected to contain values of the retry with the lower error
+        retry1 = Retry()
+        retry1._strategy = "exponential"
+        retry1._maxTries = 5
+        retry1._base = 2
+        retry1._baseBackoff = 1
+        retry1._maxBackoff = 4
+        retry1._error = 0.1
+
+        retry2 = Retry()
+        retry2._strategy = "exponential"
+        retry2._maxTries = 8
+        retry2._base = 4
+        retry2._baseBackoff = 2
+        retry2._maxBackoff = 7
+        retry2._error = 0.5
+
+        retry3 = Retry()
+        retry3._strategy = "linear"
+        retry3._maxTries = 2
+        retry3._base = 1
+        retry3._baseBackoff = 3
+        retry3._maxBackoff = 6
+        retry3._error = 0.6
+
+        self.assertEqual(
+            {'type': 'retry', 'config': {'maxTries': 5},
+             'strategy': {'type': 'exponential', 'config': {'baseBackoff': 1, 'maxBackoff': 4, 'base': 2}}}
+            , architecture_misim.build_retry_description([retry1, retry2, retry3]))
