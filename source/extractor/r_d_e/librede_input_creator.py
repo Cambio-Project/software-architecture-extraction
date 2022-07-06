@@ -18,7 +18,7 @@ class LibredeInputCreator:
         self.operations_on_host: list[LibredeServiceOperation] = get_operations(model, self.hosts)
         add_default_cpu_utilization(self.hosts)
         for librede_service_operation in self.operations_on_host:
-            librede_service_operation.sort_response_times()
+            librede_service_operation.clean_response_times()
 
         self.absolute_path_to_input: str = path_for_librede_files + "input\\"
         self.absolute_path_to_output: str = path_for_librede_files + "output\\"

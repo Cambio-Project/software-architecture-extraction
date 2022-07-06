@@ -34,8 +34,12 @@ class LibredeServiceOperation:
         string_representation += str(len(self.response_times)) + " " + ("response-time-entries" if len(self.response_times) > 1 or len(self.response_times) == 0 else "response-time-entry")
         return string_representation
 
-    def sort_response_times(self):
+	 # sorts the response times and converts the time stamps and response times to seconds (while remaining the milliseconds)
+    def clean_response_times(self):
         self.response_times = sorted(self.response_times, key=lambda response_time_entry: response_time_entry[0])
+        for response_time_entry in self.response_times:
+        	response_time_entry[0] = int(response_time_entry[0] / 10**3) / 10**3
+        	response_time_entry[1] = int(response_time_entry[1] / 10**6)
 
 
 # Iterates over all operations of the model creates a LibredeServiceOperation object for each distinct
