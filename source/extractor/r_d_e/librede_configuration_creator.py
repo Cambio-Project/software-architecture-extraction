@@ -12,8 +12,8 @@ class LibredeConfigurationCreator:
         self.services = services
         self.path_for_input_files = path_for_input_files
         self.path_for_output_files = path_for_output_files
-        self.start_timestamp = start_timestamp
-        self.end_timestamp = end_timestamp
+        self.start_timestamp = int(start_timestamp / 10 ** 3)
+        self.end_timestamp = int(end_timestamp / 10 ** 3)
         self.content = ""
         self.create_content()
 
@@ -62,13 +62,13 @@ class LibredeConfigurationCreator:
         step_size: int = 120000
         self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_timestamp) + "\" endTimestamp=\"" + str(self.end_timestamp) + "\">\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeApproximationApproach\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.approach.WangKalmanFilterApproach\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.approach.ZhangKalmanFilterApproach\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.bayesplusplus.ExtendedKalmanFilter\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.nnls.LeastSquaresRegression\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.ipopt.java.RecursiveOptimization\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.algorithm.SimpleApproximation\"/>\n"
+        # self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeApproximationApproach\"/>\n"
+        # self.content += "   <approaches type=\"tools.descartes.librede.approach.WangKalmanFilterApproach\"/>\n"
+        # self.content += "   <approaches type=\"tools.descartes.librede.approach.ZhangKalmanFilterApproach\"/>\n"
+        # self.content += "   <approaches type=\"tools.descartes.librede.bayesplusplus.ExtendedKalmanFilter\"/>\n"
+        # self.content += "   <approaches type=\"tools.descartes.librede.nnls.LeastSquaresRegression\"/>\n"
+        # self.content += "   <approaches type=\"tools.descartes.librede.ipopt.java.RecursiveOptimization\"/>\n"
+        # self.content += "   <approaches type=\"tools.descartes.librede.algorithm.SimpleApproximation\"/>\n"
         self.content += "</estimation>\n"
 
     def create_output(self):

@@ -25,7 +25,7 @@ class LibredeInputCreator:
         self.set_indices_to_hosts_and_services()
         self.configuration = LibredeConfigurationCreator(self.hosts, self.operations_on_host,
                                                          self.absolute_path_to_input, self.absolute_path_to_output,
-                                                         self.get_start_timestamp(model), self.get_end_timestamp(model))
+                                                         self.get_start_timestamp(), self.get_end_timestamp())
         # Create necessary directories, in case they don't exist.
         if not os.path.exists(path_for_librede_files):
             os.mkdir(path_for_librede_files)
@@ -65,29 +65,18 @@ class LibredeInputCreator:
             operation.id = i
             i += 1
 
-    def get_start_timestamp(self, model: IModel) -> int:
-        first_operation = list(list(model.services.values())[0].operations.values())[0]
-        minimum = list(first_operation.response_times.values())[0][0][0]
-        for service in model.services.values():
-            for operation in service.operations.values():
-                hosts_of_operation = operation.response_times.keys()
-                for host in hosts_of_operation:
-                    response_times = operation.response_times[host]
-                    for response_time in response_times:
-                        if response_time[0] < minimum:
-                            minimum = response_time[0]
+    def get_start_timestamp(self) -> int:
+        minimum = self.hosts[0].start_time
+        for host in self.hosts:
+            if host.start_time < minimum:
+                minimum = host.start_time
         return minimum
 
-    def get_end_timestamp(self, model: IModel) -> int:
-        maximum = 0
-        for service in model.services.values():
-            for operation in service.operations.values():
-                hosts_of_operation = operation.response_times.keys()
-                for host in hosts_of_operation:
-                    response_times = operation.response_times[host]
-                    for response_time in response_times:
-                        if response_time[0] > maximum:
-                            maximum = response_time[0]
+    def get_end_timestamp(self) -> int:
+        maximum = self.hosts[0].end_time
+        for host in self.hosts:
+            if host.end_time > maximum:
+                maximum = host.end_time
         return maximum
 
     def get_path_to_configuration_file(self):
