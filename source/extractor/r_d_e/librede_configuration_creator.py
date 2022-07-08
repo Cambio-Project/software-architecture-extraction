@@ -58,17 +58,12 @@ class LibredeConfigurationCreator:
         self.content += "</input>\n"
 
     def create_estimation(self):
-        window: int = 60
-        step_size: int = 120000
+        window: int = 500
+        step_size: int = 1000
         self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_timestamp) + "\" endTimestamp=\"" + str(self.end_timestamp) + "\">\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
-        # self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeApproximationApproach\"/>\n"
-        # self.content += "   <approaches type=\"tools.descartes.librede.approach.WangKalmanFilterApproach\"/>\n"
-        # self.content += "   <approaches type=\"tools.descartes.librede.approach.ZhangKalmanFilterApproach\"/>\n"
-        # self.content += "   <approaches type=\"tools.descartes.librede.bayesplusplus.ExtendedKalmanFilter\"/>\n"
-        # self.content += "   <approaches type=\"tools.descartes.librede.nnls.LeastSquaresRegression\"/>\n"
-        # self.content += "   <approaches type=\"tools.descartes.librede.ipopt.java.RecursiveOptimization\"/>\n"
-        # self.content += "   <approaches type=\"tools.descartes.librede.algorithm.SimpleApproximation\"/>\n"
+        self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeApproximationApproach\"/>\n"
+        self.content += "   <approaches type=\"tools.descartes.librede.approach.WangKalmanFilterApproach\"/>\n"
         self.content += "</estimation>\n"
 
     def create_output(self):

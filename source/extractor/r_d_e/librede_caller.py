@@ -19,6 +19,7 @@ class LibredeCaller:
 
     def __init__(self, model: IModel):
         self.model: IModel = model
+        self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
         self.librede_input: LibredeInputCreator = self.create_input_for_librede()
         self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_bat_file()
         self.call_librede()
@@ -26,8 +27,7 @@ class LibredeCaller:
 
     # Creates the input-Files for LibReDE: response-times-.csv-Files, cpu-utilization-.csv-Files and the LibReDE_configuration-File.
     def create_input_for_librede(self) -> LibredeInputCreator:
-        path_to_librede_files: str = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
-        return LibredeInputCreator(self.model, path_to_librede_files)
+        return LibredeInputCreator(self.model, self.path_to_librede_files)
 
     # Asks for the path of the LibReDE-installation. Helps the user with their LibReDE installation, if needed.
     def ask_for_path_of_librede_bat_file(self):
@@ -55,11 +55,10 @@ class LibredeCaller:
 
     # Extracts the necessary information out of the output of LibReDE and adds the demands in the generic model.
     def parse_output_of_librede(self):
-        pass
-        # librede_output_parser = LibredeOutputParser(librede_input_creator.operations_on_host, path_to_librede_files + "output\\")
-        # results_of_librede: dict[LibredeServiceOperation, float] = librede_output_parser.get_results_of_librede()
-        # for service_operation in results_of_librede.keys():
-        #     add_demand_to_operation(service_operation, results_of_librede[service_operation])
+        librede_output_parser = LibredeOutputParser(self.librede_input.operations_on_host, self.path_to_librede_files + "output\\")
+        results_of_librede: dict[tuple[str, str], float] = librede_output_parser.get_results_of_librede()
+        for service_name, operation_name in results_of_librede.keys():
+            self.add_demand_to_operation(service_name, operation_name, results_of_librede[(service_name, operation_name)])
 
     # Prints a help message for installing LibReDE and then asks for the path.
     def help_and_ask_for_librede_installation_path_again(self):
@@ -72,17 +71,21 @@ class LibredeCaller:
         print("-------------------------------------------------")
         return input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\"): ")
 
+    # Sets the demand of the given operation.
+    def add_demand_to_operation(self, service_name, operation_name, demanded_utilization: float):
+        service: Service = self.get_service(service_name)
+        operation: Operation = self.get_operation(operation_name, service)
+        demand = int(demanded_utilization * service.capacity)
+        operation.set_demand(demand)
 
-# Sets the demand of the given operation.
-def add_demand_to_operation(librede_service_operation: LibredeServiceOperation, demanded_utilization: float):
-    service: Service = librede_service_operation.service
-    operation: Operation = get_operation(librede_service_operation.operation_name, service)
-    demand = int(demanded_utilization * service.capacity)
-    operation.set_demand(demand)
+    # Retrieves the Service-object with the given name out of the generic model.
+    def get_service(self, service_name) -> Service:
+        for service in self.model.services.keys():
+            if service == service_name:
+                return self.model.services[service]
 
-
-# Searches for the Operation object in the service.
-def get_operation(operation_name_to_look_for: str, service: Service) -> Operation:
-    for operation_name in service.operations.keys():
-        if operation_name_to_look_for == operation_name:
-            return service.operations[operation_name]
+    # Searches for the Operation object in the service.
+    def get_operation(self, operation_name_to_look_for: str, service: Service) -> Operation:
+        for operation_name in service.operations.keys():
+            if operation_name_to_look_for == operation_name:
+                return service.operations[operation_name]

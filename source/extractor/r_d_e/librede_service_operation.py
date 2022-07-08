@@ -34,6 +34,12 @@ class LibredeServiceOperation:
         string_representation += str(len(self.response_times)) + " " + ("response-time-entries" if len(self.response_times) > 1 or len(self.response_times) == 0 else "response-time-entry")
         return string_representation
 
+    def __hash__(self):
+        return hash((self.operation_name, self.service.name))
+
+    def __eq__(self, other):
+        return (self.operation_name, self.service.name) == (other.operation_name, other.service.name)
+
     # sorts the response times and converts the time stamps and response times to seconds (while remaining the milliseconds)
     def clean_response_times(self):
         self.response_times = sorted(self.response_times, key=lambda response_time_entry: response_time_entry[0])
