@@ -75,6 +75,10 @@ class ZipkinTrace(IModel):
                     if not self._services[remote_endpoint].hosts.__contains__(remote_host):
                         self._services[remote_endpoint].add_host(remote_host)
 
+            # set load balancer strategy
+            self._services[local_endpoint].load_balancer.set_strategy_with_tag(
+                span.get('tags', {}).get('loadbalancer.strategy', ''))
+
         # Add operations
         for span in model:
             local = span.get('localEndpoint', {})
@@ -115,7 +119,7 @@ class ZipkinTrace(IModel):
                     operation.response_times[local_host] = [(span['timestamp'], duration)]
 
             operation.durations[span_id] = duration
-            operation.tags[span_id] = OrderedDict(sorted(span.get('tags', {}).items(), key=lambda t: t[0])) 
+            operation.tags[span_id] = OrderedDict(sorted(span.get('tags', {}).items(), key=lambda t: t[0]))
             operation.logs[span_id] = {a['timestamp']: {'log': a['value']} for a in span.get('annotations', {})}
 
             for s in operation.tags.items():
