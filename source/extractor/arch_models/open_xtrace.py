@@ -45,7 +45,7 @@ class OpenXTrace(IModel):
             operation_id = tupel[1]
             for child in children:
                 dependency = self._parse_children(child)
-                child_dependency = dependency[0]
+                child_dependency = dependency[0] 
                 child_id = dependency[1]
                 #add retry
                 operation.retry.add_call_history_entry(
@@ -53,6 +53,10 @@ class OpenXTrace(IModel):
                     {child_dependency.timestamp[child_id]: (child_dependency.name, child_dependency.error[child_id], child_dependency.starttime[child_id], child_dependency.endtime[child_id])})
                 if not operation.contains_operation_as_dependency(child_dependency):
                     operation.add_dependency(Dependency(child_dependency))
+                if not operation.get_dependency_with_operation(child_dependency).calling_spans.__contains__(
+                        operation_id):
+                    operation.get_dependency_with_operation(child_dependency).add_calling_span(operation_id)
+                    operation.get_dependency_with_operation(child_dependency).add_call()
                     
         self.subsequent_calculations()
         return True
@@ -93,6 +97,11 @@ class OpenXTrace(IModel):
                     tmp.add_latency(child_latency)
             elif latency != None:
                 operation.get_dependency_with_operation(child_dependency).add_latency(latency)
+                    
+            if not operation.get_dependency_with_operation(child_dependency).calling_spans.__contains__(
+                        operation_id):
+                operation.get_dependency_with_operation(child_dependency).add_calling_span(operation_id)
+                operation.get_dependency_with_operation(child_dependency).add_call()
         return operation, operation_id
 
     # Checks if a circuitBreaker pattern exists and adds it to the operation
