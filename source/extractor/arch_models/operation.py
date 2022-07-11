@@ -22,6 +22,11 @@ class Operation:
 
         # Runtime 
         self._durations = {}
+        self._latency = {}
+        self._starttime = {}
+        self._endtime = {}
+        self._error = {}
+        self._timestamp = {}
         self._tags = {}
         self._logs = {}
 
@@ -70,6 +75,26 @@ class Operation:
     @property
     def durations(self) -> Dict:
         return self._durations
+
+    @property
+    def latency(self) -> Dict:
+        return self._latency
+
+    @property
+    def starttime(self) -> Dict:
+        return self._starttime
+
+    @property
+    def endtime(self) -> Dict:
+        return self._endtime
+
+    @property
+    def error(self) -> Dict:
+        return self._error
+
+    @property
+    def timestamp(self) -> Dict:
+        return self._timestamp
 
     @property
     def logs(self) -> Dict[str, Dict]:

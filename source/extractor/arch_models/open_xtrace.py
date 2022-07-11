@@ -1,6 +1,7 @@
 import json
-from distutils.util import strtobool 
+from distutils.util import strtobool
 from tokenize import String
+from xmlrpc.client import Boolean
 
 from extractor.arch_models.circuit_breaker import CircuitBreaker
 from extractor.arch_models.dependency import Dependency
@@ -41,10 +42,19 @@ class OpenXTrace(IModel):
             
             tupel = self.calculateOperations(span, host)
             operation = tupel[0]
+            operation_id = tupel[1]
             for child in children:
-                dependency = self._parse_children(child)[0]
-                if not operation.contains_operation_as_dependency(dependency):
-                    operation.add_dependency(Dependency(dependency))
+                dependency = self._parse_children(child)
+                child_dependency = dependency[0]
+                child_id = dependency[1]
+                #add retry
+                operation.retry.add_call_history_entry(
+                    operation_id,
+                    {child_dependency.timestamp[child_id]: (child_dependency.name, child_dependency.error[child_id], child_dependency.starttime[child_id], child_dependency.endtime[child_id])})
+                if not operation.contains_operation_as_dependency(child_dependency):
+                    operation.add_dependency(Dependency(child_dependency))
+                    
+        self.subsequent_calculations()
         return True
 
     def _parse_children(self, model: List[Dict[str, Any]]) -> Tuple[Operation, int]:
@@ -65,19 +75,25 @@ class OpenXTrace(IModel):
 
         tupel = self.calculateOperations(model, host)
         operation = tupel[0]
-        latency = tupel[1]
+        operation_id = tupel[1]
+        latency = operation.latency[operation_id]
         for child in children:        
             dependency = self._parse_children(child)
-            child_dependency = dependency[0]
-            child_latency = dependency[1]
+            child_dependency : Operation = dependency[0]
+            child_id = dependency[1]
+            child_latency = child_dependency.latency[child_id]
+            #add retry
+            operation.retry.add_call_history_entry(
+                    operation_id,
+                    {child_dependency.timestamp[child_id]: (child_dependency.name, child_dependency.error[child_id], child_dependency.starttime[child_id], child_dependency.endtime[child_id])})
             if not operation.contains_operation_as_dependency(child_dependency):
                 tmp = Dependency(child_dependency)
                 operation.add_dependency(tmp)
                 if latency != None:
                     tmp.add_latency(child_latency)
             elif latency != None:
-                operation.get_dependency_with_operation(dependency).add_latency(latency)
-        return operation, latency
+                operation.get_dependency_with_operation(child_dependency).add_latency(latency)
+        return operation, operation_id
 
     # Checks if a circuitBreaker pattern exists and adds it to the operation
     def addCircuitBreaker(self, model: List[Dict[str, Any]], operation : Operation) :
@@ -98,8 +114,11 @@ class OpenXTrace(IModel):
         return host
 
     #
-    def calculateOperations(self, model: List[Dict[str, Any]], host) -> Tuple[Operation, int]: 
+    def calculateOperations(self, model: List[Dict[str, Any]], host) -> Tuple[Operation, str]: 
         latency = None
+        timestamp = None
+        timestamp_start = None
+        timestamp_end = None
         child = model.get('targetSubTrace', {})
         service_name = child.get('application', '')
         operation = child.get("businessTransaction", '')
@@ -111,7 +130,10 @@ class OpenXTrace(IModel):
             service_name = model.get('application', '')
             duration = int(model.get('responseTime', -1) / 1000)
         else:
-            latency = int((node['timeStamp']- model['timeStamp']) * 1000)
+            timestamp = node.get('timeStamp', 0) * 1000
+            timestamp_start = model.get('timeStamp', 0) * 1000
+            timestamp_end = model.get('exitTime', 0) * 1000
+            latency = int((timestamp - timestamp_start))
         identifier = node.get('identifier')
         httpmethod = node.get("requestMethod", "")
         httppath = node.get("uri", "")
@@ -129,12 +151,24 @@ class OpenXTrace(IModel):
         # store the response time (duration) of the operation
         if duration != -1:
             if operation.response_times.keys().__contains__(host):
-                operation.response_times[host].append((node['timeStamp'], duration))
+                operation.response_times[host].append((timestamp, duration))
             else:
-                operation.response_times[host] = [(node['timeStamp'], duration)]
-        
-        operation.durations[identifier] = duration
-        
+                operation.response_times[host] = [(timestamp, duration)]
+        if duration != None:
+            operation.durations[identifier] = duration
+        if latency != None:    
+            operation.latency[identifier] = latency
+        operation.error[identifier] = model.get("additionalInformation.error", False)
+
+        if timestamp != None:    
+            operation.timestamp[identifier] = timestamp
+
+        if timestamp_start != None:
+            operation.starttime[identifier] = timestamp_start
+
+        if timestamp_end != None:
+            operation.endtime[identifier] = timestamp_end
+
         tags = self.filterAdditionalInformation(model)
         tags.update(self.filterAdditionalInformation(node))
         if (not "http.method" in tags) and httpmethod != "":
@@ -144,7 +178,7 @@ class OpenXTrace(IModel):
         operation.tags[identifier] = OrderedDict(sorted(tags.items(), key=lambda t: t[0]))
         operation.logs[identifier] = {}
 
-        return operation, latency
+        return operation, identifier
 
     def filterAdditionalInformation(self, model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         tags = dict()
