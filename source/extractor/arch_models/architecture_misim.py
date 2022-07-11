@@ -99,7 +99,7 @@ class ArchitectureMiSim:
                 'capacity': capacity,
             }
 
-            if loadbalancer_strategy != 'random':
+            if loadbalancer_strategy is not None:
                 microservice_description['loadbalancer_strategy'] = loadbalancer_strategy
 
             microservice_description['patterns'] = patterns

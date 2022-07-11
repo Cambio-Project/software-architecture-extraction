@@ -1,7 +1,7 @@
 class LoadBalancer:
 
     def __init__(self):
-        self._strategy = "random"  # default strategy is random
+        self._strategy = None  # default strategy is random
 
         # List with currently supported strategies
         self._valid_strategies = ["random", "round_robin", "round_robin_fast", "utilization"]
