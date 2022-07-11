@@ -102,6 +102,9 @@ class JaegerTrace(IModel):
                             if bool(s[1][value]):
                                 operation.add_circuit_breaker(CircuitBreaker())
 
+                        if value == 'loadbalancer.strategy':
+                            self.services[service_name].load_balancer.set_strategy_with_tag(str(s[1][value]))
+
             # Add dependencies
             for span in trace['spans']:
                 for reference in span['references']:
