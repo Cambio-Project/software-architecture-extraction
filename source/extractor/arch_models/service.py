@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from extractor.arch_models.load_balancer import LoadBalancer
 from extractor.arch_models.operation import Operation
 
 
@@ -12,6 +13,7 @@ class Service:
         self._operations = {}
         self._hosts = []
         self._capacity = 1000
+        self._load_balancer = LoadBalancer()
 
         # Runtime
         self._tags = {}
@@ -50,6 +52,10 @@ class Service:
     @property
     def capacity(self):
         return self._capacity
+
+    @property
+    def load_balancer(self):
+        return self._load_balancer
 
     def set_capacity(self, capacity):
         self._capacity = capacity

@@ -161,7 +161,7 @@ class RetrySequence:
 
         if self._sequence[len(self._sequence) - 1][2]:
             # if the sequence ends with an error, the maximum amount of retry attempts has been reached
-            self._maxTries = len(self._sequence)
+            self._maxTries = len(self._sequence) - 1
 
     # extracts the time intervals between all calls from a sequence of calls with start and end time
     def get_timings_from_sequence(self):

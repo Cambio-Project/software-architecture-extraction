@@ -29,6 +29,7 @@ class ArchitectureMiSim:
             patterns = []
             capacity = s.capacity
             operations = []
+            loadbalancer_strategy = s.load_balancer.strategy
 
             retries_of_operations = []
 
@@ -92,13 +93,20 @@ class ArchitectureMiSim:
             if len(retries_of_operations) > 0:
                 patterns.append(build_retry_description(retries_of_operations))
 
-            microservices.append({
+            microservice_description = {
                 'name': name,
                 'instances': instances,
-                'patterns': patterns,
                 'capacity': capacity,
-                'operations': operations
-            })
+            }
+
+            if loadbalancer_strategy is not None:
+                microservice_description['loadbalancer_strategy'] = loadbalancer_strategy
+
+            microservice_description['patterns'] = patterns
+            microservice_description['operations'] = operations
+
+            microservices.append(microservice_description)
+
         result = {}
         if self._network_latency != "":
             result['network_latency'] = self._network_latency
