@@ -1,4 +1,5 @@
 import pickle
+from typing import Optional
 
 from extractor.arch_models.architecture_resirio import Architecture
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
@@ -16,14 +17,17 @@ from datetime import datetime
 
 # Creates the respective IModel implementation (generic model) from the given input.
 def create_generic_model(model_input, trace_input, settings_input):
+    generic_model = None
     if model_input.contains_resirio_model:
-        return pickle.load(open(model_input.get_model_file_path(), 'rb'))
+        generic_model = pickle.load(open(model_input.get_model_file_path(), 'rb'))
     elif model_input.contains_misim_model:
-        return MiSimModel(model_input.get_model_file_path())
+        generic_model = MiSimModel(model_input.get_model_file_path())
     elif trace_input.traces_are_jaeger:
-        return JaegerTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
+        generic_model = JaegerTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
     elif trace_input.traces_are_zipkin:
-        return ZipkinTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
+        generic_model = ZipkinTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
+    call_librede_if_user_wants(generic_model)
+    return generic_model
 
 
 # Creates the architecture for RESIRIO or MiSim out of the generic model.
@@ -69,7 +73,26 @@ def export(settings_input, generic_model, architecture):
     output_file.close()
 
 
+def call_librede_if_user_wants(generic_model) -> Optional[LibredeCaller]:
+    """
+    Asks the user whether LibReDE should be used to estimate the resource demands. As an alternative,
+    the user can put in a default value as demand for every operation in the model.
+    """
+    answer = input("Estimate Resource-Demands with LibReDE or with default demand? <y [for LibReDE]> or <int [positive integer as default demand]>: ")
+    if answer == "y":
+        return LibredeCaller(generic_model)
+    elif answer != "":
+        default_demand = int(answer)
+        for service in generic_model.services.values():
+            for operation in service.operations.values():
+                operation.set_demand(default_demand)
+    return None
+
+
 def ask_user_whether_he_wants_a_summary_of_the_input(user_input: InteractiveInput, librede_input: LibredeInputCreator):
+    """
+    TODO
+    """
     print()
     answer_of_user = input("Do you want a summary of all input (yours and of LibReDE)? <y> or <n>: ")
     if answer_of_user == "y":
@@ -82,19 +105,20 @@ def ask_user_whether_he_wants_a_summary_of_the_input(user_input: InteractiveInpu
         print("--------------------------------------------------------")
 
 
-# 1. Asks the user for all input in an interactive way via the command line.
-# 2. Prints all registered input to check whether everything is like the user wants.
-# 3. Validation, Analyses, Export
 def main():
+    """
+    1. Asks the user for all input in an interactive way via the command line.
+    2. Creates the generic model and the architecture.
+    3. Validation, Analyses, Export
+    """
     user_input = InteractiveInput()
     model_input = user_input.model_input
     trace_input = user_input.trace_input
     settings_input = user_input.settings_input
 
     generic_model = create_generic_model(model_input, trace_input, settings_input)
-    librede_caller = LibredeCaller(generic_model)
-    ask_user_whether_he_wants_a_summary_of_the_input(user_input, librede_caller.librede_input)
     architecture = create_architecture(settings_input, generic_model)
+
     validate(settings_input, generic_model, architecture)
     analyse(settings_input, generic_model)
     export(settings_input, generic_model, architecture)
