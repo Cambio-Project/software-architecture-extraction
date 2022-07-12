@@ -15,13 +15,14 @@ class LibredeCaller:
     parse its output and write the gained information back in the generic model (to the field "demand" of an operation).
     All of this automatically happens at instantiation.
     """
+    relative_path_to_librede_bat_file = "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
 
     def __init__(self, model: IModel):
         self.model: IModel = model
         self.approaches = ["ResponseTimeApproximationApproach", "ServiceDemandLawApproach", "WangKalmanFilterApproach"]
         self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
         self.librede_input: LibredeInputCreator = self.create_input_for_librede()
-        self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
+        self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + self.relative_path_to_librede_bat_file
         self.call_librede()
         self.parse_output_of_librede()
 
@@ -43,8 +44,8 @@ class LibredeCaller:
             return self.ask_for_path_of_librede_installation()
         else:
             path_to_librede_installation = answer_of_user
-            if not os.path.exists(path_to_librede_installation):
-                print("LibReDE-installation at <" + path_to_librede_installation + "> couldn't be found, please try again.\n")
+            if not os.path.exists(path_to_librede_installation + self.relative_path_to_librede_bat_file):
+                print("LibReDE-installation at <" + path_to_librede_installation + self.relative_path_to_librede_bat_file + "> couldn't be found, please try again.\n")
                 return self.ask_for_path_of_librede_installation()
             else:
                 return path_to_librede_installation
