@@ -79,7 +79,7 @@ def call_librede_if_user_wants(generic_model) -> Optional[LibredeCaller]:
     Asks the user whether LibReDE should be used to estimate the resource demands. As an alternative,
     the user can put in a default value as demand for every operation in the model.
     """
-    answer = input("Estimate Resource-Demands with LibReDE or with default demand? <y [for LibReDE]> or <int [positive integer as default demand]>: ")
+    answer = input("Estimate Resource-Demands with LibReDE or with default demand? <y [for LibReDE]> or <int [positive integer as default demand for all operations]>: ")
     if answer == "y":
         return LibredeCaller(generic_model)
     elif answer != "":
@@ -96,7 +96,7 @@ def add_service_capacities(generic_model):
     or should be read from a csv-File. Furthermore, fills in the capacities in the generic model.
     """
     answer = input("Set capacity of services: <int [positive integer as default capacity for all services]> or\n"
-                   "<path to csv [content must be like: \"service_name1,capacity1\\nservice_name2,capacity2,\\n...\"]>: ")
+                   "    <path to csv [content must be like: \"service_name1,capacity1\\nservice_name2,capacity2,\\n etc.\"]>: ")
     if str.isdigit(answer):
         for service in generic_model.services.values():
             service.set_capacity(int(answer))
