@@ -27,6 +27,7 @@ def create_generic_model(model_input, trace_input, settings_input):
     elif trace_input.traces_are_zipkin:
         generic_model = ZipkinTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
     call_librede_if_user_wants(generic_model)
+    add_service_capacities(generic_model)
     return generic_model
 
 
@@ -89,6 +90,28 @@ def call_librede_if_user_wants(generic_model) -> Optional[LibredeCaller]:
     return None
 
 
+def add_service_capacities(generic_model):
+    """
+    Asks the user whether the capacity of a service should be a custom default value for all services
+    or should be read from a csv-File. Furthermore, fills in the capacities in the generic model.
+    """
+    answer = input("Set capacity of services: <int [positive integer as default capacity for all services]> or\n"
+                   "<path to csv [content must be like: \"service_name1,capacity1\\nservice_name2,capacity2,\\n...\"]>: ")
+    if str.isdigit(answer):
+        for service in generic_model.services.values():
+            service.set_capacity(int(answer))
+    else:
+        capacity_file_handler = open(answer, "r")
+        capacity_file_content = capacity_file_handler.read()
+        lines: list[str] = capacity_file_content.split("\n")
+        for line in lines:
+            line_components = line.split(",")
+            service_name = line_components[0]
+            capacity_of_service = int(line_components[1])
+            generic_model.services[service_name].set_capacity(capacity_of_service)
+        capacity_file_handler.close()
+
+
 def ask_user_whether_he_wants_a_summary_of_the_input(user_input: InteractiveInput, librede_input: LibredeInputCreator):
     """
     TODO
@@ -107,9 +130,9 @@ def ask_user_whether_he_wants_a_summary_of_the_input(user_input: InteractiveInpu
 
 def main():
     """
-    1. Asks the user for all input in an interactive way via the command line.
-    2. Creates the generic model and the architecture.
-    3. Validation, Analyses, Export
+    Asks the user for all input in an interactive way via the command line.
+    Creates the generic model and the architecture.
+    Validation, Analyses, Export
     """
     user_input = InteractiveInput()
     model_input = user_input.model_input
