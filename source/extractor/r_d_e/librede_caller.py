@@ -21,28 +21,41 @@ class LibredeCaller:
         self.model: IModel = model
         self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
         self.librede_input: LibredeInputCreator = self.create_input_for_librede()
-        self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_bat_file()
+        self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
         self.call_librede()
         self.parse_output_of_librede()
 
-    # Creates the input-Files for LibReDE: response-times-.csv-Files, cpu-utilization-.csv-Files and the LibReDE_configuration-File.
     def create_input_for_librede(self) -> LibredeInputCreator:
+        """
+        Creates the input-Files for LibReDE: response-times-.csv-Files, cpu-utilization-.csv-Files and the LibReDE_configuration-File.
+        """
         return LibredeInputCreator(self.model, self.path_to_librede_files)
 
-    # Asks for the path of the LibReDE-installation. Helps the user with their LibReDE installation, if needed.
-    def ask_for_path_of_librede_bat_file(self):
+    def ask_for_path_of_librede_installation(self):
+        """
+        Asks for a path to the cloned librede repository (must already had been builded).
+        By typing "help", a helpful message is printed about how to install LibReDE.
+        Asks for a path recursively, till a valid path is put in.
+        """
         answer_of_user: str = input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\") [type <help>, for how to install]: ")
         if answer_of_user == "help":
-            path_to_librede_installation = self.help_and_ask_for_librede_installation_path_again()
+            self.print_help_for_installing_librede()
+            return self.ask_for_path_of_librede_installation()
         else:
             path_to_librede_installation = answer_of_user
-        return path_to_librede_installation + "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
+            if not os.path.exists(path_to_librede_installation):
+                print("LibReDE-installation at <" + path_to_librede_installation + "> couldn't be found, please try again.\n")
+                return self.ask_for_path_of_librede_installation()
+            else:
+                return path_to_librede_installation
 
-    # Calls LibReDE.
-    # LibReDE needs a workaround: The .bat needs to be called from the location it is and the configuration must be in the same folder.
-    # That's why the current working directory is changed and later restored and
-    # the configuration file gets copied to the location of the .bat and then deleted.
     def call_librede(self):
+        """
+        Calls LibReDE.
+        LibReDE needs a workaround: The .bat needs to be called from the path it is and the configuration must be in the same folder.
+        That's why the current working directory is changed and restored, later and
+        the configuration file gets copied to the location of the .bat and then deleted.
+        """
         old_dir = os.getcwd()
         os.chdir(self.path_to_librede_bat_file)
         shutil.copy(self.librede_input.get_path_to_configuration_file(), self.path_to_librede_bat_file)
@@ -53,15 +66,16 @@ class LibredeCaller:
         os.chdir(old_dir)
         print("Finished call of LibReDE.")
 
-    # Extracts the necessary information out of the output of LibReDE and adds the demands in the generic model.
     def parse_output_of_librede(self):
+        """
+        Extracts the necessary information out of the output of LibReDE and adds the demands in the generic model.
+        """
         librede_output_parser = LibredeOutputParser(self.librede_input.operations_on_host, self.path_to_librede_files + "output\\")
         results_of_librede: dict[tuple[str, str], float] = librede_output_parser.get_results_of_librede()
         for service_name, operation_name in results_of_librede.keys():
             self.add_demand_to_operation(service_name, operation_name, results_of_librede[(service_name, operation_name)])
 
-    # Prints a help message for installing LibReDE and then asks for the path.
-    def help_and_ask_for_librede_installation_path_again(self):
+    def print_help_for_installing_librede(self):
         print("-------------------------------------------------")
         print("You have to manually install/build LibReDE (else its not runnable from console).")
         print("  1. Clone their repository")
@@ -69,7 +83,6 @@ class LibredeCaller:
         print("  3. Call <mvn clean install -DskipTests> in the folder \"tools.descartes.librede.releng\"")
         print("  4. Come back here and type the path to the repository")
         print("-------------------------------------------------")
-        return input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\"): ")
 
     # Sets the demand of the given operation.
     def add_demand_to_operation(self, service_name, operation_name, demanded_utilization: float):

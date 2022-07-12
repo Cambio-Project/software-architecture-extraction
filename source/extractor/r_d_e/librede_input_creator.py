@@ -14,9 +14,10 @@ class LibredeInputCreator:
 
     # Creates the output paths, the .csv-Files and the LibReDE_Configuration-File.
     def __init__(self, model: IModel, path_for_librede_files: str):
+        self.model = model
         self.hosts: list[LibredeHost] = get_hosts(model)
         self.operations_on_host: list[LibredeServiceOperation] = get_operations(model, self.hosts)
-        add_default_cpu_utilization(self.hosts)
+        add_cpu_utilization(self.hosts)
         for librede_service_operation in self.operations_on_host:
             librede_service_operation.clean_response_times()
 
@@ -91,7 +92,9 @@ class LibredeInputCreator:
         return string_representation
 
 
-# adds a default cpu utilization to all hosts
-def add_default_cpu_utilization(all_hosts: list[LibredeHost]):
+# Currently, adds a default cpu utilization to all hosts.
+def add_cpu_utilization(all_hosts: list[LibredeHost]):
+    # TODO allow for custom cpu utlizations (either mapping between host and utlization or fully custom csv
+    answer = input("Set default cpu-utilization <number in [0, 1]>: ")
     for host in all_hosts:
-        host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time)
+        host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(answer))
