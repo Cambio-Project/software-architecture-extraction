@@ -79,10 +79,11 @@ def call_librede_if_user_wants(generic_model) -> Optional[LibredeCaller]:
     Asks the user whether LibReDE should be used to estimate the resource demands. As an alternative,
     the user can put in a default value as demand for every operation in the model.
     """
-    print("----------------------------------------------------------\n")
     answer = input("Estimate Resource-Demands with LibReDE or with default demand? <y [for LibReDE]> or <int [positive integer as default demand for all operations]>: ")
     if answer == "y":
-        return LibredeCaller(generic_model)
+        librede_caller = LibredeCaller(generic_model)
+        print("----------------------------------------------------------\n")
+        return librede_caller
     elif answer != "":
         default_demand = int(answer)
         for service in generic_model.services.values():
@@ -139,6 +140,7 @@ def main():
     model_input = user_input.model_input
     trace_input = user_input.trace_input
     settings_input = user_input.settings_input
+    print("----------------------------------------------------------\n")
 
     generic_model = create_generic_model(model_input, trace_input, settings_input)
     architecture = create_architecture(settings_input, generic_model)
