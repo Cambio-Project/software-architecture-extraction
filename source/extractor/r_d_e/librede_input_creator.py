@@ -13,8 +13,9 @@ class LibredeInputCreator:
     """
 
     # Creates the output paths, the .csv-Files and the LibReDE_Configuration-File.
-    def __init__(self, model: IModel, path_for_librede_files: str):
+    def __init__(self, model: IModel, path_for_librede_files: str, approaches: list[str]):
         self.model = model
+        self.approaches = approaches
         self.hosts: list[LibredeHost] = get_hosts(model)
         self.operations_on_host: list[LibredeServiceOperation] = get_operations(model, self.hosts)
         add_cpu_utilization(self.hosts)
@@ -26,7 +27,7 @@ class LibredeInputCreator:
         self.set_indices_to_hosts_and_services()
         self.configuration = LibredeConfigurationCreator(self.hosts, self.operations_on_host,
                                                          self.absolute_path_to_input, self.absolute_path_to_output,
-                                                         self.get_start_timestamp(), self.get_end_timestamp())
+                                                         self.get_start_timestamp(), self.get_end_timestamp(), self.approaches)
         # Create necessary directories, in case they don't exist.
         if not os.path.exists(path_for_librede_files):
             os.mkdir(path_for_librede_files)

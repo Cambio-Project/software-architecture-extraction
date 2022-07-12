@@ -5,7 +5,6 @@ import shutil
 from extractor.arch_models.model import IModel
 from extractor.arch_models.operation import Operation
 from extractor.arch_models.service import Service
-from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 from extractor.r_d_e.librede_input_creator import LibredeInputCreator
 from extractor.r_d_e.librede_output_parser import LibredeOutputParser
 
@@ -19,6 +18,7 @@ class LibredeCaller:
 
     def __init__(self, model: IModel):
         self.model: IModel = model
+        self.approaches = ["ResponseTimeApproximationApproach", "ServiceDemandLawApproach", "WangKalmanFilterApproach"]
         self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
         self.librede_input: LibredeInputCreator = self.create_input_for_librede()
         self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
@@ -29,7 +29,7 @@ class LibredeCaller:
         """
         Creates the input-Files for LibReDE: response-times-.csv-Files, cpu-utilization-.csv-Files and the LibReDE_configuration-File.
         """
-        return LibredeInputCreator(self.model, self.path_to_librede_files)
+        return LibredeInputCreator(self.model, self.path_to_librede_files, self.approaches)
 
     def ask_for_path_of_librede_installation(self):
         """
@@ -70,7 +70,7 @@ class LibredeCaller:
         """
         Extracts the necessary information out of the output of LibReDE and adds the demands in the generic model.
         """
-        librede_output_parser = LibredeOutputParser(self.librede_input.operations_on_host, self.path_to_librede_files + "output\\")
+        librede_output_parser = LibredeOutputParser(self.librede_input.operations_on_host, self.path_to_librede_files + "output\\", self.approaches)
         results_of_librede: dict[tuple[str, str], float] = librede_output_parser.get_results_of_librede()
         for service_name, operation_name in results_of_librede.keys():
             self.add_demand_to_operation(service_name, operation_name, results_of_librede[(service_name, operation_name)])

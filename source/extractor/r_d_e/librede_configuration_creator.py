@@ -7,13 +7,15 @@ class LibredeConfigurationCreator:
     Creates a LibReDE_Configuration-File out of the given hosts and services.
     """
 
-    def __init__(self, hosts: list[LibredeHost], services: list[LibredeServiceOperation], path_for_input_files: str, path_for_output_files: str, start_timestamp: int, end_timestamp: int):
+    def __init__(self, hosts: list[LibredeHost], services: list[LibredeServiceOperation], path_for_input_files: str, path_for_output_files: str,
+                 start_timestamp: int, end_timestamp: int, approaches: list[str]):
         self.hosts = hosts
         self.services = services
         self.path_for_input_files = path_for_input_files
         self.path_for_output_files = path_for_output_files
         self.start_timestamp = int(start_timestamp / 10 ** 3)
         self.end_timestamp = int(end_timestamp / 10 ** 3)
+        self.approaches = approaches
         self.content = ""
         self.create_content()
 
@@ -65,9 +67,8 @@ class LibredeConfigurationCreator:
         window = int(window / 10)
         step_size = int((self.end_timestamp - self.start_timestamp) / window)
         self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_timestamp) + "\" endTimestamp=\"" + str(self.end_timestamp) + "\">\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeApproximationApproach\"/>\n"
-        self.content += "   <approaches type=\"tools.descartes.librede.approach.WangKalmanFilterApproach\"/>\n"
+        for approach in self.approaches:
+            self.content += "   <approaches type=\"tools.descartes.librede.approach." + approach + "\"/>\n"
         self.content += "</estimation>\n"
 
     def create_output(self):
