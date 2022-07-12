@@ -66,12 +66,13 @@ class JaegerTrace(IModel):
 
                 service_name = process_ids[pid]
 
-                host = '0.0.0.0'
+                host = ''
                 for tag in trace['processes'][pid]['tags']:
                     if tag['key'] == 'ip':
                         host = tag['value']
                 if not self.services[service_name].hosts.__contains__(host):
                     self.services[service_name].add_host(host)
+                self.services[service_name].load_balancer.add_instance_history_entry(span['startTime'], host)
 
                 # Ignore GET-Requests or similar
                 if re.search(self._call_string, operation_name):

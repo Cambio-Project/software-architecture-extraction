@@ -118,6 +118,10 @@ class ZipkinTrace(IModel):
                 else:
                     operation.response_times[local_host] = [(span['timestamp'], duration)]
 
+            # Save which instance was used in order to determine the load balancer later
+            # if not client_span_ids.keys().__contains__(span['id']):
+            self._services[service_name].load_balancer.add_instance_history_entry(span['timestamp'], local_host)
+
             operation.durations[span_id] = duration
             operation.tags[span_id] = OrderedDict(sorted(span.get('tags', {}).items(), key=lambda t: t[0]))
             operation.logs[span_id] = {a['timestamp']: {'log': a['value']} for a in span.get('annotations', {})}

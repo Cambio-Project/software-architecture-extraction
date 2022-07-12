@@ -113,9 +113,13 @@ class IModel:
         """
         This method executes two subsequent operations that need to be done one the finished generic model:
         It calculates all the probabilities of the dependencies and calls the retry-detection method of each
-        operation.
+        operation. Furthermore, for each service that has no load balancing strategy set via a tag yet, the
+        round-robin detection method is called.
         """
         for service in self.services.values():
+            if service.load_balancer.strategy is None:
+                service.load_balancer.detect_round_robin_pattern()
+
             for operation in service.operations.values():
                 # call the retry-detection method of each operation
                 operation.retry.detect_retry()
