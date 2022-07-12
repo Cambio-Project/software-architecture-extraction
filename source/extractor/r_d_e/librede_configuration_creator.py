@@ -58,8 +58,12 @@ class LibredeConfigurationCreator:
         self.content += "</input>\n"
 
     def create_estimation(self):
-        window: int = 500
-        step_size: int = 1000
+        window = 0
+        for service in self.services:
+            if len(service.response_times) > window:
+                window = len(service.response_times)
+        window = int(window / 10)
+        step_size = int((self.end_timestamp - self.start_timestamp) / window)
         self.content += "<estimation window=\"" + str(window) + "\" stepSize=\"" + str(step_size) + "\" startTimestamp=\"" + str(self.start_timestamp) + "\" endTimestamp=\"" + str(self.end_timestamp) + "\">\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ServiceDemandLawApproach\"/>\n"
         self.content += "   <approaches type=\"tools.descartes.librede.approach.ResponseTimeApproximationApproach\"/>\n"
