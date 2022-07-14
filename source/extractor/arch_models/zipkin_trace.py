@@ -119,7 +119,6 @@ class ZipkinTrace(IModel):
                     operation.response_times[local_host] = [(span['timestamp'], duration)]
 
             # Save which instance was used in order to determine the load balancer later
-            # if not client_span_ids.keys().__contains__(span['id']):
             self._services[service_name].load_balancer.add_instance_history_entry(span['timestamp'], local_host)
 
             operation.durations[span_id] = duration
@@ -183,7 +182,7 @@ class ZipkinTrace(IModel):
                 # add this call to the call history of the parent span in order to detect retries later
                 parent_operation.retry.add_call_history_entry(
                     parent_span['id'],
-                    {span['timestamp']: (operation_name, span['tags'].get('error', False), start_time, end_time)})
+                    {span['timestamp']: (operation_name, span.get('tags', {}).get('error', False), start_time, end_time)})
 
         self.subsequent_calculations()
 
