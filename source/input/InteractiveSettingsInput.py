@@ -4,7 +4,6 @@ class InteractiveSettingsInput:
 
     def __init__(self):
         self.should_analyse_model = False
-        self.should_analyse_architecture = False
 
         self.should_validate_model = False
         self.should_validate_architecture = False
@@ -24,6 +23,7 @@ class InteractiveSettingsInput:
         self.custom_latency_format = None
 
         self.ask_for_resirio_or_misim_export()
+        self.ask_for_pickle_export()
         if self.should_export_for_resirio:
             self.ask_for_additional_resirio_settings()
         print()
@@ -37,37 +37,38 @@ class InteractiveSettingsInput:
         self.ask_for_validations()
 
     def ask_for_analyses(self):
-        analyse_model_answer = input("Do you want an analyses of the MODEL? <y> or <n>: ")
-        analyse_architecture_answer = input("Do you want an analyses of the ARCHITECTURE? <y> or <n>: ")
+        analyse_model_answer = input("Do you want an analysis of the MODEL? <y> or <n>: ")
         self.should_analyse_model = True if analyse_model_answer == "y" else False
-        self.should_analyse_architecture = True if analyse_architecture_answer == "y" else False
 
     def ask_for_validations(self):
         validate_model_answer = input("Do you want a validation of the MODEL? <y> or <n>: ")
-        validate_architecture_answer = input("Do you want a validation of the ARCHITECTURE? <y> or <n>: ")
+        if self.should_export_for_resirio:
+            validate_architecture_answer = input("Do you want a validation of the ARCHITECTURE? <y> or <n>: ")
+            self.should_validate_architecture = True if validate_architecture_answer == "y" else False
         self.should_validate_model = True if validate_model_answer == "y" else False
-        self.should_validate_architecture = True if validate_architecture_answer == "y" else False
 
     def ask_for_resirio_or_misim_export(self):
-        export_type_answer = input("Do you want to create a model for RESIRIO or MiSim? <r> or <m>: ")
+        export_type_answer = input("Do you want to create an architecture model for RESIRIO or MiSim? <r> or <m>: ")
         self.should_export_for_resirio = True if export_type_answer == "r" else False
         self.should_export_for_misim = True if export_type_answer == "m" else False
 
-    def ask_for_additional_resirio_settings(self):
+    def ask_for_pickle_export(self):
         should_store_in_pickle_format_answer = input(
-            "Do you want to store in an intermediate format (pickle), too? <y> or <n>: ")
-        resirio_export_data_type_answer = input("Do you want the export being .js or .json? <js> or <json>: ")
-        should_be_lightweight_answer = input("Do you want the export of the graph being lightweight? <y> or <n>: ")
-        should_print_pretty_answer = input("Do you want a pretty print? <y> or <n>: ")
+            "Do you want to store the generic model in an intermediate format (pickle), too? <y> or <n>: ")
         self.should_store_in_pickle_format = True if should_store_in_pickle_format_answer == "y" else False
+
+    def ask_for_additional_resirio_settings(self):
+        resirio_export_data_type_answer = input("Do you want .js or .json as export type? <js> or <json>: ")
+        should_be_lightweight_answer = input("Do you want the export of the graph to be lightweight? <y> or <n>: ")
+        should_print_pretty_answer = input("Do you want a pretty print? <y> or <n>: ")
         self.resirio_export_should_be_json = True if resirio_export_data_type_answer == "json" else False
         self.resirio_export_should_be_js = True if resirio_export_data_type_answer == "js" else False
         self.should_be_lightweight_export = True if should_be_lightweight_answer == "y" else False
         self.should_be_pretty_print = True if should_print_pretty_answer == "y" else False
 
     def ask_for_call_string_pattern(self):
-        print("Enter a Pattern for the spans that should ignored. E.g.: GET-Requests.")
-        print("Press Enter to use the default value (^GET$ for Jaeger and ^get$ for Zipkin")
+        print("Enter a Pattern for the spans that should be ignored. E.g.: GET-Requests.")
+        print("Press Enter to use the default value (^GET$ for Jaeger and ^get$ for Zipkin)")
         self.pattern = input("Pattern as Python RegEx:")
 
     def ask_for_latency(self):
@@ -76,8 +77,7 @@ class InteractiveSettingsInput:
                                            "or mean with standard derivation? <m> or <mstd>: ")
 
     def __str__(self):
-        output_string = "Analyse Model: " + str(self.should_analyse_model) + ", Analyse Architecture: " + str(
-            self.should_analyse_architecture)
+        output_string = "Analyse Model: " + str(self.should_analyse_model)
         output_string += "\nValidate Model: " + str(self.should_validate_model) + ", Validate Architecture: " + str(
             self.should_validate_architecture)
         output_string += "\nExport Model for " + ("RESIRIO" if self.should_export_for_resirio else "MiSim")

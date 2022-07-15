@@ -12,12 +12,12 @@ class InteractiveModelInput:
             self.ask_for_model_files()
 
     def ask_for_model_types(self):
-        model_answer = input("Do you want to put in a previously created RESIRIO-/MiSim-model or no model? <r>, <m> or <n>: ")
+        model_answer = input("Do you want to enter a RESIRIO-/MiSim-model that has previously been created or no model? <r>, <m> or <n>: ")
         if model_answer == "r":
             self.contains_resirio_model = True
         elif model_answer == "m":
             self.contains_misim_model = True
-            experimental_misim_model_answer = input("Do you want to put in an misim experimental model? <y> or <n>: ")
+            experimental_misim_model_answer = input("Do you want to enter an misim experimental model? <y> or <n>: ")
             self.contains_misim_experimental_model = True if experimental_misim_model_answer == "y" else False
         elif model_answer == "n":
             pass
