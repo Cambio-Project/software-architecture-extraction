@@ -46,10 +46,10 @@ class ZipkinTrace(IModel):
             local_endpoint = local.get('serviceName', '')
             remote_endpoint = remote.get('serviceName', '')
 
-            local_host = local.get('ipv4') or local.get('ipv6')
+            local_host = local.get('ipv4') or local.get('ipv6') or local.get('serviceName')
             local_port = local.get('port', None)
 
-            remote_host = remote.get('ipv4') or remote.get('ipv6')
+            remote_host = remote.get('ipv4') or remote.get('ipv6') or remote.get('serviceName')
             remote_port = remote.get('port', None)
 
             if local_port is not None:
@@ -106,7 +106,7 @@ class ZipkinTrace(IModel):
 
             # calculate host of operation
             local = span.get('localEndpoint', {})
-            local_host = local.get('ipv4') or local.get('ipv6')
+            local_host = local.get('ipv4') or local.get('ipv6') or local.get('serviceName')
             local_port = local.get('port', None)
             if local_port is not None:
                 local_host = str(local_host) + ':' + str(local_port)
@@ -133,7 +133,7 @@ class ZipkinTrace(IModel):
 
         # Add dependencies
         for span in model:
-            if span.get('parentId', 0) in span_ids:
+            if span.get('parentId', 0) in span_ids or span.get('parentId', 0) in client_span_ids:
 
                 # Callee
                 ID = span['id']
@@ -147,17 +147,35 @@ class ZipkinTrace(IModel):
 
                 # Caller
                 parent_id = span['parentId']
-                parent_span = span_ids[parent_id]
+                parent_span = span_ids.get(parent_id, None) or client_span_ids.get(parent_id, None)
                 parent = parent_span.get('localEndpoint', {})
                 parent_service_name = parent.get('serviceName', '')
                 parent_operation_name = parent_span['name']
-                if re.search(self._call_string, parent_operation_name):
+                while re.search(self._call_string, parent_operation_name):
+                    parent_id = parent_span.get('parentId', None)
+                    if parent_id is None:
+                        break
+                    parent_span = span_ids.get(parent_id, None) or client_span_ids.get(parent_id, None)
+                    parent = parent_span.get('localEndpoint', {})
+                    parent_service_name = parent.get('serviceName', '')
+                    parent_operation_name = parent_span['name']
+
+                if parent_id is None:
                     continue
 
                 parent_operation = self._services[parent_service_name].operations[parent_operation_name]
 
                 if not parent_operation.contains_operation_as_dependency(operation):
                     parent_operation.add_dependency(Dependency(operation))
+
+                # keep track of spans that call this operation in order to calculate probabilities later
+                if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(
+                        parent_span):
+                    parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
+                    parent_operation.get_dependency_with_operation(operation).add_call()
+
+                if span.get('kind', '') == 'PRODUCER' or span.get('kind', '') == 'CONSUMER':
+                    continue
 
                 # save start time and end time (needed for retry detection)
                 start_time = span['timestamp']
@@ -173,16 +191,11 @@ class ZipkinTrace(IModel):
                     start_time = client_span['timestamp']
                     end_time = start_time + client_span['duration']
 
-                # keep track of spans that call this operation in order to calculate probabilities later
-                if not parent_operation.get_dependency_with_operation(operation).calling_spans.__contains__(
-                        parent_span):
-                    parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
-                    parent_operation.get_dependency_with_operation(operation).add_call()
-
                 # add this call to the call history of the parent span in order to detect retries later
                 parent_operation.retry.add_call_history_entry(
                     parent_span['id'],
-                    {span['timestamp']: (operation_name, span.get('tags', {}).get('error', False), start_time, end_time)})
+                    {span['timestamp']: (
+                    operation_name, span.get('tags', {}).get('error', False), start_time, end_time)})
 
         self.subsequent_calculations()
 
