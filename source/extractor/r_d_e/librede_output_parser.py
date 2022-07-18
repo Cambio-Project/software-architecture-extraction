@@ -11,8 +11,12 @@ class LibredeOutputParser:
         self.service_operations = service_operations
         self.possible_approaches = approaches
         self.path_to_output_files = path_to_output_files
+        self.final_results = self.calcualate_results_of_librede()
 
     def get_results_of_librede(self) -> dict[tuple[str, str], float]:
+        return self.final_results
+
+    def calcualate_results_of_librede(self) -> dict[tuple[str, str], float]:
         """
         Calculates a mapping between [service_name, operation_name] to its estimated utilization by the approaches
         the user wanted to use. (The final result is the average of the estimations by the desired approaches)
@@ -90,6 +94,8 @@ class LibredeOutputParser:
             for approach in result_per_approach.keys():
                 print("      " + approach + ": " + str(result_per_approach[approach]))
 
-    def print_final_results(self, final_result_per_operation: dict[tuple[str, str], float]):
-        for unique_operation in final_result_per_operation:
-            print(unique_operation[0] + ", " + unique_operation[1] + "; " + str(final_result_per_operation[unique_operation]))
+    def get_final_results_as_str(self) -> str:
+        string_representation = ""
+        for unique_operation in self.final_results:
+            string_representation += unique_operation[0] + ", " + unique_operation[1] + "; " + str(self.final_results[unique_operation]) + "\n"
+        return string_representation

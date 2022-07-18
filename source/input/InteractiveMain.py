@@ -74,7 +74,7 @@ def export(settings_input, generic_model, architecture):
     output_file.close()
 
 
-def call_librede_if_user_wants(generic_model) -> Optional[LibredeCaller]:
+def call_librede_if_user_wants(generic_model):
     """
     Asks the user whether LibReDE should be used to estimate the resource demands. As an alternative,
     the user can put in a default value as demand for every operation in the model.
@@ -82,13 +82,12 @@ def call_librede_if_user_wants(generic_model) -> Optional[LibredeCaller]:
     answer = input("Estimate Resource-Demands with LibReDE or enter a default demand? <y [for LibReDE]> or <int [positive integer as default demand for all operations]>: ")
     if answer == "y":
         librede_caller = LibredeCaller(generic_model)
-        return librede_caller
+        librede_caller.print_summary()
     elif answer != "":
         default_demand = int(answer)
         for service in generic_model.services.values():
             for operation in service.operations.values():
                 operation.set_demand(default_demand)
-    return None
 
 
 def add_service_capacities(generic_model):
@@ -113,22 +112,6 @@ def add_service_capacities(generic_model):
         capacity_file_handler.close()
 
 
-def ask_user_whether_he_wants_a_summary_of_the_input(user_input: InteractiveInput, librede_input: LibredeInputCreator):
-    """
-    TODO
-    """
-    print()
-    answer_of_user = input("Do you want a summary of all input (yours and of LibReDE)? <y> or <n>: ")
-    if answer_of_user == "y":
-        print()
-        print("--------------------------------------------------------")
-        print(str(user_input))
-        print()
-        print("LibReDE-input:")
-        print(str(librede_input), end="")
-        print("--------------------------------------------------------")
-
-
 def main():
     """
     Asks the user for all input in an interactive way via the command line.
@@ -147,6 +130,9 @@ def main():
     validate(settings_input, generic_model, architecture)
     analyse(settings_input, generic_model)
     export(settings_input, generic_model, architecture)
+
+    print("Summary of user input:\n")
+    print(str(user_input))
 
 
 if __name__ == "__main__":

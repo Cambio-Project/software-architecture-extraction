@@ -22,10 +22,10 @@ class LibredeCaller:
     def __init__(self, model: IModel):
         self.model: IModel = model
         self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
-        self.librede_input: LibredeInputCreator = LibredeInputCreator(self.model, self.path_to_librede_files, self.approaches)
+        self.librede_input_creator: LibredeInputCreator = LibredeInputCreator(self.model, self.path_to_librede_files, self.approaches)
         self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + self.relative_path_to_librede_bat_file
         self.call_librede()
-        self.librede_output_parser = LibredeOutputParser(self.librede_input.operations_on_host, self.path_to_librede_files + "output\\", self.approaches)
+        self.librede_output_parser = LibredeOutputParser(self.librede_input_creator.operations_on_host, self.path_to_librede_files + "output\\", self.approaches)
         self.parse_output_of_librede()
 
     def ask_for_path_of_librede_installation(self):
@@ -54,10 +54,10 @@ class LibredeCaller:
         .bat and then deleted.
         """
         old_dir = os.getcwd()
-        for configuration in self.librede_input.configurations:
+        for configuration in self.librede_input_creator.configurations:
             shutil.copy(configuration.get_path_to_configuration_file(), self.path_to_librede_bat_file)
         os.chdir(self.path_to_librede_bat_file)
-        for configuration in self.librede_input.configurations:
+        for configuration in self.librede_input_creator.configurations:
             command: str = "librede.bat" + " -c " + configuration.get_file_name() + ""
             print("Running \"" + command + "\" for operation \"" + configuration.service_operation.operation_name + "\" on host \"" + configuration.service_operation.host.name + "\"")
             os.system(command)
@@ -108,6 +108,12 @@ class LibredeCaller:
 
     def print_summary(self):
         """
-        Prints a string representing the 
+        Prints a string summarising the call of librede
         """
-        pass
+        print("LibReDE-Summary:")
+        print("------------------------------------------")
+        print("Input:")
+        print(self.librede_input_creator)
+        print("Output:")
+        print(self.librede_output_parser.get_final_results_as_str(), end="")
+        print("------------------------------------------")
