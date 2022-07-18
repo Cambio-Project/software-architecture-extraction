@@ -1,0 +1,172 @@
+[
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "0b003e6ad6716ff0",
+    "id": "e21b5a1c10ec8865",
+    "kind": "SERVER",
+    "name": "get /d1",
+    "timestamp": 1657538143939775,
+    "duration": 33927,
+    "localEndpoint": { "serviceName": "d", "ipv4": "172.19.0.3" },
+    "remoteEndpoint": { "ipv4": "172.19.0.7" },
+    "tags": {
+      "http.method": "GET",
+      "http.path": "/d1",
+      "loadbalancer.strategy": "round_robin",
+      "mvc.controller.class": "Microservice",
+      "mvc.controller.method": "d1"
+    },
+    "shared": true
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "0b003e6ad6716ff0",
+    "id": "e21b5a1c10ec8865",
+    "kind": "CLIENT",
+    "name": "get",
+    "timestamp": 1657538143902184,
+    "duration": 73728,
+    "localEndpoint": { "serviceName": "b", "ipv4": "172.19.0.7" },
+    "tags": { "http.method": "GET", "http.path": "/d1" }
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "0b003e6ad6716ff0",
+    "id": "f74ffa27cf7481f5",
+    "kind": "CLIENT",
+    "name": "get",
+    "timestamp": 1657538143984600,
+    "duration": 70130,
+    "localEndpoint": { "serviceName": "b", "ipv4": "172.19.0.7" },
+    "tags": { "http.method": "GET", "http.path": "/e1" }
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "d790f00240019e85",
+    "id": "0b003e6ad6716ff0",
+    "kind": "SERVER",
+    "name": "get /b1",
+    "timestamp": 1657538143865936,
+    "duration": 202033,
+    "localEndpoint": { "serviceName": "b", "ipv4": "172.19.0.7" },
+    "remoteEndpoint": { "ipv4": "172.19.0.11" },
+    "tags": {
+      "http.method": "GET",
+      "http.path": "/b1",
+      "loadbalancer.strategy": "round_robin",
+      "mvc.controller.class": "Microservice",
+      "mvc.controller.method": "b1",
+      "pattern.circuitBreaker": "true"
+    },
+    "shared": true
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "0b003e6ad6716ff0",
+    "id": "f74ffa27cf7481f5",
+    "kind": "SERVER",
+    "name": "get /e1",
+    "timestamp": 1657538144023315,
+    "duration": 33300,
+    "localEndpoint": { "serviceName": "e", "ipv4": "172.19.0.2" },
+    "remoteEndpoint": { "ipv4": "172.19.0.7" },
+    "tags": {
+      "http.method": "GET",
+      "http.path": "/e1",
+      "loadbalancer.strategy": "utilization",
+      "mvc.controller.class": "Microservice",
+      "mvc.controller.method": "e1"
+    },
+    "shared": true
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "d790f00240019e85",
+    "id": "0b003e6ad6716ff0",
+    "kind": "CLIENT",
+    "name": "get",
+    "timestamp": 1657538143827186,
+    "duration": 240787,
+    "localEndpoint": { "serviceName": "a", "ipv4": "172.19.0.11" },
+    "tags": { "http.method": "GET", "http.path": "/b1" }
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "d790f00240019e85",
+    "id": "23d4cb264b0e151c",
+    "kind": "CLIENT",
+    "name": "get",
+    "timestamp": 1657538144076853,
+    "duration": 177419,
+    "localEndpoint": { "serviceName": "a", "ipv4": "172.19.0.11" },
+    "tags": { "http.method": "GET", "http.path": "/c1" }
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "id": "d790f00240019e85",
+    "kind": "SERVER",
+    "name": "get /a1",
+    "timestamp": 1657538143780796,
+    "duration": 487557,
+    "localEndpoint": { "serviceName": "a", "ipv4": "172.19.0.11" },
+    "remoteEndpoint": { "ipv4": "172.19.0.1" },
+    "tags": {
+      "http.method": "GET",
+      "http.path": "/a1",
+      "loadbalancer.strategy": "round_robin",
+      "mvc.controller.class": "Microservice",
+      "mvc.controller.method": "a1",
+      "pattern.circuitBreaker": "true"
+    }
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "23d4cb264b0e151c",
+    "id": "c8936f04d1fd77b9",
+    "kind": "SERVER",
+    "name": "get /e2",
+    "timestamp": 1657538144198406,
+    "duration": 38655,
+    "localEndpoint": { "serviceName": "e", "ipv4": "172.19.0.4" },
+    "remoteEndpoint": { "ipv4": "172.19.0.8" },
+    "tags": {
+      "http.method": "GET",
+      "http.path": "/e2",
+      "loadbalancer.strategy": "utilization",
+      "mvc.controller.class": "Microservice",
+      "mvc.controller.method": "e2"
+    },
+    "shared": true
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "23d4cb264b0e151c",
+    "id": "c8936f04d1fd77b9",
+    "kind": "CLIENT",
+    "name": "get",
+    "timestamp": 1657538144156287,
+    "duration": 81519,
+    "localEndpoint": { "serviceName": "c", "ipv4": "172.19.0.8" },
+    "tags": { "http.method": "GET", "http.path": "/e2" }
+  },
+  {
+    "traceId": "d790f00240019e85",
+    "parentId": "d790f00240019e85",
+    "id": "23d4cb264b0e151c",
+    "kind": "SERVER",
+    "name": "get /c1",
+    "timestamp": 1657538144119632,
+    "duration": 136655,
+    "localEndpoint": { "serviceName": "c", "ipv4": "172.19.0.8" },
+    "remoteEndpoint": { "ipv4": "172.19.0.11" },
+    "tags": {
+      "http.method": "GET",
+      "http.path": "/c1",
+      "loadbalancer.strategy": "round_robin",
+      "mvc.controller.class": "Microservice",
+      "mvc.controller.method": "c1",
+      "pattern.circuitBreaker": "true"
+    },
+    "shared": true
+  }
+]
