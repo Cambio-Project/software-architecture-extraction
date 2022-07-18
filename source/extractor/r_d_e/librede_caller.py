@@ -21,16 +21,10 @@ class LibredeCaller:
         self.model: IModel = model
         self.approaches = ["ResponseTimeApproximationApproach", "ServiceDemandLawApproach", "WangKalmanFilterApproach"]
         self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
-        self.librede_input: LibredeInputCreator = self.create_input_for_librede()
+        self.librede_input: LibredeInputCreator = LibredeInputCreator(self.model, self.path_to_librede_files, self.approaches)
         self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + self.relative_path_to_librede_bat_file
         self.call_librede()
         self.parse_output_of_librede()
-
-    def create_input_for_librede(self) -> LibredeInputCreator:
-        """
-        Creates the input-Files for LibReDE: response-times-.csv-Files, cpu-utilization-.csv-Files and the LibReDE_configuration-File.
-        """
-        return LibredeInputCreator(self.model, self.path_to_librede_files, self.approaches)
 
     def ask_for_path_of_librede_installation(self):
         """
@@ -76,6 +70,31 @@ class LibredeCaller:
         for service_name, operation_name in results_of_librede.keys():
             self.add_demand_to_operation(service_name, operation_name, results_of_librede[(service_name, operation_name)])
 
+    def add_demand_to_operation(self, service_name, operation_name, demanded_utilization: float):
+        """
+        Sets the demand of an operation of a service by multiplying the estimated utilization with the capacity of the service.
+        """
+        service: Service = self.get_service(service_name)
+        operation: Operation = self.get_operation(operation_name, service)
+        demand = int(demanded_utilization * service.capacity)
+        operation.set_demand(demand)
+
+    def get_service(self, service_name) -> Service:
+        """
+        Searches for the Service-Object with the given name out of the generic model.
+        """
+        for service in self.model.services.keys():
+            if service == service_name:
+                return self.model.services[service]
+
+    def get_operation(self, operation_name_to_look_for: str, service: Service) -> Operation:
+        """
+        Searches for the Operation-Object in the service.
+        """
+        for operation_name in service.operations.keys():
+            if operation_name_to_look_for == operation_name:
+                return service.operations[operation_name]
+
     def print_help_for_installing_librede(self):
         print("-------------------------------------------------")
         print("You have to manually install/build LibReDE (else its not runnable from console).")
@@ -84,22 +103,3 @@ class LibredeCaller:
         print("  3. Call <mvn clean install -DskipTests> in the folder \"tools.descartes.librede.releng\"")
         print("  4. Come back here and type the path to the repository")
         print("-------------------------------------------------")
-
-    # Sets the demand of the given operation.
-    def add_demand_to_operation(self, service_name, operation_name, demanded_utilization: float):
-        service: Service = self.get_service(service_name)
-        operation: Operation = self.get_operation(operation_name, service)
-        demand = int(demanded_utilization * service.capacity)
-        operation.set_demand(demand)
-
-    # Retrieves the Service-object with the given name out of the generic model.
-    def get_service(self, service_name) -> Service:
-        for service in self.model.services.keys():
-            if service == service_name:
-                return self.model.services[service]
-
-    # Searches for the Operation object in the service.
-    def get_operation(self, operation_name_to_look_for: str, service: Service) -> Operation:
-        for operation_name in service.operations.keys():
-            if operation_name_to_look_for == operation_name:
-                return service.operations[operation_name]

@@ -4,7 +4,7 @@ from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 
 class LibredeConfigurationCreator:
     """
-    Creates a LibReDE_Configuration-File out of the given hosts and services.
+    Creates a LibReDE_Configuration-File out of the given host and service.
     """
 
     def __init__(self, hosts: list[LibredeHost], services: list[LibredeServiceOperation], path_for_input_files: str, path_for_output_files: str,
