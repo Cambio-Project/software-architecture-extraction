@@ -113,6 +113,13 @@ class OpenXTrace(IModel):
             if bool(boolean) is True:
                 operation.add_circuit_breaker(CircuitBreaker())
 
+    # set load balancer strategy
+    def addLoadBalancer(self, model: List[Dict[str, Any]], service_name):
+        pattern = "additionalInformation.loadbalancer.strategy"
+        if pattern in model:
+            loadbalancer = model.get(pattern, '')
+            self._services[service_name].load_balancer.set_strategy_with_tag(loadbalancer)
+
     # Looks up if a port is specified and adds it to the host
     def checkPort(self, model: List[Dict[str, Any]]) -> String:
         port = model.get('port', '')
@@ -154,6 +161,12 @@ class OpenXTrace(IModel):
             self.addCircuitBreaker(node, operation)
             self._services[service_name].add_operation(operation)
 
+            
+        self.addLoadBalancer(node, service_name)
+
+        # Save which instance was used in order to determine the load balancer later
+        self._services[service_name].load_balancer.add_instance_history_entry(timestamp, host)
+        
         # Track the amount times this operation gets called
         operation.add_span(identifier)
 
