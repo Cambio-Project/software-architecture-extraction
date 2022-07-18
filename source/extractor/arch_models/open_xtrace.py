@@ -27,6 +27,7 @@ class OpenXTrace(IModel):
 
     def _parse(self, model: List[Dict[str, Any]]) -> bool:
         # Store all services
+        
         for span in model:
             span = span.get("rootOfTrace", {})
             service_name = span.get('application', '')
@@ -129,7 +130,7 @@ class OpenXTrace(IModel):
                 host = str(host) + ':' + str(port)
         return host
 
-    #
+    # operations are extracted from the tracks and added to the appropriate services
     def calculateOperations(self, model: List[Dict[str, Any]], host) -> Tuple[Operation, str]: 
         latency = None
         timestamp = None
