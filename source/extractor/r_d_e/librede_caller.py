@@ -15,15 +15,17 @@ class LibredeCaller:
     parse its output and write the gained information back in the generic model (to the field "demand" of an operation).
     All of this automatically happens at instantiation.
     """
+
     relative_path_to_librede_bat_file = "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
+    approaches = ["ResponseTimeApproximationApproach", "ServiceDemandLawApproach", "WangKalmanFilterApproach"]
 
     def __init__(self, model: IModel):
         self.model: IModel = model
-        self.approaches = ["ResponseTimeApproximationApproach", "ServiceDemandLawApproach", "WangKalmanFilterApproach"]
         self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
         self.librede_input: LibredeInputCreator = LibredeInputCreator(self.model, self.path_to_librede_files, self.approaches)
         self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + self.relative_path_to_librede_bat_file
         self.call_librede()
+        self.librede_output_parser = LibredeOutputParser(self.librede_input.operations_on_host, self.path_to_librede_files + "output\\", self.approaches)
         self.parse_output_of_librede()
 
     def ask_for_path_of_librede_installation(self):
@@ -47,26 +49,26 @@ class LibredeCaller:
     def call_librede(self):
         """
         Calls LibReDE.
-        LibReDE needs a workaround: The .bat needs to be called from the path it is and the configuration must be in the same folder.
-        That's why the current working directory is changed and restored, later and
-        the configuration file gets copied to the location of the .bat and then deleted.
+        LibReDE needs a workaround: The .bat needs to be called from the path where it is and the configurations must be in the same folder.
+        That's why the current working directory is changed, later restored and the configuration file gets copied to the location of the
+        .bat and then deleted.
         """
         old_dir = os.getcwd()
+        for configuration in self.librede_input.configurations:
+            shutil.copy(configuration.get_path_to_configuration_file(), self.path_to_librede_bat_file)
         os.chdir(self.path_to_librede_bat_file)
-        shutil.copy(self.librede_input.get_path_to_configuration_file(), self.path_to_librede_bat_file)
-        command: str = "librede.bat" + " -c \"" + self.librede_input.configuration.get_file_name() + "\""
-        print("Running <--" + command + "-->")
-        os.system(command)
-        os.remove(self.path_to_librede_bat_file + self.librede_input.configuration.get_file_name())
+        for configuration in self.librede_input.configurations:
+            command: str = "librede.bat" + " -c " + configuration.get_file_name() + ""
+            print("Running \"" + command + "\" for operation \"" + configuration.service_operation.operation_name + "\" on host \"" + configuration.service_operation.host.name + "\"")
+            os.system(command)
+            os.remove(self.path_to_librede_bat_file + configuration.get_file_name())
         os.chdir(old_dir)
-        print("Finished call of LibReDE.")
 
     def parse_output_of_librede(self):
         """
         Extracts the necessary information out of the output of LibReDE and adds the demands in the generic model.
         """
-        librede_output_parser = LibredeOutputParser(self.librede_input.operations_on_host, self.path_to_librede_files + "output\\", self.approaches)
-        results_of_librede: dict[tuple[str, str], float] = librede_output_parser.get_results_of_librede()
+        results_of_librede: dict[tuple[str, str], float] = self.librede_output_parser.get_results_of_librede()
         for service_name, operation_name in results_of_librede.keys():
             self.add_demand_to_operation(service_name, operation_name, results_of_librede[(service_name, operation_name)])
 
@@ -103,3 +105,9 @@ class LibredeCaller:
         print("  3. Call <mvn clean install -DskipTests> in the folder \"tools.descartes.librede.releng\"")
         print("  4. Come back here and type the path to the repository")
         print("-------------------------------------------------")
+
+    def print_summary(self):
+        """
+        Prints a string representing the 
+        """
+        pass

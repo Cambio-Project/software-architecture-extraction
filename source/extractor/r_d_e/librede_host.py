@@ -26,7 +26,7 @@ class LibredeHost:
         self.services.append(operation)
 
     def get_csv_file_name(self) -> str:
-        return "host_id" + str(self.id) + "_cpu_utilization.csv"
+        return "host_" + str(self.id) + "_cpu_utilization.csv"
 
     def get_csv_file_content(self) -> str:
         """

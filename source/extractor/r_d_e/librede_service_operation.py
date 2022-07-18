@@ -18,7 +18,7 @@ class LibredeServiceOperation:
         self.response_times = list[tuple[float, float]]()  # list of <time, response-time of query>
 
     def get_csv_file_name(self) -> str:
-        return "operation_id" + str(self.id) + "_response_times.csv"
+        return "operation_" + str(self.id) + "_response_times.csv"
 
     def get_csv_file_content(self) -> str:
         """
@@ -37,10 +37,16 @@ class LibredeServiceOperation:
         return string_representation
 
     def __hash__(self):
-        return hash((self.operation_name, self.service.name))
+        """
+        Needed to be able to have this as keys for dictionaries.
+        """
+        return hash((self.operation_name, self.service.name, self.host.name))
 
     def __eq__(self, other):
-        return (self.operation_name, self.service.name) == (other.operation_name, other.service.name)
+        """
+        Needed to be able to have this as keys for dictionaries.
+        """
+        return (self.operation_name, self.service.name, self.host.name) == (other.operation_name, other.service.name, other.host.name)
 
     def clean_response_times(self):
         """

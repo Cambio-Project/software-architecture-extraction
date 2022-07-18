@@ -26,8 +26,8 @@ def create_generic_model(model_input, trace_input, settings_input):
         generic_model = JaegerTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
     elif trace_input.traces_are_zipkin:
         generic_model = ZipkinTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
-    call_librede_if_user_wants(generic_model)
     add_service_capacities(generic_model)
+    call_librede_if_user_wants(generic_model)
     return generic_model
 
 
@@ -82,7 +82,6 @@ def call_librede_if_user_wants(generic_model) -> Optional[LibredeCaller]:
     answer = input("Estimate Resource-Demands with LibReDE or enter a default demand? <y [for LibReDE]> or <int [positive integer as default demand for all operations]>: ")
     if answer == "y":
         librede_caller = LibredeCaller(generic_model)
-        print("----------------------------------------------------------\n")
         return librede_caller
     elif answer != "":
         default_demand = int(answer)

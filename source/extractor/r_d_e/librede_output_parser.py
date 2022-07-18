@@ -1,74 +1,95 @@
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 
 
-# Class which parses the output of LibReDE.
-# Will calculate the final utilization_demand as the average of all approaches.
 class LibredeOutputParser:
+    """
+    Class which parses the output of LibReDE.
+    Will calculate the final estimated utilization_demand as the average of all approaches the user wants to use.
+    """
 
     def __init__(self, service_operations: list[LibredeServiceOperation], path_to_output_files: str, approaches: list[str]):
         self.service_operations = service_operations
-        self.approaches = approaches
+        self.possible_approaches = approaches
         self.path_to_output_files = path_to_output_files
 
-    # Calculates a mapping between (service name, operation name) and its demand_utilization.
     def get_results_of_librede(self) -> dict[tuple[str, str], float]:
-        results_per_service_operation = self.get_average_of_results_per_service_operation()
-        results_per_operation = dict[tuple[str, str], list[float]]()
-        for service_operation in results_per_service_operation.keys():
-            demand_utilization = results_per_service_operation[service_operation]
-            service_name = service_operation.service.name
-            operation_name = service_operation.operation_name
-            if not results_per_operation.keys().__contains__((service_name, operation_name)):
-                results_per_operation[(service_name, operation_name)] = list[float]()
-            results_per_operation[(service_name, operation_name)].append(demand_utilization)
-        return self.get_averages(results_per_operation)
-
-    # Calculates the mapping between the LibReDEServiceOperation and its demand_utilization.
-    def get_average_of_results_per_service_operation(self) -> dict[LibredeServiceOperation, float]:
+        """
+        Calculates a mapping between [service_name, operation_name] to its estimated utilization by the approaches
+        the user wanted to use. (The final result is the average of the estimations by the desired approaches)
+        """
+        original_output: dict[LibredeServiceOperation, dict[str, float]] = self.parse_output_of_librede()
+        mapped_output: dict[tuple[str, str], dict[str, float]] = self.map_output(original_output)
+        self.print_results_of_librede(mapped_output)
+        print("-------------------------------------------------")
         approaches_to_use = self.get_approaches_to_use()
-        demanded_utilizations = dict[LibredeServiceOperation, float]()
-        results_of_approaches = self.parse_output_of_librede()
-        # Calculates the average result of all approaches
+        final_results = dict[tuple[str, str], float]()
+        for unique_operation in mapped_output:
+            sum = 0
+            for approach in approaches_to_use:
+                sum += mapped_output[unique_operation][approach]
+            final_results[unique_operation] = sum / len(approaches_to_use)
+        print("------------------------------------------------- Finished calculating the resource demands\n")
+        return final_results
+
+    def map_output(self, original_output: dict[LibredeServiceOperation, dict[str, float]]) -> dict[tuple[str, str], dict[str, float]]:
+        """
+        Maps the original output to a mapping between [service_name, operation_name] to [a mapping between approach to its estimation].
+        Will be calculated by taking the average of the estimations of a single operation on several hosts.
+        """
+        structured_original_output = dict[tuple[str, str], list[dict[str, float]]]()
+        for service_operation in original_output.keys():
+            unique_name = (service_operation.service.name, service_operation.operation_name)
+            if not structured_original_output.keys().__contains__(unique_name):
+                structured_original_output[unique_name] = list[dict[str, float]]()
+            structured_original_output[unique_name].append(original_output[service_operation])
+        results = dict[tuple[str, str], dict[str, float]]()
+        for unique_operation in structured_original_output.keys():
+            estimations_on_all_hosts: list[dict[str, float]] = structured_original_output[unique_operation]
+            average_estimations = dict[str, float]()
+            for approach in self.possible_approaches:
+                sum = 0
+                for estimation_results_on_single_host in estimations_on_all_hosts:
+                    sum += estimation_results_on_single_host[approach]
+                average_estimations[approach] = sum / len(self.possible_approaches)
+            results[unique_operation] = average_estimations
+        return results
+
+    def parse_output_of_librede(self) -> dict[LibredeServiceOperation, dict[str, float]]:
+        """
+        Retrieves the data from the output-csv-files of LibReDE and stores them in a mapping between LibredeServiceOperation and
+        [a mapping between approach and its estimation]. This method simply parses the content of the output .csv-files into
+        a format which can be manipulated easier.
+        """
+        results_of_approaches_per_operation_per_host = dict[LibredeServiceOperation, dict[str, float]]()
         for service_operation in self.service_operations:
-            sum_of_results = 0
-            for approach_name in approaches_to_use:
-                approach_result = results_of_approaches[approach_name]
-                index_in_result = service_operation.host.id * len(self.service_operations) + service_operation.id
-                sum_of_results += approach_result[index_in_result]
-            demanded_utilizations[service_operation] = sum_of_results / len(approaches_to_use)
-        return demanded_utilizations
-
-    # Takes the average out of the given dict
-    def get_averages(self, results: dict[tuple[str, str], list[float]]) -> dict[tuple[str, str], float]:
-        results_with_averages = dict[tuple[str, str], float]()
-        for service_and_operation_name in results.keys():
-            demanded_utilizations: list[float] = results[service_and_operation_name]
-            results_with_averages[service_and_operation_name] = sum(demanded_utilizations) / len(demanded_utilizations)
-        return results_with_averages
-
-    def parse_output_of_librede(self) -> dict[str, list[float]]:
-        """
-        Retrieves the data from the output-csv-files of LibReDE and stores them in a mapping between approach and
-        its estimations for every service-operation for every host.
-        """
-        results_of_approaches = dict[str, list[float]]()  # mapping between approach_name and its results.
-        for approach_name in self.approaches:
-            output_file_handler = open(self.path_to_output_files + approach_name + "_fold_0.csv")
-            output_file_content: str = output_file_handler.read()
-            estimations_as_str: list[str] = output_file_content.split(",")
-            estimations = list[float]()
-            for i in range(1, len(estimations_as_str)):  # Don't start at 0, because 0 is a timestamp.
-                estimations.append(float(estimations_as_str[i]))
-            results_of_approaches[approach_name] = estimations
-        return results_of_approaches
+            results_of_approaches_per_operation_per_host[service_operation] = dict[str, float]()
+            for approach_name in self.possible_approaches:
+                output_file_handler = open(self.path_to_output_files + str(service_operation.id) + "_" + approach_name + "_fold_0.csv")
+                output_file_content: str = output_file_handler.read()
+                estimated_utilization = float(output_file_content.split(",")[1])
+                results_of_approaches_per_operation_per_host[service_operation][approach_name] = estimated_utilization
+                output_file_handler.close()
+        return results_of_approaches_per_operation_per_host
 
     def get_approaches_to_use(self) -> list[str]:
         """
         Calculates a list of approaches. The user decides via command line input which one of the possible approaches is considered.
         """
         approaches_to_use = list[str]()
-        for approach in self.approaches:
-            answer = input("Use output of approach " + approach + "? <y> or <n>: ")
+        for approach in self.possible_approaches:
+            answer = input("Use output of approach \"" + approach + "\"? <y> or <n>: ")
             if answer == "y":
                 approaches_to_use.append(approach)
         return approaches_to_use
+
+    def print_results_of_librede(self, result_of_approaches_per_operation: dict[tuple[str, str], dict[str, float]]):
+        print("Results of LibReDE:")
+        for unique_operation in result_of_approaches_per_operation:
+            result_per_approach = result_of_approaches_per_operation[unique_operation]
+            print("   " + unique_operation[0] + "; " + unique_operation[1])
+            for approach in result_per_approach.keys():
+                print("      " + approach + ": " + str(result_per_approach[approach]))
+
+    def print_final_results(self, final_result_per_operation: dict[tuple[str, str], float]):
+        for unique_operation in final_result_per_operation:
+            print(unique_operation[0] + ", " + unique_operation[1] + "; " + str(final_result_per_operation[unique_operation]))
