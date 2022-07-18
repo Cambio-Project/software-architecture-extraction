@@ -79,10 +79,15 @@ def call_librede_if_user_wants(generic_model):
     Asks the user whether LibReDE should be used to estimate the resource demands. As an alternative,
     the user can put in a default value as demand for every operation in the model.
     """
-    answer = input("Estimate Resource-Demands with LibReDE or enter a default demand? <y [for LibReDE]> or <int [positive integer as default demand for all operations]>: ")
+    answer = input("Estimate Resource-Demands with LibReDE or enter a default demand?\n   <y [for LibReDE]> or\n   <int [positive integer as default demand for all operations]> or\n"
+                   "   <\"custom\" [set demand for each operation]: ")
     if answer == "y":
         librede_caller = LibredeCaller(generic_model)
         librede_caller.print_summary()
+    elif answer == "custom":
+        for service in generic_model.services.values():
+            for operation in service.operations.values():
+                operation.set_demand(int(input("Set demand for operation <" + operation.name + "> at service <" + service.name + ">: ")))
     elif answer != "":
         default_demand = int(answer)
         for service in generic_model.services.values():
@@ -95,12 +100,16 @@ def add_service_capacities(generic_model):
     Asks the user whether the capacity of a service should be a custom default value for all services
     or should be read from a csv-File. Furthermore, fills in the capacities in the generic model.
     """
-    answer = input("Set the capacity of services: <int [positive integer as default capacity for all services]> or\n"
-                   "    <path to csv [content must be like: \"service_name1,capacity1 \\nservice_name2,capacity2,\\n etc.\"]>: ")
+    answer = input("Set the capacity of services:\n   <int [default capacity for all services]> or\n   <\"custom\" [manual capacity for each service]> or\n   "
+                   "<path to csv [with capacities in a csv-format like: service_name1,capacity1\\nservice_name2,capacity2\\n ...]>: ")
     if str.isdigit(answer):
         for service in generic_model.services.values():
             service.set_capacity(int(answer))
-    else:
+    elif answer == "custom":
+        for service in generic_model.services.values():
+            print("Capacity of service <" + service.name + "> should be: ", end="")
+            service.set_capacity(int(input("")))
+    elif answer != "":
         capacity_file_handler = open(answer, "r")
         capacity_file_content = capacity_file_handler.read()
         lines: list[str] = capacity_file_content.split("\n")

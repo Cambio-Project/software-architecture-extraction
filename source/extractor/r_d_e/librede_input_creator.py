@@ -89,10 +89,22 @@ class LibredeInputCreator:
 
 
 def add_cpu_utilization(all_hosts: list[LibredeHost]):
-    """
-    Currently, adds a default cpu utilization to all hosts.
-    """
-    # TODO allow for custom cpu utlizations (either mapping between host and utlization or fully custom csv
-    answer = input("Set default cpu-utilization <number in [0, 1]>: ")
-    for host in all_hosts:
-        host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(answer))
+    answer = input("Set cpu-utilization for LibReDE <number in [0, 1] [default for all hosts]> or\n   <\"custom_fix\" [manual for each host]> or\n"
+                   "   <custom_csv [with cpu utilizitations for each host in a csv]>: ")
+    if isinstance(answer, float):
+        for host in all_hosts:
+            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(answer))
+    elif answer == "custom_fix":
+        for host in all_hosts:
+            cpu_utilization = input("Fix cpu utilization for host <" + host.name + "> should be: ")
+            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(cpu_utilization))
+    elif answer == "custom_csv":
+        for host in all_hosts:
+            csv_file_path = input("Path to cpu utiliztation csv-file [timestamp1, utilization1\\ntimestamp2, utilization2\\n ...] for host <" + host.name + ">: ")
+            file_handler = open(csv_file_path, "r")
+            file_content = file_handler.read()
+            lines = file_content.split("\\n")
+            for line in lines:
+                line_component = line.split(",")
+                host.cpu_utilization.append((int(line_component[0]), float(line_component[1])))
+            file_handler.close()
