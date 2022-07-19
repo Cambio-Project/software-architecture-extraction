@@ -20,8 +20,8 @@ class LibredeInputCreator:
         add_cpu_utilization(self.hosts)
         for librede_service_operation in self.operations_on_host:
             librede_service_operation.clean_response_times()
-        self.absolute_path_to_input: str = path_to_librede_files + "input\\"
-        self.absolute_path_to_output: str = path_to_librede_files + "output\\"
+        self.absolute_path_to_input: str = path_to_librede_files + "input" + os.path.sep
+        self.absolute_path_to_output: str = path_to_librede_files + "output" + os.path.sep
         self.set_indices_to_hosts_and_services()
         self.configurations: list[LibredeConfigurationCreator] = create_configurations(self.operations_on_host, approaches,
                                                                                        self.absolute_path_to_input, self.absolute_path_to_output)

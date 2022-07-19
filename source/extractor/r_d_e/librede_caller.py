@@ -1,8 +1,8 @@
 import os
 import pathlib
 import shutil
-import numpy
 import numpy as np
+import platform
 
 from extractor.arch_models.model import IModel
 from extractor.arch_models.operation import Operation
@@ -18,14 +18,15 @@ class LibredeCaller:
     All of this automatically happens at instantiation.
     """
 
-    relative_path_to_librede_bat_file = "\\tools.descartes.librede.releng.standalone\\target\\standalone\\console\\"
+    relative_path_to_librede_script_file = os.path.sep + "tools.descartes.librede.releng.standalone" + os.path.sep + \
+                                           "target" + os.path.sep + "standalone" + os.path.sep + "console" + os.path.sep
     approaches = ["ResponseTimeApproximationApproach", "ServiceDemandLawApproach", "WangKalmanFilterApproach"]
 
     def __init__(self, model: IModel):
         self.model: IModel = model
-        self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + "\\librede_files\\"
+        self.path_to_librede_files = str(pathlib.Path(__file__).parent.resolve()) + os.path.sep + "librede_files" + os.path.sep
         self.librede_input_creator: LibredeInputCreator = LibredeInputCreator(self.model, self.path_to_librede_files, self.approaches)
-        self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + self.relative_path_to_librede_bat_file
+        self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + self.relative_path_to_librede_script_file
         self.call_librede()
         self.librede_output_parser = LibredeOutputParser(self.librede_input_creator.operations_on_host, self.path_to_librede_files + "output\\", self.approaches)
         self.parse_output_of_librede()
@@ -36,14 +37,15 @@ class LibredeCaller:
         By typing "help", a helpful message is printed about how to install LibReDE.
         Asks for a path recursively, till a valid path is put in.
         """
-        answer_of_user: str = input("Path to your LibReDE-installation (e.g. \"C:\\Users\\Max\\Downloads\\librede\") [type <help>, for how to install]: ")
+        answer_of_user: str = input("Path to your LibReDE-installation (e.g. "
+                                    "\"" + os.path.join("C:", "Users", "Max", "Downloads", "librede") + "\") [type <help>, for how to install]: ")
         if answer_of_user == "help":
             self.print_help_for_installing_librede()
             return self.ask_for_path_of_librede_installation()
         else:
             path_to_librede_installation = answer_of_user
-            if not os.path.exists(path_to_librede_installation + self.relative_path_to_librede_bat_file):
-                print("LibReDE-installation at <" + path_to_librede_installation + self.relative_path_to_librede_bat_file + "> couldn't be found, please try again.\n")
+            if not os.path.exists(path_to_librede_installation + self.relative_path_to_librede_script_file):
+                print("LibReDE-installation at <" + path_to_librede_installation + self.relative_path_to_librede_script_file + "> couldn't be found, please try again.\n")
                 return self.ask_for_path_of_librede_installation()
             else:
                 return path_to_librede_installation
@@ -60,7 +62,8 @@ class LibredeCaller:
             shutil.copy(configuration.get_path_to_configuration_file(), self.path_to_librede_bat_file)
         os.chdir(self.path_to_librede_bat_file)
         for configuration in self.librede_input_creator.configurations:
-            command: str = "librede.bat" + " -c " + configuration.get_file_name() + ""
+            name_of_script_file = "librede.bat" if platform.system() == "Windows" else "librede.sh"
+            command: str = name_of_script_file + " -c " + configuration.get_file_name() + ""
             print("Running \"" + command + "\" for operation \"" + configuration.service_operation.operation_name + "\" on host \"" + configuration.service_operation.host.name + "\"")
             os.system(command)
             os.remove(self.path_to_librede_bat_file + configuration.get_file_name())
