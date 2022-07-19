@@ -79,8 +79,8 @@ def call_librede_if_user_wants(generic_model):
     Asks the user whether LibReDE should be used to estimate the resource demands. As an alternative,
     the user can put in a default value as demand for every operation in the model.
     """
-    answer = input("Estimate Resource-Demands with LibReDE or enter a default demand?\n   <y [for LibReDE]> or\n   <int [positive integer as default demand for all operations]> or\n"
-                   "   <\"custom\" [set demand for each operation]: ")
+    answer = input("Estimate Resource-Demands with LibReDE or enter a default demand?\n   <y [for LibReDE]> or\n   <int [default demand for all operations]> or\n"
+                   "   <\"custom\" [set demand manually for each operation]: ")
     if answer == "y":
         librede_caller = LibredeCaller(generic_model)
         librede_caller.print_summary()

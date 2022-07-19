@@ -89,12 +89,9 @@ class LibredeInputCreator:
 
 
 def add_cpu_utilization(all_hosts: list[LibredeHost]):
-    answer = input("Set cpu-utilization for LibReDE <number in [0, 1] [default for all hosts]> or\n   <\"custom_fix\" [manual for each host]> or\n"
+    answer = input("Set cpu-utilization for LibReDE\n   <number in [0, 1] [default for all hosts]> or\n   <\"custom_fix\" [set utilization manually for each host]> or\n"
                    "   <custom_csv [with cpu utilizitations for each host in a csv]>: ")
-    if isinstance(answer, float):
-        for host in all_hosts:
-            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(answer))
-    elif answer == "custom_fix":
+    if answer == "custom_fix":
         for host in all_hosts:
             cpu_utilization = input("Fix cpu utilization for host <" + host.name + "> should be: ")
             host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(cpu_utilization))
@@ -108,3 +105,6 @@ def add_cpu_utilization(all_hosts: list[LibredeHost]):
                 line_component = line.split(",")
                 host.cpu_utilization.append((int(line_component[0]), float(line_component[1])))
             file_handler.close()
+    else:
+        for host in all_hosts:
+            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(answer))

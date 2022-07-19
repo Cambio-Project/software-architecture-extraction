@@ -1,6 +1,8 @@
 import os
 import pathlib
 import shutil
+import numpy
+import numpy as np
 
 from extractor.arch_models.model import IModel
 from extractor.arch_models.operation import Operation
@@ -75,11 +77,13 @@ class LibredeCaller:
     def add_demand_to_operation(self, service_name, operation_name, demanded_utilization: float):
         """
         Sets the demand of an operation of a service by multiplying the estimated utilization with the capacity of the service.
+        Wont do anything if demanded_utilization is NaN
         """
-        service: Service = self.get_service(service_name)
-        operation: Operation = self.get_operation(operation_name, service)
-        demand = int(demanded_utilization * service.capacity)
-        operation.set_demand(demand)
+        if not np.isnan(demanded_utilization):
+            service: Service = self.get_service(service_name)
+            operation: Operation = self.get_operation(operation_name, service)
+            demand = int(demanded_utilization * service.capacity)
+            operation.set_demand(demand)
 
     def get_service(self, service_name) -> Service:
         """
