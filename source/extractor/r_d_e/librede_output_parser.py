@@ -35,10 +35,10 @@ class LibredeOutputParser:
             sum = 0
             number_of_valid_results = len(approaches_to_use)
             for approach in approaches_to_use:
-                if not np.isnan(mapped_output[unique_operation][approach]):
-                    sum += mapped_output[unique_operation][approach]
-                else:
+                if np.isnan(mapped_output[unique_operation][approach]) or mapped_output[unique_operation][approach] < 0 or mapped_output[unique_operation][approach] > 1:
                     number_of_valid_results -= 1
+                else:
+                    sum += mapped_output[unique_operation][approach]
             final_results[unique_operation] = sum / number_of_valid_results if number_of_valid_results > 0 else math.nan
         print("------------------------------------------------- Finished calculating the resource demands\n")
         return final_results
@@ -62,10 +62,10 @@ class LibredeOutputParser:
                 sum = 0
                 number_of_valid_results = len(self.possible_approaches)
                 for estimation_results_on_single_host in estimations_on_all_hosts:
-                    if not np.isnan(estimation_results_on_single_host[approach]):
-                        sum += estimation_results_on_single_host[approach]
-                    else:
+                    if np.isnan(estimation_results_on_single_host[approach]) or estimation_results_on_single_host[approach] < 0 or estimation_results_on_single_host[approach] > 1:
                         number_of_valid_results -= 1
+                    else:
+                        sum += estimation_results_on_single_host[approach]
                 average_estimations[approach] = sum / number_of_valid_results if number_of_valid_results > 0 else math.nan
             results[unique_operation] = average_estimations
         return results
