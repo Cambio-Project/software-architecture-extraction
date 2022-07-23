@@ -34,6 +34,7 @@ class ArchitectureMiSim:
             retries_of_operations = []
 
             operation_has_CB = False
+            circuit_breaker_to_set = None
 
             # get all operations of this microservice
             operations_of_microservice = sorted(s.operations.items(), key=lambda x: x[0])
@@ -70,6 +71,7 @@ class ArchitectureMiSim:
                 # if a circuit breaker is present, set the flag to add the CB later into the patterns array
                 if circuit_breaker is not None:
                     operation_has_CB = True
+                    circuit_breaker_to_set = circuit_breaker
 
                 operations.append({
                     'name': op_name,
@@ -77,18 +79,18 @@ class ArchitectureMiSim:
                     'dependencies': dependencies
                 })
 
-                # If at least one Operation implements a circuit breaker, add a default CB to the patterns array
-                if operation_has_CB:
-                    circuit_breaker_dict = {
-                        "type": "circuitbreaker",
-                        "config": {
-                            "requestVolumeThreshold": circuit_breaker.request_volume_threshold,
-                            "threshold": circuit_breaker.threshold,
-                            "rollingWindow": circuit_breaker.rolling_window,
-                            "sleepWindow": circuit_breaker.sleep_window,
-                        }
+            # If at least one Operation implements a circuit breaker, add a default CB to the patterns array
+            if operation_has_CB:
+                circuit_breaker_dict = {
+                    "type": "circuitbreaker",
+                    "config": {
+                        "requestVolumeThreshold": circuit_breaker_to_set.request_volume_threshold,
+                        "threshold": circuit_breaker_to_set.threshold,
+                        "rollingWindow": circuit_breaker_to_set.rolling_window,
+                        "sleepWindow": circuit_breaker_to_set.sleep_window,
                     }
-                    patterns.append(circuit_breaker_dict)
+                }
+                patterns.append(circuit_breaker_dict)
 
             if len(retries_of_operations) > 0:
                 patterns.append(build_retry_description(retries_of_operations))

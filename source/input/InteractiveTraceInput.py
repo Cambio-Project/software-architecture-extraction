@@ -31,12 +31,14 @@ class InteractiveTraceInput:
         if self.use_jaeger_network:
             jaeger_network_manager = JaegerNetworkManager()
             self.traces = jaeger_network_manager.get_traces()
+            self.contains_multiple_traces = True
             if self.create_api_backup:
                 jaeger_network_manager.create_backup()
         elif self.use_zipkin_network:
             zipkin_network_manager = ZipkinNetworkManager()
             limit = input("Please enter a limit (integer) how many traces you wish to retrieve: ")
             self.traces = zipkin_network_manager.get_traces(int(limit))
+            self.contains_multiple_traces = True
             if self.create_api_backup:
                 zipkin_network_manager.create_backup(int(limit))
         elif self.load_jaeger_backup:
