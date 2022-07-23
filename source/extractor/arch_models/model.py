@@ -141,7 +141,7 @@ class IModel:
 
                     for dependency in operation.dependencies:
                         # Check circular dependencies
-                        if operation in dependency.dependencies:
+                        if operation in [dep.operation for dep in dependency.operation.dependencies]:
                             stack.append(CyclicOperationDependency(operation, dependency))
                             continue
 
