@@ -8,6 +8,7 @@ class LoadBalancer:
     def __init__(self):
         self._strategy = None  # default strategy is None
         self._instance_history = {}  # maps {timestamp: instance}
+        self._allowed_error_percentage = 0.1
 
         # List with currently supported strategies
         self._valid_strategies = ["random", "round_robin", "round_robin_fast", "utilization"]
@@ -27,9 +28,21 @@ class LoadBalancer:
     def add_instance_history_entry(self, timestamp, entry):
         self._instance_history[timestamp] = entry
 
-    # This method tries to detect a round-robin load balancing strategy. In a first stage it analyzes the beginning
-    # of the sequence. If the beginning could be a round-robin pattern, it is checked if the remaining part of the
-    # sequence matches this pattern. If yes, the load-balancing strategy is set to 'round_robin'.
+    def set_allowed_error_percentage(self, percentage):
+        self._allowed_error_percentage = percentage
+
+    # This method tries to detect a round-robin load balancing strategy.
+    # The algorithm has two states: One for detecting a possible pattern and another state for validating a pattern
+    # The algorithm starts in the first state, and adds all instances to the pattern it can find until one instance
+    # occurs, that is already in the pattern.
+    # In this case the state is switched, and it is checked if the next instances come in the same order as the pattern
+    # would suggest.
+    # If a new instance occurred, that is not part of the pattern yet, the pattern gets reset and the state switches.
+    # This situation can happen during autoscaling, so it does not count as an error in the pattern.
+    # If the instance is in the pattern, but occurred in the wrong order, the state is reset, and the error counter
+    # is increased.
+    # This implementation allows for a less strict detection of a round-robin load balancing strategy, because it can
+    # allow a certain amount of errors
     def detect_round_robin_pattern(self):
         timestamps = sorted(self._instance_history.keys())
 
@@ -41,7 +54,6 @@ class LoadBalancer:
         distinct_instances = set(instances_in_order)
         instance_count = len(distinct_instances)
 
-        counter = 0
         current_pattern_index = 0
         round_robin_pattern = []
 
@@ -53,22 +65,42 @@ class LoadBalancer:
             # if there are less than two instances the load balancing strategy can not be determined
             return False
 
+        PATTERN_BUILD_UP = True
+        PATTERN_VALIDATION = False
+
+        error_count = 0
+
         for current_instance in instances_in_order:
-            if counter < instance_count:
-                # if counter < instance_count, the algorithm is still detecting the possible round-robin pattern
+            if PATTERN_BUILD_UP:
+                # add instances to the pattern, as long as new instances occur in the history
                 if not round_robin_pattern.__contains__(current_instance):
                     round_robin_pattern.append(current_instance)
                 else:
-                    # Not all instances have occurred yet in the history, but one instance occurred already
-                    # twice, this can not be a round-robin load balancing strategy
-                    return False
-                counter += 1
-            else:
-                # Every instance occurred exactly once now, in the second step we check if the current instance
-                # matches the expected instance when a round-robin load balancing strategy is assumed.
-                if not round_robin_pattern[current_pattern_index % instance_count] == current_instance:
-                    return False
-                current_pattern_index += 1
+                    PATTERN_BUILD_UP = False
+                    PATTERN_VALIDATION = True
 
-        self._strategy = 'round_robin'
-        return True
+            if PATTERN_VALIDATION:
+                # validate the current pattern
+                if round_robin_pattern[current_pattern_index % len(round_robin_pattern)] == current_instance:
+                    # expected instance occurred
+                    current_pattern_index += 1
+                else:
+                    # an unexpected instance occurred, the state gets reset to PATTERN_BUILD_UP
+                    PATTERN_BUILD_UP = True
+                    PATTERN_VALIDATION = False
+
+                    if round_robin_pattern.__contains__(current_instance):
+                        # the unexpected instance was part of the pattern, it appeared at the wrong place so an error
+                        # gets tracked
+                        error_count += 1
+
+                    round_robin_pattern = []
+                    current_pattern_index = 0
+
+        error_percentage = error_count / len(instances_in_order)
+        print(error_percentage)
+        if error_percentage <= self._allowed_error_percentage:
+            self._strategy = 'round_robin'
+            return True
+        else:
+            return False
