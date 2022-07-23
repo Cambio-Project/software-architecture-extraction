@@ -174,28 +174,27 @@ class ZipkinTrace(IModel):
                     parent_operation.get_dependency_with_operation(operation).add_calling_span(parent_span)
                     parent_operation.get_dependency_with_operation(operation).add_call()
 
-                if span.get('kind', '') == 'PRODUCER' or span.get('kind', '') == 'CONSUMER':
-                    continue
+                if span.get('kind', '') != 'PRODUCER' and span.get('kind', '') != 'CONSUMER':
+                    # save start time and end time (needed for retry detection)
+                    start_time = span['timestamp']
+                    end_time = start_time + span['duration']
 
-                # save start time and end time (needed for retry detection)
-                start_time = span['timestamp']
-                end_time = start_time + span['duration']
+                    # add a custom latency to the dependency if a client span is present for this span
+                    if client_span_ids.keys().__contains__(ID):
+                        client_span = client_span_ids[ID]
+                        latency = span['timestamp'] - client_span['timestamp']
+                        if latency > 0:
+                            parent_operation.get_dependency_with_operation(operation).add_latency(latency)
 
-                # add a custom latency to the dependency if a client span is present for this span
-                if client_span_ids.keys().__contains__(ID):
-                    client_span = client_span_ids[ID]
-                    latency = span['timestamp'] - client_span['timestamp']
-                    parent_operation.get_dependency_with_operation(operation).add_latency(latency)
+                        # update start- and end time
+                        start_time = client_span['timestamp']
+                        end_time = start_time + client_span['duration']
 
-                    # update start- and end time
-                    start_time = client_span['timestamp']
-                    end_time = start_time + client_span['duration']
-
-                # add this call to the call history of the parent span in order to detect retries later
-                parent_operation.retry.add_call_history_entry(
-                    parent_span['id'],
-                    {span['timestamp']: (
-                    operation_name, span.get('tags', {}).get('error', False), start_time, end_time)})
+                    # add this call to the call history of the parent span in order to detect retries later
+                    parent_operation.retry.add_call_history_entry(
+                        parent_span['id'],
+                        {span['timestamp']: (
+                        operation_name, span.get('tags', {}).get('error', False), start_time, end_time)})
 
         self.subsequent_calculations()
 

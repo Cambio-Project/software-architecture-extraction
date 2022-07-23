@@ -82,7 +82,7 @@ def cli():
         model_name = model_file[model_file.rfind('/') + 1:]
         model_name = model_name[:model_name.rfind('.')]
         if args.export_architecture[0].lower() == 'misim':
-            arch = ArchitectureMiSim(model, "", "")
+            arch = ArchitectureMiSim(model, "", "m")
         else:
             arch = Architecture(model)
 
