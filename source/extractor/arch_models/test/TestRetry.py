@@ -3,7 +3,6 @@ import unittest
 from extractor.arch_models import architecture_misim
 from extractor.arch_models.retry import Retry, RetrySequence
 
-
 class TestRetry(unittest.TestCase):
     def test_retry1(self):
         retry = Retry()

@@ -2,7 +2,6 @@ import unittest
 
 from extractor.arch_models.load_balancer import LoadBalancer
 
-
 class MyTestCase(unittest.TestCase):
     def test_round_robin_detection1(self):
         load_balancer = LoadBalancer()
