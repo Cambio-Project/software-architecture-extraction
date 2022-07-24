@@ -1,9 +1,9 @@
-from extractor.arch_models.architecture_resirio import Architecture
+from extractor.arch_models.architecture_resirio import ArchitectureResirio
 
 
 class Exporter:
     @staticmethod
-    def export_architecture(arch: Architecture, export_type: str, pretty: bool = False, lightweight: bool = False):
+    def export_architecture(arch: ArchitectureResirio, export_type: str, pretty: bool = False, lightweight: bool = False):
         # JavaScript
         if export_type == 'js':
             return 'const graph=' + arch.export(pretty) + ';'

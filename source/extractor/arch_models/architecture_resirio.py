@@ -11,7 +11,7 @@ class CyclicServiceOperations(BaseException):
         super().__init__('Cyclic operations: {}'.format(' -> '.join(map(str, nodes))))
 
 
-class Architecture:
+class ArchitectureResirio:
     """
     Creates a architectural representation of a generic model from services, operations, and dependencies.
     """

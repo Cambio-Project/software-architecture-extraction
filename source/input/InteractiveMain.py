@@ -1,7 +1,7 @@
 import pickle
 from typing import Optional
 
-from extractor.arch_models.architecture_resirio import Architecture
+from extractor.arch_models.architecture_resirio import ArchitectureResirio
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
@@ -34,7 +34,7 @@ def create_generic_model(model_input, trace_input, settings_input):
 # Creates the architecture for RESIRIO or MiSim out of the generic model.
 def create_architecture(settings_input, generic_model):
     if settings_input.should_export_for_resirio:
-        return Architecture(generic_model)
+        return ArchitectureResirio(generic_model)
     else:
         return ArchitectureMiSim(generic_model, settings_input.latency, settings_input.custom_latency_format)
 

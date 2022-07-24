@@ -5,7 +5,7 @@ import sys
 from extractor.controllers.analyzer import Analyzer
 from extractor.controllers.exporter import Exporter
 from extractor.controllers.validator import Validator
-from extractor.arch_models.architecture_resirio import Architecture
+from extractor.arch_models.architecture_resirio import ArchitectureResirio
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
@@ -84,7 +84,7 @@ def cli():
         if args.export_architecture[0].lower() == 'misim':
             arch = ArchitectureMiSim(model, "", "m")
         else:
-            arch = Architecture(model)
+            arch = ArchitectureResirio(model)
 
     # Validation
     if args.validate_model and model:
