@@ -1,11 +1,12 @@
 import json
+
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.open_xtrace import OpenXTrace
 from extractor.arch_models.zipkin_trace import ZipkinTrace
 from extractor.arch_models.architecture_resirio import ArchitectureResirio
 from extractor.arch_models.jaeger_trace import JaegerTrace
 
-class TestUti:
+class TestUtil:
 
     @classmethod
     def loadJaegerMiSim(self, path):
