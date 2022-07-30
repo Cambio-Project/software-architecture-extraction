@@ -48,8 +48,15 @@ class LoadBalancer:
 
         instances_in_order = []
 
+        last_occurrence = {}
+
         for timestamp in timestamps:
             instances_in_order.append(self._instance_history[timestamp])
+
+        index = 0
+        for instance in instances_in_order:
+            last_occurrence[instance] = index
+            index += 1
 
         distinct_instances = set(instances_in_order)
         instance_count = len(distinct_instances)
@@ -71,6 +78,7 @@ class LoadBalancer:
 
         error_count = 0
 
+        index = 0
         for current_instance in instances_in_order:
             if PATTERN_BUILD_UP:
                 # add instances to the pattern, as long as new instances occur in the history
@@ -82,7 +90,8 @@ class LoadBalancer:
 
             if PATTERN_VALIDATION:
                 # validate the current pattern
-                if round_robin_pattern[current_pattern_index % len(round_robin_pattern)] == current_instance:
+                expected_instance = round_robin_pattern[current_pattern_index % len(round_robin_pattern)]
+                if expected_instance == current_instance:
                     # expected instance occurred
                     current_pattern_index += 1
                 else:
@@ -90,9 +99,12 @@ class LoadBalancer:
                     PATTERN_BUILD_UP = True
                     PATTERN_VALIDATION = False
 
-                    if known_instances.__contains__(current_instance):
-                        # the unexpected instance is already known, it appeared at the wrong place so an error
-                        # gets tracked
+                    if known_instances.__contains__(current_instance) and last_occurrence[expected_instance] > index:
+                        # the unexpected instance is already known and the expected instance is still alive, so
+                        # it appeared at the wrong place and an error has to get tracked.
+                        # If this is not true, it is either the first appearance of this instance (up-scaling) or the
+                        # last occurrence of the instance already happened (down-scaling). In both cases we do not want
+                        # to track errors because those Situations do not violate a round-robin pattern
                         error_count += 1
 
                     round_robin_pattern = []
@@ -100,6 +112,8 @@ class LoadBalancer:
 
             if not known_instances.__contains__(current_instance):
                 known_instances.append(current_instance)
+
+            index += 1
 
         error_percentage = error_count / len(instances_in_order)
         if error_percentage <= self._allowed_error_percentage:
