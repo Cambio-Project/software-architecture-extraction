@@ -56,6 +56,7 @@ class LoadBalancer:
 
         current_pattern_index = 0
         round_robin_pattern = []
+        known_instances = []
 
         if not len(instances_in_order) > instance_count:
             # The amount of history entries is not large enough for an estimation
@@ -89,16 +90,18 @@ class LoadBalancer:
                     PATTERN_BUILD_UP = True
                     PATTERN_VALIDATION = False
 
-                    if round_robin_pattern.__contains__(current_instance):
-                        # the unexpected instance was part of the pattern, it appeared at the wrong place so an error
+                    if known_instances.__contains__(current_instance):
+                        # the unexpected instance is already known, it appeared at the wrong place so an error
                         # gets tracked
                         error_count += 1
 
                     round_robin_pattern = []
                     current_pattern_index = 0
 
+            if not known_instances.__contains__(current_instance):
+                known_instances.append(current_instance)
+
         error_percentage = error_count / len(instances_in_order)
-        print(error_percentage)
         if error_percentage <= self._allowed_error_percentage:
             self._strategy = 'round_robin'
             return True
