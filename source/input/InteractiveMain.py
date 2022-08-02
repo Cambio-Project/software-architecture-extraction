@@ -94,7 +94,7 @@ def call_librede_if_user_wants(generic_model):
     user_input = answer[1]
     if option_the_user_decided_for == 0:
         librede_caller = LibredeCaller(generic_model)
-        librede_caller.print_summary_if_user_wants()
+        librede_caller.print_summary()
     elif option_the_user_decided_for == 1:
         for service in generic_model.services.values():
             for operation in service.operations.values():
@@ -151,9 +151,7 @@ def main():
     analyse(settings_input, generic_model)
     export(settings_input, generic_model, architecture)
 
-    user_wants_output = get_valid_yes_no_input("\nDo you want a printed (console) summary of previously entered input?")
-    if user_wants_output:
-        user_input.print_summary_of_input()
+    user_input.print_summary_of_input()
 
 
 if __name__ == "__main__":

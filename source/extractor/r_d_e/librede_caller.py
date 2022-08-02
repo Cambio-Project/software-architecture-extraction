@@ -113,11 +113,9 @@ class LibredeCaller:
         print("    3. Call \"mvn clean install -DskipTests\" in the folder \"tools.descartes.librede.releng\"")
         print("    4. Come back here and type the path to the repository")
 
-    def print_summary_if_user_wants(self):
+    def print_summary(self):
         """
-        Prints a string summarising the call of librede. (Only if the user wants to see it)
+        Prints a string summarising the call of librede.
         """
-        user_wants_output = get_valid_yes_no_input("Do you want a printed (console) summary of your use of LibReDE?")
-        if user_wants_output:
-            self.librede_input_creator.print_summary_of_input()
-            self.librede_output_parser.print_final_results()
+        self.librede_input_creator.print_summary_of_input()
+        self.librede_output_parser.print_final_results()
