@@ -97,11 +97,13 @@ def add_cpu_utilization(all_hosts: list[LibredeHost]):
             host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(cpu_utilization))
     elif answer == "custom_csv":
         for host in all_hosts:
-            csv_file_path = input("Path to cpu utiliztation csv-file [timestamp1, utilization1\\ntimestamp2, utilization2\\n ...] for host <" + host.name + ">: ")
+            csv_file_path = input("Path to cpu utiliztation csv-file [timestamp1,utilization1\\n timestamp2,utilization2\\n ...] for host <" + host.name + ">: ")
             file_handler = open(csv_file_path, "r")
             file_content = file_handler.read()
-            lines = file_content.split("\\n")
+            lines = file_content.split("\n")
             for line in lines:
+                if line == '':
+                    continue
                 line_component = line.split(",")
                 host.cpu_utilization.append((int(line_component[0]), float(line_component[1])))
             file_handler.close()
