@@ -41,7 +41,7 @@ class LibredeOutputParser:
                 else:
                     sum += mapped_output[unique_operation][approach]
             final_results[unique_operation] = sum / number_of_valid_results if number_of_valid_results > 0 else math.nan
-        print("------------------------------------------------- Finished calculating the resource demands\n")
+        print("------------------------------------------------- Finished calculating the resource demands")
         return final_results
 
     def map_output(self, original_output: dict[LibredeServiceOperation, dict[str, float]]) -> dict[tuple[str, str], dict[str, float]]:
@@ -109,4 +109,4 @@ class LibredeOutputParser:
 
     def print_final_results(self):
         for unique_operation in self.final_results:
-            print("estimated final demand of <" + unique_operation[1] + "> of service <" + unique_operation[0] + "> = " + str(self.final_results[unique_operation]))
+            print("Estimated final demand of <" + unique_operation[1] + "> of service <" + unique_operation[0] + "> = " + str(self.final_results[unique_operation]))

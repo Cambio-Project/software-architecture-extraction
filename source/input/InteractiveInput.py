@@ -23,6 +23,7 @@ class InteractiveInput:
         print("---------------------------------------------------------- Finished input of model, traces and settings.")
 
     def print_summary_of_input(self):
+        print("Summary of input:")
         self.model_input.print_summary_of_model_input()
         if self.trace_input is not None:
             self.trace_input.print_summary_of_trace_input()

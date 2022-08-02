@@ -117,5 +117,6 @@ class LibredeCaller:
         """
         Prints a string summarising the call of librede.
         """
+        print("Summary of use of LibReDE:")
         self.librede_input_creator.print_summary_of_input()
         self.librede_output_parser.print_final_results()

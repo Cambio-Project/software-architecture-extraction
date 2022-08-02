@@ -151,6 +151,7 @@ def main():
     analyse(settings_input, generic_model)
     export(settings_input, generic_model, architecture)
 
+    print()
     user_input.print_summary_of_input()
 
 
