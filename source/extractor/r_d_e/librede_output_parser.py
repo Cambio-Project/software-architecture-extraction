@@ -109,4 +109,4 @@ class LibredeOutputParser:
 
     def print_final_results(self):
         for unique_operation in self.final_results:
-            print("estimated final demand of " + unique_operation[1] + " at " + unique_operation[0] + " = " + str(self.final_results[unique_operation]))
+            print("estimated final demand of <" + unique_operation[1] + "> of service <" + unique_operation[0] + "> = " + str(self.final_results[unique_operation]))
