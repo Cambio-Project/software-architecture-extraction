@@ -36,7 +36,7 @@ class LibredeOutputParser:
             sum = 0
             number_of_valid_results = len(approaches_to_use)
             for approach in approaches_to_use:
-                if np.isnan(mapped_output[unique_operation][approach]) or mapped_output[unique_operation][approach] < 0 or mapped_output[unique_operation][approach] > 1:
+                if np.isnan(mapped_output[unique_operation][approach]) or mapped_output[unique_operation][approach] < 0:
                     number_of_valid_results -= 1
                 else:
                     sum += mapped_output[unique_operation][approach]
@@ -63,7 +63,7 @@ class LibredeOutputParser:
                 sum = 0
                 number_of_valid_results = len(self.possible_approaches)
                 for estimation_results_on_single_host in estimations_on_all_hosts:
-                    if np.isnan(estimation_results_on_single_host[approach]) or estimation_results_on_single_host[approach] < 0 or estimation_results_on_single_host[approach] > 1:
+                    if np.isnan(estimation_results_on_single_host[approach]) or estimation_results_on_single_host[approach] < 0:
                         number_of_valid_results -= 1
                     else:
                         sum += estimation_results_on_single_host[approach]
