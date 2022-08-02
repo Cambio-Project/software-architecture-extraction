@@ -8,6 +8,8 @@ from scipy.optimize import OptimizeWarning
 # Threshold that is used to detect if the retry sequence has reached the maximum backoff value
 MAX_BACKOFF_DETECTION_THRESHOLD = 0.01
 
+MISIM_DEFAULT_MAX_BACKOFF = 1
+
 
 # Function for estimating the backoff strategy based on a linear function
 def assume_linear(xi, base, baseBackoff):
@@ -124,6 +126,11 @@ class RetrySequence:
                     self._base = 0
                     self._baseBackoff = y[0]
                     self._error = sys.maxsize  # maximum uncertainty
+
+                    # if the base Backoff is greater than the MiSim default, update the maxBackoff.
+                    if self._baseBackoff > MISIM_DEFAULT_MAX_BACKOFF:
+                        self._maxBackoff = y[0]
+
                     return
                 else:
                     # One data point and a max backoff available, continue with estimation with those two points.
@@ -153,11 +160,19 @@ class RetrySequence:
             self._base = result_exponential[0]
             self._baseBackoff = result_exponential[1]
             self._error = mse_exp
+
+            if self._maxBackoff is None and (estimates_exponential[len(estimates_exponential) - 1] > MISIM_DEFAULT_MAX_BACKOFF):
+                # update maxBackoff to maximum calculated wait time if it is higher than the MiSim default.
+                self._maxBackoff = estimates_exponential[len(estimates_exponential) - 1]
         else:
             self._strategy = "linear"
             self._base = result_linear[0]
             self._baseBackoff = result_linear[1]
             self._error = mse_lin
+
+            if self._maxBackoff is None and (estimates_linear[len(estimates_linear) - 1] > MISIM_DEFAULT_MAX_BACKOFF):
+                # update maxBackoff to maximum calculated wait time if it is higher than the MiSim default.
+                self._maxBackoff = estimates_linear[len(estimates_linear) - 1]
 
         if self._sequence[len(self._sequence) - 1][2]:
             # if the sequence ends with an error, the maximum amount of retry attempts has been reached
