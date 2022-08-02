@@ -27,9 +27,9 @@ def create_generic_model(model_input, trace_input, settings_input):
     elif model_input.contains_misim_model:
         generic_model = MiSimModel(model_input.get_model_file_path())
     elif trace_input.traces_are_jaeger:
-        generic_model = JaegerTrace(trace_input.get_traces(), trace_input.get_number_of_traces() > 1, settings_input.pattern)
+        generic_model = JaegerTrace(trace_input.get_traces(), False, settings_input.pattern)
     elif trace_input.traces_are_zipkin:
-        generic_model = ZipkinTrace(trace_input.get_traces(), trace_input.get_number_of_traces() > 1, settings_input.pattern)
+        generic_model = ZipkinTrace(trace_input.get_traces(), True, settings_input.pattern)
     elif trace_input.traces_are_open_x_trace:
         generic_model = OpenXTrace(trace_input.get_traces(), trace_input.get_number_of_traces() > 1, settings_input.pattern)
     add_service_capacities(generic_model)
