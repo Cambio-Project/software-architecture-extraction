@@ -5,6 +5,7 @@ from extractor.arch_models.architecture_resirio import ArchitectureResirio
 from extractor.arch_models.architecture_misim import ArchitectureMiSim
 from extractor.arch_models.jaeger_trace import JaegerTrace
 from extractor.arch_models.misim_model import MiSimModel
+from extractor.arch_models.open_xtrace import OpenXTrace
 from extractor.arch_models.zipkin_trace import ZipkinTrace
 from extractor.controllers.analyzer import Analyzer
 from extractor.controllers.exporter import Exporter
@@ -26,6 +27,8 @@ def create_generic_model(model_input, trace_input, settings_input):
         generic_model = JaegerTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
     elif trace_input.traces_are_zipkin:
         generic_model = ZipkinTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
+    elif trace_input.traces_are_open_x_trace:
+        generic_model = OpenXTrace(trace_input.get_traces(), trace_input.contains_multiple_traces, settings_input.pattern)
     add_service_capacities(generic_model)
     call_librede_if_user_wants(generic_model)
     return generic_model

@@ -5,16 +5,18 @@ from extractor.controllers.jaeger_network_manager import JaegerNetworkManager
 from extractor.controllers.zipkin_network_manager import ZipkinNetworkManager
 
 
-# Class which forces the user putting in traces via the command line when instantiated.
-#
-# The input consists of two parts: type of traces and traces themselves.
-# (Traces from jaeger can be fetched via the Jaeger HTTP API)
-# Traces a retrievable through get_trace_list()
 class InteractiveTraceInput:
+    """
+    Class which forces the user putting in traces via the command line when instantiated.
+    The input consists of two parts: type of traces and traces themselves.
+    (Traces from jaeger can be fetched via the Jaeger HTTP API)
+    Traces a retrievable through get_trace_list()
+    """
 
     def __init__(self):
         self.traces_are_jaeger = False
         self.traces_are_zipkin = False
+        self.traces_are_open_x_trace = False
         self.use_jaeger_network = False
         self.use_zipkin_network = False
         self.traces = None
@@ -49,18 +51,19 @@ class InteractiveTraceInput:
             self.ask_for_traces_via_command_line()
 
     def ask_for_trace_type(self):
-        trace_input_type = input("Do you want to enter Jaeger or Zipkin traces? <j> or <z>: ")
+        trace_input_type = input("Do you want to enter Jaeger, Zipkin or Open-X-Trace traces? <j>, <z> or <o>: ")
         if trace_input_type == "j":
             self.traces_are_jaeger = True
         elif trace_input_type == "z":
             self.traces_are_zipkin = True
+        elif trace_input_type == "o":
+            self.traces_are_open_x_trace = True
         else:
             print("Trace-Type <" + trace_input_type + "> is not supported, try another...\n")
             self.ask_for_trace_type()
 
     def ask_for_use_of_jaeger_network(self):
-        should_use_jaeger_network = input(
-            "Do you want to directly import your traces from the Jaeger HTTP API or use a previously created backup? <y> or <n> or <b>: ")
+        should_use_jaeger_network = input("Do you want to directly import your traces from the Jaeger HTTP API or use a previously created backup? <y> or <n> or <b>: ")
         if should_use_jaeger_network == "y":
             create_backup = input("Do you wish to create a backup of the traces? <y> or <n>: ")
             self.create_api_backup = True if create_backup == "y" else False
@@ -68,16 +71,17 @@ class InteractiveTraceInput:
         self.load_jaeger_backup = True if should_use_jaeger_network == "b" else False
 
     def ask_for_use_of_zipkin_network(self):
-        should_use_zipkin_network = input(
-            "Do you want to directly import your traces from the Zipkin HTTP API? <y> or <n>: ")
+        should_use_zipkin_network = input("Do you want to directly import your traces from the Zipkin HTTP API? <y> or <n>: ")
         if should_use_zipkin_network == "y":
             create_backup = input("Do you wish to create a backup of the traces? <y> or <n>: ")
             self.create_api_backup = True if create_backup == "y" else False
         self.use_zipkin_network = True if should_use_zipkin_network == "y" else False
 
-    # Asks the user for trace locations and adds the content of each trace file to self.traces.
-    # The user can put in any number of traces, but at least one.
     def ask_for_traces_via_command_line(self):
+        """
+        Asks the user for trace locations and adds the content of each trace file to self.traces.
+        The user can put in any number of traces, but at least one.
+        """
         self.traces = {'data': []} if self.traces_are_jaeger else []
         trace_file_path_input: str = input("Path to a " + self.get_trace_type() + "-trace file: ")
         self.add_trace_if_exists(trace_file_path_input)
@@ -88,17 +92,19 @@ class InteractiveTraceInput:
             self.add_trace_if_exists(trace_file_path_input)
         self.contains_multiple_traces = self.get_number_of_traces() > 0
 
-    # Adds the trace of the given file to self.traces.
-    # If the trace doesn't exist, an error is printed.
     def add_trace_if_exists(self, trace_file_path):
+        """
+        Adds the trace of the given file to self.traces.
+        If the trace doesn't exist, an error is printed.
+        """
         if exists(trace_file_path):
             trace_file_handler = open(trace_file_path, "r")
             trace_file_as_json = json.loads(trace_file_handler.read())
             input_trace_list = trace_file_as_json["data"] if self.traces_are_jaeger else trace_file_as_json
-            if self.traces_are_jaeger:
+            if self.traces_are_jaeger or self.traces_are_open_x_trace:
                 for single_trace in input_trace_list:
                     self.get_list_of_traces().append(single_trace)
-            else:
+            elif self.traces_are_zipkin:
                 if isinstance(trace_file_as_json[0], list):
                     for trace_list in trace_file_as_json:
                         self.get_list_of_traces().append(trace_list)
@@ -119,15 +125,15 @@ class InteractiveTraceInput:
             return "Jaeger"
         elif self.traces_are_zipkin:
             return "Zipkin"
+        elif self.traces_are_open_x_trace:
+            return "OpenXTrace"
 
-    # Calculates the number of traces which were put in at instantiation.
     def get_number_of_traces(self):
         return len(self.get_list_of_traces())
 
     def __str__(self):
         output_string = "Use " + str(self.get_number_of_traces()) + " " + self.get_trace_type() + "-Traces.\n"
-        output_string += "Input-method: " + (
-            "HTTP-Network" if self.use_jaeger_network or self.use_zipkin_network else "Manual") + "."
+        output_string += "Input-method: " + ("HTTP-Network" if self.use_jaeger_network or self.use_zipkin_network else "Manual") + "."
         return output_string
 
 
