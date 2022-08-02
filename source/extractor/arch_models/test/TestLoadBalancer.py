@@ -83,7 +83,7 @@ class MyTestCase(unittest.TestCase):
     def test_round_robin_detection_fail_4(self):
         load_balancer = LoadBalancer()
         load_balancer.set_allowed_error_percentage(0.1)
-        load_balancer._instance_history = {1: "a", 2: "b", 3: "c", 4: "a", 5: "b", 6: "c", 7: "c"}
+        load_balancer._instance_history = {1: "a", 2: "b", 3: "c", 4: "a", 5: "b", 6: "c", 7: "c",  8: "a"}
         self.assertEqual(False, load_balancer.detect_round_robin_pattern())
 
     def test_round_robin_detection_fail_5(self):
