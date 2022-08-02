@@ -5,6 +5,7 @@ from extractor.r_d_e.librede_configuration_creator import LibredeConfigurationCr
 from extractor.r_d_e.librede_host import LibredeHost, get_hosts
 from extractor.r_d_e.default_cpu_utilization import get_default_cpu_utilization
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation, get_operations
+from input.input_utils import get_valid_string_input_with_predicates, str_is_float, get_valid_float_input, get_valid_file_path_input
 
 
 class LibredeInputCreator:
@@ -79,25 +80,32 @@ class LibredeInputCreator:
                 maximum = host.end_time
         return maximum
 
-    def __str__(self) -> str:
-        string_representation = ""
+    def print_summary_of_input(self):
         for host in self.hosts:
-            string_representation += "host: " + str(host) + "\n"
+            print("host: " + str(host))
         for operation in self.operations_on_host:
-            string_representation += str(operation) + "\n"
-        return string_representation
+            print(str(operation))
 
 
 def add_cpu_utilization(all_hosts: list[LibredeHost]):
-    answer = input("Set cpu-utilization for LibReDE\n   <number in [0, 1] [default for all hosts]> or\n   <\"custom_fix\" [set utilization manually for each host]> or\n"
-                   "   <custom_csv [with cpu utilizitations for each host in a csv]>: ")
-    if answer == "custom_fix":
+    answer = get_valid_string_input_with_predicates("Set cpu-utilization for LibReDE.",
+                                                    ["number in [0, 1] (will be default for all hosts)",
+                                                     "\"manual\" (set fix utilization for each host manually)",
+                                                     "\"csv\" (set csv with utilizations for each host)"],
+                                                    [lambda a: str_is_float(a),
+                                                     lambda a: a == "manual",
+                                                     lambda a: a == "csv"])
+    option_the_user_decided_for = answer[0]
+    user_input = answer[1]
+    if option_the_user_decided_for == 0:
         for host in all_hosts:
-            cpu_utilization = input("Fix cpu utilization for host <" + host.name + "> should be: ")
-            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(cpu_utilization))
-    elif answer == "custom_csv":
+            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(user_input))
+    elif option_the_user_decided_for == 1:
         for host in all_hosts:
-            csv_file_path = input("Path to cpu utiliztation csv-file [timestamp1, utilization1\\ntimestamp2, utilization2\\n ...] for host <" + host.name + ">: ")
+            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, get_valid_float_input("Set cpu utilization for host <" + host.name + ">."))
+    else:
+        for host in all_hosts:
+            csv_file_path = get_valid_file_path_input("Path to cpu utilization csv-file for host <" + host.name + ">.")
             file_handler = open(csv_file_path, "r")
             file_content = file_handler.read()
             lines = file_content.split("\\n")
@@ -105,6 +113,3 @@ def add_cpu_utilization(all_hosts: list[LibredeHost]):
                 line_component = line.split(",")
                 host.cpu_utilization.append((int(line_component[0]), float(line_component[1])))
             file_handler.close()
-    else:
-        for host in all_hosts:
-            host.cpu_utilization = get_default_cpu_utilization(host.start_time, host.end_time, float(answer))

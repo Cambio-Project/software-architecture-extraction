@@ -3,6 +3,7 @@ import math
 import numpy as np
 
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
+from input.input_utils import get_valid_yes_no_input
 
 
 class LibredeOutputParser:
@@ -93,8 +94,8 @@ class LibredeOutputParser:
         """
         approaches_to_use = list[str]()
         for approach in self.possible_approaches:
-            answer = input("Use output of approach \"" + approach + "\"? <y> or <n>: ")
-            if answer == "y":
+            user_approach = get_valid_yes_no_input("Use output of approach \"" + approach + "\"?")
+            if user_approach:
                 approaches_to_use.append(approach)
         return approaches_to_use
 
@@ -106,8 +107,6 @@ class LibredeOutputParser:
             for approach in result_per_approach.keys():
                 print("      " + approach + ": " + str(result_per_approach[approach]))
 
-    def get_final_results_as_str(self) -> str:
-        string_representation = ""
+    def print_final_results(self):
         for unique_operation in self.final_results:
-            string_representation += unique_operation[0] + ", " + unique_operation[1] + "; " + str(self.final_results[unique_operation]) + "\n"
-        return string_representation
+            print("estimated final demand of " + unique_operation[1] + " at " + unique_operation[0] + " = " + str(self.final_results[unique_operation]))
