@@ -63,3 +63,6 @@ class Dependency:
         # Example:
         # If the parent operation is executed 2 times but this dependency only occurs once, the probability is 0.5
         self._probability = min(1.0, self._calls / parent_executions)
+
+    def set_probability(self, probability):
+        self._probability = probability
