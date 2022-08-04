@@ -22,7 +22,7 @@ def create_generic_model(model_input, trace_input, settings_input):
     Creates the respective IModel implementation (generic model) from the given input.
     """
     generic_model = None
-    if model_input.contains_resirio_model:
+    if model_input.contains_generic_model:
         generic_model = pickle.load(open(model_input.get_model_file_path(), 'rb'))
     elif model_input.contains_misim_model:
         generic_model = MiSimModel(model_input.get_model_file_path())
@@ -72,7 +72,7 @@ def export(settings_input, generic_model, architecture):
     name_of_output_file = (
                               "RESIRIO" if settings_input.should_export_for_resirio else "MiSim") + "-extraction_" + current_date
     if settings_input.should_store_in_pickle_format:
-        pickle.dump(generic_model, open(name_of_output_file + "_pickle_export.dat",
+        pickle.dump(generic_model, open("Generic_model_extraction_" + current_date + "_pickle_export.dat",
                                         'wb+'))  # stores the generic model in a binary format
     export_file_type = "json" if settings_input.resirio_export_should_be_json or settings_input.should_export_for_misim else "js"
     export_type = export_file_type if settings_input.should_export_for_resirio else "MiSim"

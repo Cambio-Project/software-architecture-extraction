@@ -7,7 +7,9 @@ class InteractiveSettingsInput:
     The input consists of three parts: Analyses, Validation and Export.
     """
 
-    def __init__(self):
+    def __init__(self, traces_as_input):
+        self.traces_are_user_input = traces_as_input
+
         self.should_analyse_model = False
         self.should_validate_model = False
         self.should_validate_architecture = False
@@ -33,7 +35,8 @@ class InteractiveSettingsInput:
         self.should_export_for_misim = export_type_answer == "m"
         self.should_store_in_pickle_format = get_valid_yes_no_input("Do you want to store the generic model in an intermediate format (pickle), too?")
         self.ask_for_additional_resirio_settings()
-        self.ask_for_call_string_pattern()
+        if self.traces_are_user_input:
+            self.ask_for_call_string_pattern()
         if self.should_export_for_misim:
             self.ask_for_latency()
         self.should_analyse_model = get_valid_yes_no_input("Do you want an analysis of the MODEL?")
