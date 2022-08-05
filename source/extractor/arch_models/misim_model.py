@@ -71,7 +71,7 @@ class MiSimModel(IModel):
                                     dependency_of_op.add_latency((float(mean) - float(std)) * 1000000)
                                     dependency_of_op.add_latency((float(mean) + float(std)) * 1000000)
                                 elif dependency_latency is not None:
-                                    dependency_of_op.add_latency(int(dependency_latency) * 1000000)
+                                    dependency_of_op.add_latency(float(dependency_latency) * 1000000)
 
                                 if dependency_probability is not None:
                                     dependency_of_op.set_probability(dependency_probability)
