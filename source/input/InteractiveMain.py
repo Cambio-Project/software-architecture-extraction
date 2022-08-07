@@ -112,8 +112,10 @@ def call_librede_if_user_wants(generic_model):
     else:
         csv_file_handler = open(user_input, "r")
         csv_file_content = csv_file_handler.read()
-        lines = csv_file_content.split("\\n")
+        lines = csv_file_content.split(os.linesep)
         for line in lines:
+            if line == '':
+                continue
             line_components = line.split(",")
             service_name = line_components[0].strip()
             operation_name = line_components[1].strip()
@@ -144,8 +146,10 @@ def add_service_capacities(generic_model):
     else:
         capacity_file_handler = open(user_input, "r")
         capacity_file_content = capacity_file_handler.read()
-        lines: list[str] = capacity_file_content.split("\n")
+        lines: list[str] = capacity_file_content.split(os.linesep)
         for line in lines:
+            if line == '':
+                continue
             line_components = line.split(",")
             service_name = line_components[0].strip()
             capacity_of_service = int(line_components[1].strip())

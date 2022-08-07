@@ -108,7 +108,7 @@ def add_cpu_utilization(all_hosts: list[LibredeHost]):
             csv_file_path = get_valid_file_path_input("Path to cpu utiliztation csv-file [timestamp1,utilization1\\n timestamp2,utilization2\\n ...] for host <" + host.name + ">")
             file_handler = open(csv_file_path, "r")
             file_content = file_handler.read()
-            lines = file_content.split("\n")
+            lines = file_content.split(os.linesep)
             for line in lines:
                 if line == '':
                     continue
