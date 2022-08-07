@@ -14,7 +14,8 @@ from extractor.r_d_e.librede_caller import LibredeCaller
 from input.InteractiveInput import InteractiveInput
 from datetime import datetime
 
-from input.input_utils import get_valid_string_input_with_predicates, str_is_int, get_valid_int_input, get_valid_yes_no_input
+from input.input_utils import get_valid_string_input_with_predicates, str_is_int, get_valid_int_input, \
+    get_valid_yes_no_input
 
 
 def create_generic_model(model_input, trace_input, settings_input):
@@ -31,7 +32,8 @@ def create_generic_model(model_input, trace_input, settings_input):
     elif trace_input.traces_are_zipkin:
         generic_model = ZipkinTrace(trace_input.get_traces(), True, settings_input.pattern)
     elif trace_input.traces_are_open_x_trace:
-        generic_model = OpenXTrace(trace_input.get_traces(), trace_input.get_number_of_traces() > 1, settings_input.pattern)
+        generic_model = OpenXTrace(trace_input.get_traces(), trace_input.get_number_of_traces() > 1,
+                                   settings_input.pattern)
     add_service_capacities(generic_model)
     call_librede_if_user_wants(generic_model)
     return generic_model
@@ -88,8 +90,11 @@ def call_librede_if_user_wants(generic_model):
     the user can put in a default value as demand for every operation in the model.
     """
     answer = get_valid_string_input_with_predicates("Estimate Resource-Demands with LibReDE or enter a default demand?",
-                                                    ["y (for LibReDE)", "int (default demand for all operations)", "\"custom\" (set demand manually for each operation)"],
-                                                    [lambda a: a == "y", lambda a: str_is_int(a), lambda a: a == "custom"])
+                                                    ["y (for LibReDE)", "int (default demand for all operations)",
+                                                     "\"manual\" (set demand manually for each operation)",
+                                                     "Path to csv-file with demands of operations"],
+                                                    [lambda a: a == "y", lambda a: str_is_int(a),
+                                                     lambda a: a == "manual", os.path.isfile])
     option_the_user_decided_for = answer[0]
     user_input = answer[1]
     if option_the_user_decided_for == 0:
@@ -99,10 +104,22 @@ def call_librede_if_user_wants(generic_model):
         for service in generic_model.services.values():
             for operation in service.operations.values():
                 operation.set_demand(int(user_input))
-    else:
+    elif option_the_user_decided_for == 2:
         for service in generic_model.services.values():
             for operation in service.operations.values():
-                operation.set_demand(get_valid_int_input("Set demand for operation <" + operation.name + "> at service <" + service.name + ">."))
+                operation.set_demand(get_valid_int_input(
+                    "Set demand for operation <" + operation.name + "> at service <" + service.name + ">."))
+    else:
+        csv_file_handler = open(user_input, "r")
+        csv_file_content = csv_file_handler.read()
+        lines = csv_file_content.split("\\n")
+        for line in lines:
+            line_components = line.split(",")
+            service_name = line_components[0].strip()
+            operation_name = line_components[1].strip()
+            demand = int(line_components[2].strip())
+            generic_model.services[service_name].operations[operation_name].set_demand(demand)
+        csv_file_handler.close()
 
 
 def add_service_capacities(generic_model):
@@ -111,8 +128,11 @@ def add_service_capacities(generic_model):
     or should be read from a csv-File. Furthermore, fills in the capacities in the generic model.
     """
     answer = get_valid_string_input_with_predicates("Set the capacity of the services.",
-                                                    ["int (default for all services)", "\"manual\" (manual capacity for each service)", "Path to csv-file with capacities"],
-                                                    [lambda a: str_is_int(a), lambda a: a == "manual", lambda a: os.path.isfile(a)])
+                                                    ["int (default for all services)",
+                                                     "\"manual\" (manual capacity for each service)",
+                                                     "Path to csv-file with capacities"],
+                                                    [lambda a: str_is_int(a), lambda a: a == "manual",
+                                                     lambda a: os.path.isfile(a)])
     option_the_user_decided_for = answer[0]
     user_input = answer[1]
     if option_the_user_decided_for == 0:
