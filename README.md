@@ -4,7 +4,7 @@ This project is capable of creating an architectual model out of runtime data (t
 The models can be used as input for [MiSim](https://github.com/Cambio-Project/resilience-simulator) or [RESIRIO](https://github.com/Cambio-Project/hazard-elicitation).
 
 In the following, there will be an overview of the whole project.
-For details, consider visiting our Wiki (TODO link) and the [Wiki of MiSim](https://github.com/Cambio-Project/resilience-simulator/wiki/ArchitectureDescription).
+For details, consider visiting our [Wiki](https://github.com/Cambio-Project/software-architecture-extraction/wiki) and the [Wiki of MiSim](https://github.com/Cambio-Project/resilience-simulator/wiki/ArchitectureDescription).
 
 ## Input
 The entry point of the extractor is the python-file _model2arch.py_.
