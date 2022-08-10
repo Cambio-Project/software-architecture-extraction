@@ -14,8 +14,7 @@ from extractor.r_d_e.librede_caller import LibredeCaller
 from input.InteractiveInput import InteractiveInput
 from datetime import datetime
 
-from input.input_utils import get_valid_string_input_with_predicates, str_is_int, get_valid_int_input, \
-    get_valid_yes_no_input
+from input.input_utils import get_valid_string_input_with_predicates, str_is_int, get_valid_int_input, read_csv
 
 
 def create_generic_model(model_input, trace_input, settings_input):
@@ -110,18 +109,12 @@ def call_librede_if_user_wants(generic_model):
                 operation.set_demand(get_valid_int_input(
                     "Set demand for operation <" + operation.name + "> at service <" + service.name + ">."))
     else:
-        csv_file_handler = open(user_input, "r")
-        csv_file_content = csv_file_handler.read()
-        lines = csv_file_content.split(os.linesep)
-        for line in lines:
-            if line == '':
-                continue
-            line_components = line.split(",")
-            service_name = line_components[0].strip()
-            operation_name = line_components[1].strip()
-            demand = int(line_components[2].strip())
+        demands = read_csv(user_input)
+        for row in demands:
+            service_name = row[0]
+            operation_name = row[1]
+            demand = int(row[2])
             generic_model.services[service_name].operations[operation_name].set_demand(demand)
-        csv_file_handler.close()
 
 
 def add_service_capacities(generic_model):
@@ -144,17 +137,11 @@ def add_service_capacities(generic_model):
         for service in generic_model.services.values():
             service.set_capacity(get_valid_int_input("Set capacity of service <" + service.name + ">: "))
     else:
-        capacity_file_handler = open(user_input, "r")
-        capacity_file_content = capacity_file_handler.read()
-        lines: list[str] = capacity_file_content.split(os.linesep)
-        for line in lines:
-            if line == '':
-                continue
-            line_components = line.split(",")
-            service_name = line_components[0].strip()
-            capacity_of_service = int(line_components[1].strip())
+        capacities: list[list[str]] = read_csv(user_input)
+        for row in capacities:
+            service_name = row[0]
+            capacity_of_service = int(row[1])
             generic_model.services[service_name].set_capacity(capacity_of_service)
-        capacity_file_handler.close()
 
 
 def main():

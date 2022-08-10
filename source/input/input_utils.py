@@ -67,6 +67,24 @@ def str_is_float(string_to_test: str):
         return False
 
 
+def read_csv(path: str) -> list[list[str]]:
+    """
+    Reads the file at the given path, assuming it's a csv. Splits its content between the lines and
+    then between commas and adds all to a list of lists.
+    """
+    file_handler = open(path, "r")
+    file_content = file_handler.read()
+    file_handler.close()
+    lines = file_content.splitlines()
+    parsed_csv = list[list[str]]()
+    for line in lines:
+        if line != "":
+            line_components = line.split(",")
+            parsed_line = [line_component.strip() for line_component in line_components]
+            parsed_csv.append(parsed_line)
+    return parsed_csv
+
+
 class SimpleEqualsFunction:
     """
     Class as an encapsulation of a lambda to store its context.
