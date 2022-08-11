@@ -33,8 +33,9 @@ def create_generic_model(model_input, trace_input, settings_input):
     elif trace_input.traces_are_open_x_trace:
         generic_model = OpenXTrace(trace_input.get_traces(), trace_input.get_number_of_traces() > 1,
                                    settings_input.pattern)
-    add_service_capacities(generic_model)
-    call_librede_if_user_wants(generic_model)
+    if settings_input.should_export_for_misim:
+        add_service_capacities(generic_model)
+        call_librede_if_user_wants(generic_model)
     return generic_model
 
 
