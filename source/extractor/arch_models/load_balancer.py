@@ -84,6 +84,10 @@ class LoadBalancer:
                 # add instances to the pattern, as long as new instances occur in the history
                 if not round_robin_pattern.__contains__(current_instance):
                     round_robin_pattern.append(current_instance)
+                elif len(round_robin_pattern) == 1:
+                    error_count += 1
+                    round_robin_pattern = []
+                    current_pattern_index = 0
                 else:
                     PATTERN_BUILD_UP = False
                     PATTERN_VALIDATION = True

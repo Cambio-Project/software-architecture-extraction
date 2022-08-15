@@ -64,9 +64,9 @@ class InteractiveTraceInput:
 
     def ask_for_use_of_zipkin_network(self):
         should_use_zipkin_network = get_valid_yes_no_input("Do you want to directly import your traces from the Zipkin HTTP API?")
-        if should_use_zipkin_network == "y":
+        if should_use_zipkin_network:
             self.create_api_backup = get_valid_yes_no_input("Do you wish to create a backup of the traces?")
-        self.use_zipkin_network = True if should_use_zipkin_network == "y" else False
+        self.use_zipkin_network = True if should_use_zipkin_network else False
 
     def ask_for_traces_via_command_line(self):
         """
