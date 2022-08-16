@@ -108,6 +108,6 @@ def add_cpu_utilization(all_hosts: list[LibredeHost]):
             csv_file_path = get_valid_file_path_input("Path to cpu utiliztation csv-file for host <" + host.name + ">")
             cpu_progress = read_csv(csv_file_path)
             for row in cpu_progress:
-                timestamp = int(row[0])
+                timestamp = int(float(row[0]))
                 utilization = float(row[1])
                 host.cpu_utilization.append((timestamp, utilization))
