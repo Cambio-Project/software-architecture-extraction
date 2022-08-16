@@ -29,7 +29,7 @@ class LibredeCaller:
         self.path_to_librede_bat_file: str = self.ask_for_path_of_librede_installation() + self.relative_path_to_librede_script_file
 
         self.call_librede()
-        self.librede_output_parser = LibredeOutputParser(self.librede_input_creator.operations_on_host, self.path_to_librede_files + "output" + os.path.sep, self.approaches)
+        self.librede_output_parser = LibredeOutputParser(self.librede_input_creator.operations_on_host, self.path_to_librede_files + "output" + os.path.sep, self.approaches, model)
         self.parse_output_of_librede()
 
     def call_librede(self):

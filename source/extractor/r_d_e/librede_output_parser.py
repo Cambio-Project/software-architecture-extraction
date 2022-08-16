@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 
+from extractor.arch_models.model import IModel
 from extractor.r_d_e.librede_service_operation import LibredeServiceOperation
 from input.input_utils import get_valid_yes_no_input
 
@@ -12,7 +13,8 @@ class LibredeOutputParser:
     Will calculate the final estimated utilization_demand as the average of all approaches the user wants to use.
     """
 
-    def __init__(self, service_operations: list[LibredeServiceOperation], path_to_output_files: str, approaches: list[str]):
+    def __init__(self, service_operations: list[LibredeServiceOperation], path_to_output_files: str, approaches: list[str], model: IModel):
+        self.model = model
         self.service_operations = service_operations
         self.possible_approaches = approaches
         self.path_to_output_files = path_to_output_files
@@ -61,7 +63,8 @@ class LibredeOutputParser:
             average_estimations = dict[str, float]()
             for approach in self.possible_approaches:
                 sum = 0
-                number_of_valid_results = len(self.possible_approaches)
+                service = unique_operation[0]
+                number_of_valid_results = len(self.model.services[service].hosts)
                 for estimation_results_on_single_host in estimations_on_all_hosts:
                     if np.isnan(estimation_results_on_single_host[approach]) or estimation_results_on_single_host[approach] < 0:
                         number_of_valid_results -= 1
