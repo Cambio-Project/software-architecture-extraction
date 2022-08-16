@@ -11,7 +11,7 @@ class LoadBalancer:
         self._allowed_error_percentage = 0.1
 
         # List with currently supported strategies
-        self._valid_strategies = ["random", "round_robin", "round_robin_fast", "utilization"]
+        self._valid_strategies = ["random", "round_robin", "round_robin_fast", "utilization", "even"]
 
     @property
     def strategy(self):
