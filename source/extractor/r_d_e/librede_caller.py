@@ -44,7 +44,7 @@ class LibredeCaller:
             shutil.copy(configuration.get_path_to_configuration_file(), self.path_to_librede_bat_file)
         os.chdir(self.path_to_librede_bat_file)
         for configuration in self.librede_input_creator.configurations:
-            name_of_script_file = "librede.bat" if platform.system() == "Windows" else "librede.sh"
+            name_of_script_file = "librede.bat" if platform.system() == "Windows" else "./librede.sh"
             command: str = name_of_script_file + " -c " + configuration.get_file_name() + ""
             print("Running \"" + command + "\" for operation \"" + configuration.service_operation.operation_name + "\" on host \"" + configuration.service_operation.host.name + "\"")
             os.system(command)
