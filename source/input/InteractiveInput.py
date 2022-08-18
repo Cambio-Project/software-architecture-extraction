@@ -19,8 +19,8 @@ class InteractiveInput:
         if not self.model_input.contains_model():
             self.trace_input = InteractiveTraceInput()
             print()
-        input_is_traces = self.trace_input is not None
-        self.settings_input = InteractiveSettingsInput(input_is_traces)
+        input_requires_pattern = self.trace_input is not None and (self.trace_input.traces_are_jaeger or self.trace_input.traces_are_zipkin)
+        self.settings_input = InteractiveSettingsInput(input_requires_pattern)
         print("---------------------------------------------------------- Finished input of model, traces and settings.")
 
     def print_summary_of_input(self):
