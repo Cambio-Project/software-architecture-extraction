@@ -16,9 +16,9 @@ class InteractiveModelInput:
         self.ask_for_model()
 
     def ask_for_model(self):
-        input_specification = "Optionally enter a previosuly created extraction:"
+        input_specification = "Optionally enter a previously created extraction:"
         input_descriptions = [
-            "Path to extraction (either .dat-file for Generic Model (pickle) or .json for MiSim-architecture",
+            "Path to extraction (either .dat-file for Generic Model (pickle) or .json for MiSim-architecture)",
             "Enter for no model"]
         inputs_predicates = [os.path.isfile, lambda a: a == ""]
         model_answer = get_valid_string_input_with_predicates(input_specification, input_descriptions,

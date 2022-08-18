@@ -50,7 +50,7 @@ class InteractiveTraceInput:
             self.ask_for_traces_via_command_line()
 
     def ask_for_trace_type(self):
-        trace_input_type = get_valid_string_input_with_finite_valid_options("Do you want to enter Jaeger, Zipkin or Open.xtrace traces?", ["j", "z", "o"])
+        trace_input_type = get_valid_string_input_with_finite_valid_options("Do you want to enter Jaeger, Zipkin or OPEN.xtrace traces?", ["j", "z", "o"])
         self.traces_are_jaeger = trace_input_type == "j"
         self.traces_are_zipkin = trace_input_type == "z"
         self.traces_are_open_x_trace = trace_input_type == "o"
@@ -113,7 +113,7 @@ class InteractiveTraceInput:
         elif self.traces_are_zipkin:
             return "Zipkin"
         elif self.traces_are_open_x_trace:
-            return "OpenXTrace"
+            return "OPEN.xtrace"
 
     def get_number_of_traces(self):
         return len(self.get_list_of_traces())
