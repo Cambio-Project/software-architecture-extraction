@@ -1,7 +1,7 @@
 from typing import Dict, List, Union
 
-from ..graph.edge import Edge
-from ..graph.node import Node
+from extractor.graph.edge import Edge
+from extractor.graph.node import Node
 
 
 class Graph:

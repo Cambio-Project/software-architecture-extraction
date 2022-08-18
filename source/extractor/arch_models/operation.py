@@ -1,4 +1,7 @@
 from typing import Dict, List
+from extractor.arch_models.circuit_breaker import CircuitBreaker
+from extractor.arch_models.dependency import Dependency
+from extractor.arch_models.retry import Retry
 
 
 class Operation:
@@ -7,11 +10,23 @@ class Operation:
     def __init__(self, name: str):
         self._id = Operation.ID
         self._name = name
-        self._dependencies = []
+        self._dependencies: [Dependency] = []
         self._service = None
-        
+        self._circuit_breaker = None
+        self._demand = 100
+        self._spans = set()
+        self._retry = Retry()
+
+        # stores {host1 :  [(timestamp1, response time 1), (timestamp2, response time 2), ...], host2: [(..),..], ...}
+        self._response_times = {}
+
         # Runtime 
         self._durations = {}
+        self._latency = {}
+        self._starttime = {}
+        self._endtime = {}
+        self._error = {}
+        self._timestamp = {}
         self._tags = {}
         self._logs = {}
 
@@ -48,14 +63,54 @@ class Operation:
     @property
     def dependencies(self) -> List:
         return self._dependencies
-    
+
+    @property
+    def response_times(self) -> Dict:
+        return self._response_times
+
+    @property
+    def demand(self):
+        return self._demand
+
     @property
     def durations(self) -> Dict:
         return self._durations
-        
+
+    @property
+    def latency(self) -> Dict:
+        return self._latency
+
+    @property
+    def starttime(self) -> Dict:
+        return self._starttime
+
+    @property
+    def endtime(self) -> Dict:
+        return self._endtime
+
+    @property
+    def error(self) -> Dict:
+        return self._error
+
+    @property
+    def timestamp(self) -> Dict:
+        return self._timestamp
+
     @property
     def logs(self) -> Dict[str, Dict]:
         return self._logs
+
+    @property
+    def circuit_breaker(self) -> CircuitBreaker:
+        return self._circuit_breaker
+
+    @property
+    def spans(self):
+        return self._spans
+
+    @property
+    def retry(self):
+        return self._retry
 
     @logs.setter
     def logs(self, logs: Dict[str, Dict]):
@@ -84,3 +139,28 @@ class Operation:
     def remove_dependencies(self, dependencies: List):
         for dependency in dependencies:
             self._dependencies.remove(dependency)
+
+    def contains_operation_as_dependency(self, operation):
+        for dependency in self._dependencies:
+            if dependency.name == operation.name and dependency.service == operation.service:
+                return True
+        return False
+
+    def get_dependency_with_operation(self, operation):
+        for dependency in self._dependencies:
+            if dependency.name == operation.name and dependency.service == operation.service:
+                return dependency
+        return None
+
+    def remove_dependency_with_duplicates(self, dependency):
+        while self._dependencies.__contains__(dependency):
+            self._dependencies.remove(dependency)
+
+    def add_circuit_breaker(self, circuitBreaker: CircuitBreaker):
+        self._circuit_breaker = circuitBreaker
+
+    def set_demand(self, demand):
+        self._demand = demand
+
+    def add_span(self, span):
+        self._spans.add(span)

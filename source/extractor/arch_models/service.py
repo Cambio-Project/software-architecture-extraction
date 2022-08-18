@@ -1,6 +1,7 @@
 from typing import Dict, List
 
-from ..arch_models.operation import Operation
+from extractor.arch_models.load_balancer import LoadBalancer
+from extractor.arch_models.operation import Operation
 
 
 class Service:
@@ -10,6 +11,9 @@ class Service:
         self._id = Service.ID
         self._name = name
         self._operations = {}
+        self._hosts = []
+        self._capacity = 1000
+        self._load_balancer = LoadBalancer()
 
         # Runtime
         self._tags = {}
@@ -41,6 +45,21 @@ class Service:
     def tags(self) -> Dict[str, str]:
         return self._tags
 
+    @property
+    def hosts(self):
+        return self._hosts
+
+    @property
+    def capacity(self):
+        return self._capacity
+
+    @property
+    def load_balancer(self):
+        return self._load_balancer
+
+    def set_capacity(self, capacity):
+        self._capacity = capacity
+
     @tags.setter
     def tags(self, tags: Dict[str, str]):
         self._tags = tags
@@ -65,3 +84,7 @@ class Service:
         for operation in operations:
             del self._operations[operation.name]
             operation.service = self
+
+    def add_host(self, host):
+        if host not in self._hosts:
+            self._hosts.append(host)

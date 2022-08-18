@@ -1,10 +1,10 @@
 from typing import Union, Dict, Tuple, List, Any
-from typing.io import IO
+from typing import IO
 import pandas as pd
 
-from ..arch_models.hazard import *
-from ..arch_models.operation import Operation
-from ..arch_models.service import Service
+from extractor.arch_models.hazard import *
+from extractor.arch_models.operation import Operation
+from extractor.arch_models.service import Service
 from util.log import tb
 
 
@@ -48,12 +48,13 @@ class IModel:
     IModel provides a validation method that checks for validity of the model.
     This validation checks the semantic of the model.
     """
-    def __init__(self, model_type: str, source: Union[str, IO] = None, multiple: bool = False):
+    def __init__(self, model_type: str, source: Union[str, IO] = None, multiple: bool = False, pattern: str = None):
         self._model_type = model_type
         self._services = {}
         self._valid = False
         self._hazards = {}
         self._stimuli = []
+        self._call_string = pattern
 
         if source:
             try:
@@ -87,6 +88,13 @@ class IModel:
     def hazards(self) -> Dict[str, List[Hazard]]:
         return self._hazards
 
+    @property
+    def call_string(self):
+        return self._call_string
+
+    def set_call_string(self, call_pattern):
+        self._call_string = call_pattern
+
     @hazards.setter
     def hazards(self, hazards: Dict[str, List[Hazard]]):
         self._hazards = hazards
@@ -100,6 +108,24 @@ class IModel:
         raise NotImplementedError('_parse() method must be implemented!')
 
     # Public
+
+    def subsequent_calculations(self):
+        """
+        This method executes two subsequent operations that need to be done one the finished generic model:
+        It calculates all the probabilities of the dependencies and calls the retry-detection method of each
+        operation. Furthermore, for each service that has no load balancing strategy set via a tag yet, the
+        round-robin detection method is called.
+        """
+        for service in self.services.values():
+            if service.load_balancer.strategy is None:
+                service.load_balancer.detect_round_robin_pattern()
+
+            for operation in service.operations.values():
+                # call the retry-detection method of each operation
+                operation.retry.detect_retry()
+                for dependency in operation.dependencies:
+                    # iterate through all dependencies and call the method for calculating the probability
+                    dependency.calculate_probability(len(operation.spans))
 
     def validate(self, check_everything=False) -> Tuple[bool, List[BaseException]]:
         valid = True
@@ -115,7 +141,7 @@ class IModel:
 
                     for dependency in operation.dependencies:
                         # Check circular dependencies
-                        if operation in dependency.dependencies:
+                        if operation in [dep.operation for dep in dependency.operation.dependencies]:
                             stack.append(CyclicOperationDependency(operation, dependency))
                             continue
 

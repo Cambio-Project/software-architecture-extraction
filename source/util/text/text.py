@@ -1,6 +1,6 @@
 import random
-from util.log import warning
-from util.text.languages import LanguageConfig, TEXT
+from ..log import warning
+from languages import LanguageConfig, TEXT
 
 
 def text(text_id: int):

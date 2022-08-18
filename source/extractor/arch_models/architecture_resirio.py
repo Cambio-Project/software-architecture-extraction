@@ -2,8 +2,8 @@ import json
 import re
 from typing import Tuple, List
 
-from ..graph.graph import Graph, Node, Edge
-from ..arch_models.model import IModel, UnknownOperation
+from extractor.graph.graph import Graph, Node, Edge
+from extractor.arch_models.model import IModel, UnknownOperation
 
 
 class CyclicServiceOperations(BaseException):
@@ -11,7 +11,7 @@ class CyclicServiceOperations(BaseException):
         super().__init__('Cyclic operations: {}'.format(' -> '.join(map(str, nodes))))
 
 
-class Architecture:
+class ArchitectureResirio:
     """
     Creates a architectural representation of a generic model from services, operations, and dependencies.
     """
@@ -31,6 +31,7 @@ class Architecture:
 
         # Add edges
         for _, s in self._model.services.items():
+            temp = None
             for _, o in s.operations.items():
                 source = self._graph.node(s.id)
 
